@@ -4,6 +4,15 @@ project(midimapper)
 file(GLOB_RECURSE sources      src/*.c src/*.h)
 file(GLOB_RECURSE data resources/*)
 
+# Remove tmp files from source tree
+foreach ( PATH ${sources} )
+  string (FIND ${PATH} "#" FOUND)
+  if (NOT ${FOUND} EQUAL -1)
+    list ( REMOVE_ITEM sources ${PATH} )
+  endif()
+endforeach( PATH )
+
+
 add_executable(midimapper ${sources} ${data})
 
 target_include_directories(midimapper PUBLIC src)
