@@ -14,6 +14,7 @@ endforeach( PATH )
 
 
 add_executable(midimapper ${sources} ${data})
+add_library(midimap ${sources} ${data})
 
 target_include_directories(midimapper PUBLIC src)
 
@@ -43,8 +44,8 @@ elseif (UNIX)
 endif ()
 
 
-
 target_link_libraries( midimapper ${_midi_libs} )
+target_link_libraries( midimap ${_midi_libs} )
 
 unset( _midi_libs )
 unset( _midi_defs )
