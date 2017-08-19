@@ -8,14 +8,13 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 typedef struct Device {
-  char* name;
+  char *name;
 } Device;
 
 typedef struct Devices {
-  Device** store;
+  Device **store;
   int count;
 } Devices;
 
-
 int CreateVirtualDevice();
-Devices* GetMIDIDevices();
+Devices *GetMIDIDevices();
