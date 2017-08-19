@@ -8,10 +8,20 @@ if [[ $1 == "clean" ]]; then
   $BIN/clean
 fi
 
+if [[ $1 == "build" ]]; then
+  shift;
+  $BIN/build
+
+  if [[ $? != 0 ]]; then
+    echo "Build Failed"
+    exit 1
+  fi
+fi
+
 if [ ! -f $ROOT/build/midimapper ]; then
   $BIN/build
 
-  if [ ! -eq $? 0 ]; then
+  if [[ $? != 0 ]]; then
     echo "Build Failed"
     exit 1
   fi
@@ -19,4 +29,5 @@ fi
 
 CMD="$ROOT/build/midimapper $@"
 echo $CMD
+echo
 $CMD
