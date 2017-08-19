@@ -1,48 +1,75 @@
 #include "driver.h"
 
 typedef struct Connection {
-  int id;
+    int id;
 } Connection;
 
 typedef struct MIDIPlayer {
-  AUGraph graph;
-  AudioUnit instrumentUnit;
+    AUGraph graph;
+    AudioUnit instrumentUnit;
 } MIDIPlayer;
 
-void MyMIDIReadProc(const MIDIPacketList *pktlist,
-    void *refCon,
-    void *connRefCon) {
+void MyMIDIReadProc(const MIDIPacketList* pktlist,
+    void* refCon,
+    void* connRefCon)
+{
 
-  Connection *c = (Connection*) refCon;
-  printf("received midi: %d", c->id);
+    Connection* c = (Connection*)refCon;
+    printf("received midi: %d\n", c->id);
 }
 
-void MyMIDINotifyProc(const MIDINotification *message, void *refCon) {
-  printf("MIDI Notify -> messageID=%d", message->messageID);
-  Connection *c = (Connection*) refCon;
+void MyMIDINotifyProc(const MIDINotification* message, void* refCon)
+{
+    printf("MIDI Notify -> messageID=%d", message->messageID);
+    Connection* c = (Connection*)refCon;
 }
 
-int CreateVirtualDevice() {
-  CFStringRef name  = CFSTR("midimapper.virtual");
+Devices* GetMIDIDevices()
+{
+    int devs = 12;
 
-  MIDIClientRef vClient;
-  MIDIEndpointRef vEndpoint;
+    // Device Sentinel
+    Devices *devices = NULL;
 
-  MIDIPortRef *output = NULL;
-  MIDIPortRef *input = NULL;
+    // Allocate master device sentinel
+    devices = malloc(sizeof(Devices*));
 
-  Connection con;
-  con.id = 1;
+    // Allocate a collection of pointers to Device pointers
+    devices->store = malloc(devs * sizeof(Device*));
 
-  MIDIClientCreate(CFSTR("midimapper.client"),
-                              MyMIDINotifyProc,
-                              &con,
-                              &vClient);
+    for (int i = 0; i < devs; ++i) {
+      devices->store[i] = (Device*)malloc(sizeof(Device));
+      devices->store[i]->name = strdup("ok");
+      devices->count = i;
+    }
 
-  MIDIOutputPortCreate(vClient, CFSTR("midimapper.output"), output);
-  /* MIDIInputPortCreate(vClient, CFSTR("midimapper.input"), MyMIDIReadProc, &con, output); */
+    return devices;
+}
 
-  MIDIDestinationCreate(vClient, name, MyMIDIReadProc, &con, &vEndpoint);
-  MIDISourceCreate(vClient, name, &vEndpoint);
-  return 0;
+int CreateVirtualDevice(char* cname)
+{
+    CFStringRef name;
+    name = CFStringCreateWithCStringNoCopy(NULL, cname,
+        kCFStringEncodingMacRoman, NULL);
+
+    MIDIClientRef client;
+    MIDIEndpointRef endpoint;
+
+    MIDIPortRef* output = NULL;
+    MIDIPortRef* input = NULL;
+
+    Connection con;
+    con.id = 1;
+
+    MIDIClientCreate(name,
+        MyMIDINotifyProc,
+        &con,
+        &client);
+
+    MIDIOutputPortCreate(client, CFSTR("output"), output);
+    MIDIInputPortCreate(client, CFSTR("input"), MyMIDIReadProc, &con, output);
+
+    MIDIDestinationCreate(client, name, MyMIDIReadProc, &con, &endpoint);
+    MIDISourceCreate(client, name, &endpoint);
+    return 0;
 }
