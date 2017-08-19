@@ -3,6 +3,11 @@
 DIR="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$( cd $DIR/../ && pwd )
 
-mkdir -p $ROOT/build && cd build;
-cmake .. && make -j4
+mkdir -p $ROOT/build && cd $ROOT/build;
+
+if [[ ! -f $ROOT/build/Makefile ]]; then
+  cmake ..
+fi
+
+make -j4
 

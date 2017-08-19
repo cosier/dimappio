@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
       printf(" %02d: %s\n", i, devices->store[i]->name);
     }
 
-    void (*pFunc)(const MIDINotification *message, void *refCon);
+    void (*pFunc)(const MIDIPacketList *message, void *refCon, void *connRefCon);
     pFunc = &MMMIDIReadProc;
 
     MMAttachListener(devices->store[0], pFunc);

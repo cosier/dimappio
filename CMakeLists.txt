@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(midimapper)
 
+set(CMAKE_INSTALL_MESSAGE LAZY)
 
 # Main executable has a single file
 SET ( SRC_MAIN src/main.c )
