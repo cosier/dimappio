@@ -7,8 +7,11 @@
 
 #include <AudioToolbox/AudioToolbox.h>
 
+#import "utils.h"
+
 typedef struct Device {
   char *name;
+  MIDIEndpointRef endpoint;
 } Device;
 
 typedef struct Devices {
@@ -16,5 +19,9 @@ typedef struct Devices {
   int count;
 } Devices;
 
-int CreateVirtualDevice();
-Devices *GetMIDIDevices();
+extern int MMCreateVirtualDevice();
+extern Devices *MMGetDevices();
+
+void MMMIDIReadProc(const MIDIPacketList *pktlist, void *refCon, void *connRefCon);
+void MMMIDINotifyProc(const MIDINotification *message, void *refCon);
+void MMAttachListener();

@@ -1,23 +1,28 @@
 cmake_minimum_required(VERSION 3.6)
 project(midimapper)
 
-file(GLOB_RECURSE sources      src/*.c src/*.h)
-file(GLOB_RECURSE data resources/*)
+
+# Main executable has a single file
+SET ( SRC_MAIN src/main.c )
+
+file(GLOB_RECURSE SRC_LIB      src/*.c src/*.h)
 
 # Remove tmp files from source tree
-foreach ( PATH ${sources} )
+foreach ( PATH ${SRC_LIB} )
   string (FIND ${PATH} "#" FOUND)
   if (NOT ${FOUND} EQUAL -1)
-    list ( REMOVE_ITEM sources ${PATH} )
+    list ( REMOVE_ITEM SRC_LIB ${PATH} )
   endif()
 endforeach( PATH )
 
 
-add_executable(midimapper ${sources} ${data})
-add_library(midimap ${sources} ${data})
+add_library(midimap ${SRC_LIB})
+add_executable(midimapper ${SRC_MAIN})
 
 target_include_directories(midimapper PUBLIC src)
+target_include_directories(midimap PUBLIC src)
 
+# Break into conditionals for audio driver support
 if (APPLE)
   find_library( coreaudio_lib CoreAudio )
   find_library( coremidi_lib CoreMIDI )
@@ -43,10 +48,10 @@ elseif (UNIX)
 
 endif ()
 
+# Everybody needs curses
+find_library( ncurses_lib ncurses )
 
-target_link_libraries( midimapper ${_midi_libs} )
-target_link_libraries( midimap ${_midi_libs} )
-
-unset( _midi_libs )
-unset( _midi_defs )
+# Link up our two targets (main exe and library support)
+target_link_libraries( midimap ${_midi_libs} ${ncurses_lib} )
+target_link_libraries( midimapper midimap )
 

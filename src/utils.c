@@ -21,3 +21,10 @@ char *CFStringRefToChars(CFStringRef string) {
   free(buffer);
   return NULL;
 }
+
+CFStringRef CharToCFStringRef(char *c) {
+  return CFStringCreateWithCStringNoCopy(NULL,
+                                         c,
+                                         kCFStringEncodingUTF8,
+                                         NULL);
+}

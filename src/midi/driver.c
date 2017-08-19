@@ -4,48 +4,66 @@ typedef struct Connection {
   int id;
 } Connection;
 
-typedef struct MIDIPlayer {
-  AUGraph graph;
-  AudioUnit instrumentUnit;
-} MIDIPlayer;
-
-void MyMIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
+void MMMIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                     void *connRefCon) {
 
   Connection *c = (Connection *)refCon;
   printf("received midi: %d\n", c->id);
 }
 
-void MyMIDINotifyProc(const MIDINotification *message, void *refCon) {
+void MMMIDINotifyProc(const MIDINotification *message, void *refCon) {
   printf("MIDI Notify -> messageID=%d", message->messageID);
   Connection *c = (Connection *)refCon;
 }
 
-Devices *GetMIDIDevices() {
-  int devs = 12;
+void MMAttachListener(Device dev,
+                      void (*func)(const MIDINotification *message, void *refCon)) {
+}
+
+Devices *MMGetDevices() {
+  int srcs = MIDIGetNumberOfSources();
+  /* printf("MIDI Sources: %d\n", srcs); */
+
+  if (srcs < 1) {
+    printf("No Midi Sources found, attempting to force enumeration(10)\n");
+    srcs = 10;
+  }
 
   // Device Sentinel
   Devices *devices = NULL;
 
   // Allocate master device sentinel
   devices = malloc(sizeof(Devices *));
+  devices->count = 0;
 
   // Allocate a collection of pointers to Device pointers
-  devices->store = malloc(devs * sizeof(Device *));
+  devices->store = malloc(srcs * sizeof(Device *));
 
-  for (int i = 0; i < devs; ++i) {
+  for (int i = 0; i < srcs; ++i) {
     devices->store[i] = (Device *)malloc(sizeof(Device));
-    devices->store[i]->name = strdup("ok");
-    devices->count = i;
+    /* MIDIDeviceRef dev = MIDIGetDevice(i); */
+    MIDIDeviceRef src = MIDIGetSource(i);
+
+    if (src) {
+      CFPropertyListRef *propList = NULL;
+      MIDIObjectGetProperties(src, propList, true);
+
+      CFStringRef deviceName = NULL;
+      MIDIObjectGetStringProperty(src, kMIDIPropertyName, &deviceName);
+
+      devices->store[i]->endpoint = src;
+      devices->store[i]->name = CFStringRefToChars(deviceName);
+
+      // Increment device counter
+      devices->count++;
+    }
   }
 
   return devices;
 }
 
-int CreateVirtualDevice(char *cname) {
-  CFStringRef name;
-  name = CFStringCreateWithCStringNoCopy(NULL, cname, kCFStringEncodingMacRoman,
-                                         NULL);
+int MMCreateVirtualDevice(char *cname) {
+  CFStringRef name = CharToCFStringRef(cname);
 
   MIDIClientRef client;
   MIDIEndpointRef endpoint;
@@ -56,12 +74,17 @@ int CreateVirtualDevice(char *cname) {
   Connection con;
   con.id = 1;
 
-  MIDIClientCreate(name, MyMIDINotifyProc, &con, &client);
+  Device dev;
+  dev.name = cname;
+
+  MIDIClientCreate(name, MMMIDINotifyProc, &dev, &client);
 
   MIDIOutputPortCreate(client, CFSTR("output"), output);
-  MIDIInputPortCreate(client, CFSTR("input"), MyMIDIReadProc, &con, output);
+  MIDIInputPortCreate(client, CFSTR("input"), MMMIDIReadProc, &dev, output);
 
-  MIDIDestinationCreate(client, name, MyMIDIReadProc, &con, &endpoint);
+  MIDIDestinationCreate(client, name, MMMIDIReadProc, &dev, &endpoint);
+  dev.endpoint = endpoint;
+
   MIDISourceCreate(client, name, &endpoint);
   return 0;
 }

@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include "midi/driver.h"
+#include "ui/interface.h"
 
 int main(int argc, char **argv) {
 
@@ -11,18 +12,25 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  Devices *devices = GetMIDIDevices();
-  printf("midimapper found devices:\n");
+  Devices *devices = MMGetDevices();
 
-  for (int i = 0; i < devices->count; ++i) {
-    printf(" %02d: %s\n", i, devices->store[i]->name);
-  }
+  if (devices->count > 0) {
+    printf("midimapper found devices:\n");
 
-  char *name = argv[1];
-  CreateVirtualDevice(name);
+    for (int i = 0; i < devices->count; ++i) {
+      printf(" %02d: %s\n", i, devices->store[i]->name);
+    }
 
-  while (true) {
-    sleep(1);
+    void (*pFunc)(const MIDINotification *message, void *refCon);
+    pFunc = &MMMIDIReadProc;
+
+    MMAttachListener(devices->store[0], pFunc);
+
+    // Kick off the application UI thread
+    MMInterfaceStart();
+
+  } else {
+    printf("midimapper: no midi devices available\n");
   }
 
   return 0;
