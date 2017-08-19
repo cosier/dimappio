@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DIR="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$( cd $DIR/../ && pwd )
+SRC=$ROOT/src
+
+cfmt() {
+  declare INPUT=${@:-$(</dev/stdin)}
+  for f in $INPUT; do
+    echo $f
+    clang-format -i -style=Webkit $f
+  done
+}
+
+find $SRC  -type f \( -iname "*.h" -o -iname "*.c" ! -iname "*#*"  \) | cfmt
