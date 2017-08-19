@@ -1,0 +1,22 @@
+#!/bin/bash
+
+BIN="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$( cd $BIN/../ && pwd )
+
+if [[ $1 == "clean" ]]; then
+  shift;
+  $BIN/clean
+fi
+
+if [ ! -f $ROOT/build/midimapper ]; then
+  $BIN/build
+
+  if [ ! -eq $? 0 ]; then
+    echo "Build Failed"
+    exit 1
+  fi
+fi
+
+CMD="$ROOT/build/midimapper $@"
+echo $CMD
+$CMD

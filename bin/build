@@ -1,0 +1,8 @@
+#!/bin/bash
+
+DIR="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$( cd $DIR/../ && pwd )
+
+mkdir -p $ROOT/build && cd build;
+cmake .. && make -j4
+
