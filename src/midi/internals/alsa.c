@@ -19,11 +19,11 @@ Devices *MMAlsa_GetDevices() {
   int status = 0;
 
   if ((status = snd_card_next(&card)) < 0) {
-    printf("Failed to retrieve midi data");
+    error("Failed to retrieve midi data: %s", snd_strerror(status));
   }
 
   if (card < 0) {
-    error("No available sound cards found %s\n", snd_strerror(status));
+    error("No available sound cards found");
     return devices;
   }
 
@@ -148,6 +148,44 @@ void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   name = snd_rawmidi_info_get_name(info);
   sub_name = snd_rawmidi_info_get_subdevice_name(info);
   pdebug("name: %s\n      %s\n", name, sub_name);
+
+  if (sub_name[0] == '\0') {
+    pdebug("sub_name[0] == '\0");
+  } else {
+    sub = 0;
+    for (;;) {
+      pdebug("%c%c hw:%d,%d,%d %s",
+             in ? 'I' : ' ',
+             out? 'O' : ' ',
+             card, device, sub, sub_name);
+      if (++sub >= subs) {
+        break;
+      }
+
+      in = is_input(ctl, card, device, sub);
+      out = is_output(ctl, card, device, sub);
+      snd_rawmidi_info_set_subdevice(info, sub);
+
+      if (out) {
+        snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_OUTPUT);
+        if ((status = snd_ctl_rawmidi_info(ctl, info)) < 0) {
+          error("could not get rawmidi info from hw:%d,%d,%d %s",
+                card, device, sub, sub_name);
+          break;
+        }
+      } else {
+        snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_INPUT);
+        if ((status = snd_ctl_rawmidi_info(ctl, info)) < 0) {
+          error("could not get rawmidi info from hw:%d,%d,%d %s",
+                card, device, sub, sub_name);
+          break;
+        }
+      }
+
+      sub_name = snd_rawmidi_info_get_subdevice_name(info);
+    }
+  }
+
 }
 
 // Returns true if given card/device/sub can output MIDI
