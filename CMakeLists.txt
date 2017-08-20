@@ -20,9 +20,6 @@ endforeach( PATH )
 add_library(midimap ${SRC_LIB})
 add_executable(midimapper ${SRC_MAIN})
 
-target_include_directories(midimapper PUBLIC src)
-target_include_directories(midimap PUBLIC src)
-
 # Break into conditionals for audio driver support
 if (APPLE)
   find_library( coreaudio_lib CoreAudio )
@@ -45,7 +42,10 @@ elseif (MSVC)
   # TODO:
 
 elseif (UNIX)
-  # TODO:
+  find_package( ALSA REQUIRED )
+
+  set( _midi_libs ${ALSA_LIBRARY} pthread )
+  set( _midi_defs __LINUX_ALSA__ )
 
 endif ()
 
@@ -54,5 +54,15 @@ find_library( ncurses_lib ncurses )
 
 # Link up our two targets (main exe and library support)
 target_link_libraries( midimap ${_midi_libs} ${ncurses_lib} )
+target_compile_definitions( midimap PUBLIC ${_midi_defs} )
+
+target_include_directories(midi-mapper PUBLIC src)
+target_include_directories(midimap PUBLIC src)
+
 target_link_libraries( midimapper midimap )
+
+
+unset( _midi_libs )
+unset( _midi_defs )
+
 
