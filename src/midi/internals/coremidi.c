@@ -38,7 +38,7 @@ Devices *MMCoreMidi_GetDevices() {
 
   for (int i = 0; i < srcs; ++i) {
     // Allocate actual device here
-    devices->store[i] = (Device *)malloc(sizeof(Device));
+    devices->store[i] = malloc(sizeof(Device));
     /* MIDIDeviceRef dev = MIDIGetDevice(i); */
     MIDIDeviceRef src = MIDIGetSource(i);
 
