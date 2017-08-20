@@ -7,7 +7,11 @@ mkdir -p $ROOT/build && cd $ROOT/build;
 
 if [[ ! -f $ROOT/build/Makefile ]]; then
   cmake ..
+  if [ ! $? -eq 0 ]; then
+    exit 1
+  fi
 fi
 
+clear
 make -j4
 
