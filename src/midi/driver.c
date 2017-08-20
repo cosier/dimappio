@@ -62,7 +62,7 @@ Devices *MMGetDevices() {
   return devices;
 }
 
-int MMCreateVirtualDevice(char *cname) {
+Device MMCreateVirtualDevice(char *cname) {
   CFStringRef name = CharToCFStringRef(cname);
 
   MIDIClientRef client;
@@ -86,5 +86,5 @@ int MMCreateVirtualDevice(char *cname) {
   dev.endpoint = endpoint;
 
   MIDISourceCreate(client, name, &endpoint);
-  return 0;
+  return dev;
 }

@@ -19,7 +19,7 @@ typedef struct Devices {
   int count;
 } Devices;
 
-extern int MMCreateVirtualDevice();
+extern Device MMCreateVirtualDevice();
 extern Devices *MMGetDevices();
 
 void MMMIDIReadProc(const MIDIPacketList *pktlist, void *refCon, void *connRefCon);
