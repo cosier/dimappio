@@ -1,5 +1,5 @@
 #include "midi/internals/alsa.h"
-
+#ifdef __linux__
 #include <stdlib.h>
 
 Devices *MMAlsa_GetDevices() {
@@ -8,3 +8,5 @@ Devices *MMAlsa_GetDevices() {
   devices->count = 0;
   return devices;
 }
+
+#endif
