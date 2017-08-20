@@ -8,8 +8,12 @@ Devices *MM_GetDevices() {
   #endif
 }
 
-int MM_CreateVirtualDevice(char *name) {
-  return 0;
+Device *MM_CreateVirtualDevice(char *name) {
+#ifdef __APPLE__
+  return MMCoreMidi_CreateVirtualDevice(name);
+#elif __linux__
+  return MMAlsa_CreateVirtualDevice(name);
+#endif
 }
 
 void MM_MIDINotifyProc(const MIDINotification *message, void *refCon) {

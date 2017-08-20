@@ -8,9 +8,10 @@
 #include "utils.h"
 
 typedef struct Devices Devices;
+typedef struct Device Device;
 
-extern int MM_CreateVirtualDevice(char *name);
-extern Devices *MM_GetDevices();
+Device *MM_CreateVirtualDevice(char *name);
+Devices *MM_GetDevices();
 
 void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                      void *connRefCon);

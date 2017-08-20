@@ -1,5 +1,6 @@
+#ifndef INTERNAL_COREMIDI_H
+#define INTERNAL_COREMIDI_H
 #ifdef __APPLE__
-
 #include <CoreAudio/HostTime.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
@@ -8,6 +9,9 @@
 #include <CoreMIDI/MIDIServices.h>
 
 #include <AudioToolbox/AudioToolbox.h>
+
+#include "utils.h"
+#include "midi/driver.h"
 
 typedef struct Device {
   char *name;
@@ -20,9 +24,8 @@ typedef struct Devices {
 } Devices;
 
 
-
-extern int MMCreateVirtualDevice();
-extern Devices *MMGetDevices();
+Device *MMCoreMidi_CreateVirtualDevice();
+Devices *MMCoreMidi_GetDevices();
 
 void MMCoreMidi_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                              void *connRefCon);
@@ -31,4 +34,5 @@ void MMCoreMidi_AttachListener(Device dev,
                                void (*func)(const MIDINotification *message,
                                             void *refCon));
 
+#endif
 #endif

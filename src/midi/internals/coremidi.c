@@ -1,11 +1,12 @@
 #ifdef __APPLE__
 #include <stdlib.h>
+#include "midi/internals/coremidi.h"
 
 void MMCoreMidi_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                              void *connRefCon) {
 
   Device *dev = (Device *)refCon;
-  printf("received midi: %d\n", dev->name);
+  printf("received midi: %s\n", dev->name);
 }
 
 void MMCoreMidi_MIDINotifyProc(const MIDINotification *message, void *refCon) {
@@ -60,7 +61,7 @@ Devices *MMCoreMidi_GetDevices() {
   return devices;
 }
 
-int MMCoreMidi_CreateVirtualDevice(char *cname) {
+Device *MMCoreMidi_CreateVirtualDevice(char *cname) {
   CFStringRef name = CharToCFStringRef(cname);
 
   MIDIClientRef client;
@@ -69,18 +70,15 @@ int MMCoreMidi_CreateVirtualDevice(char *cname) {
   MIDIPortRef *output = NULL;
   MIDIPortRef *input = NULL;
 
-  Connection con;
-  con.id = 1;
-
   Device dev;
   dev.name = cname;
 
-  MIDIClientCreate(name, MMMIDINotifyProc, &dev, &client);
+  MIDIClientCreate(name, MM_MIDINotifyProc, &dev, &client);
 
   MIDIOutputPortCreate(client, CFSTR("output"), output);
-  MIDIInputPortCreate(client, CFSTR("input"), MMMIDIReadProc, &dev, output);
+  MIDIInputPortCreate(client, CFSTR("input"), MM_MIDIReadProc, &dev, output);
 
-  MIDIDestinationCreate(client, name, MMMIDIReadProc, &dev, &endpoint);
+  MIDIDestinationCreate(client, name, MM_MIDIReadProc, &dev, &endpoint);
   dev.endpoint = endpoint;
 
   MIDISourceCreate(client, name, &endpoint);
