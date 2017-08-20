@@ -1,4 +1,6 @@
 #include "utils.h"
+#include <stdarg.h>
+#include <stdio.h>
 
 #ifdef __APPLE__
 char *CFStringRefToChars(CFStringRef string) {
@@ -28,3 +30,20 @@ CFStringRef CharToCFStringRef(char *c) {
 }
 
 #endif
+
+
+void pdebug(const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    vfprintf(stdout, format, ap);
+    va_end(ap);
+    putc('\n', stdout);
+}
+
+void error(const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    vfprintf(stderr, format, ap);
+    va_end(ap);
+    putc('\n', stderr);
+}

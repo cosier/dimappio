@@ -4,6 +4,7 @@
 #include <alsa/asoundlib.h>
 #include <ncurses.h>
 #include <stdlib.h>
+#include "utils.h"
 
 void iterate_midi_devices_on_card();
 void iterate_subdevice_info();
@@ -22,7 +23,7 @@ Devices *MMAlsa_GetDevices() {
   }
 
   if (card < 0) {
-    printf("No available sound cards found %s\n", snd_strerror(status));
+    error("No available sound cards found %s\n", snd_strerror(status));
     return devices;
   }
 
@@ -32,7 +33,7 @@ Devices *MMAlsa_GetDevices() {
     iterate_midi_devices_on_card(ctl, card);
 
     if ((status = snd_card_next(&card)) < 0) {
-      printf("No other cards available: %s", snd_strerror(status));
+      error("No other cards available: %s", snd_strerror(status));
       break;
     }
   }
@@ -54,7 +55,7 @@ void iterate_midi_devices_on_card(snd_ctl_t *ctl, int card) {
   sprintf(name, "hw:%d"  , card);
 
   if ((status = snd_ctl_open(&ctl, name, 0)) < 0) {
-    printf("Could not open ctl for sound card: %s\n", name);
+    error("Could not open ctl for sound card: %s\n", name);
 
   } else {
     /* printf("snd_ctl_opened: %s\n", name); */
@@ -62,7 +63,7 @@ void iterate_midi_devices_on_card(snd_ctl_t *ctl, int card) {
       status = snd_ctl_rawmidi_next_device(ctl, &device);
 
       if (status < 0) {
-        printf("failed to determined device number\n");
+        error("failed to determined device number\n");
         break;
       }
 
@@ -78,7 +79,7 @@ void iterate_midi_devices_on_card(snd_ctl_t *ctl, int card) {
 }
 
 void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
-  printf("reading subdevice info\n");
+  pdebug("reading subdevice info");
   snd_rawmidi_info_t *info;
 
   const char *name;
@@ -104,8 +105,8 @@ void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   snd_ctl_rawmidi_info(ctl, info);
   subs_out = snd_rawmidi_info_get_subdevices_count(info);
 
-  printf("hw:%d -> subs_in: %d\n", card, subs_in);
-  printf("hw:%d -> subs_out: %d\n", card, subs_out);
+  pdebug("hw:%d -> subs_in: %d\n", card, subs_in);
+  pdebug("hw:%d -> subs_out: %d\n", card, subs_out);
 
   // determine the upper boundary for info searching
   subs = subs_in > subs_out ? subs_in : subs_out;
@@ -115,7 +116,7 @@ void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
 
   if ((status = is_output(ctl, card, device, sub)) < 0) {
     // is_output failed with a status code
-    printf("cannot get rawmidi sub output information %d:%d %s",
+    error("cannot get rawmidi sub output information %d:%d %s",
            card, device, snd_strerror(status));
     return;
   } else if (status) {
@@ -127,8 +128,8 @@ void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   if (status) {
     if ((status = is_input(ctl, card, device, sub)) < 0) {
       // is_output failed with a status code
-      printf("cannot get rawmidi sub input information %d:%d %s",
-             card, device, snd_strerror(status));
+      error("cannot get rawmidi sub input information %d:%d %s",
+            card, device, snd_strerror(status));
       return;
     } else if (status) {
       // is_output determined the sub is an output
@@ -136,17 +137,17 @@ void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
     }
   }
 
-  printf("hw:%d -> in: %d / out: %d\n", card, in, out);
+  pdebug("hw:%d -> in: %d / out: %d", card, in, out);
 
   // still no luck, we need to return..
   if (status == 0) {
-    printf("Could not determine any subputs\n\n");
+    error("Could not determine any subputs");
     return;
   }
 
   name = snd_rawmidi_info_get_name(info);
   sub_name = snd_rawmidi_info_get_subdevice_name(info);
-  printf("name: %s\n      %s\n\n", name, sub_name);
+  pdebug("name: %s\n      %s\n", name, sub_name);
 }
 
 // Returns true if given card/device/sub can output MIDI
