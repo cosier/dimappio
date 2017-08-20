@@ -1,5 +1,6 @@
 #ifndef DRIVER_H
 #define DRIVER_H
+
 #include "midi/internals/alsa.h"
 #include "midi/internals/coremidi.h"
 #include "midi/internals/winmm.h"
@@ -16,7 +17,7 @@ typedef struct Devices {
   int count;
 } Devices;
 
-extern int MM_CreateVirtualDevice();
+extern int MM_CreateVirtualDevice(char *name);
 extern Devices *MM_GetDevices();
 
 void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,

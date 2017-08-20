@@ -8,6 +8,10 @@ Devices *MM_GetDevices() {
   #endif
 }
 
+int MM_CreateVirtualDevice(char *name) {
+  return 0;
+}
+
 void MM_MIDINotifyProc(const MIDINotification *message, void *refCon) {
   // TODO:
 }

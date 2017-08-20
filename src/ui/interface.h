@@ -1,4 +1,6 @@
-#include "utils.h"
 #include <ncurses.h>
+#include <unistd.h>
 
-void MMInterfaceStart();
+#include "midi/driver.h"
+
+void MM_InterfaceStart();

@@ -1,6 +1,6 @@
 #ifndef MIDI_INTERNAL_ALSA_H
 #define MIDI_INTERNAL_ALSA_H
-#ifdef __linux__
+#ifdef __LINUX_ALSA__
 
 #include <stdint.h>
 typedef struct Devices Devices;
