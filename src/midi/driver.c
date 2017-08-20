@@ -1,11 +1,11 @@
 #include "driver.h"
 
 Devices *MM_GetDevices() {
-  #ifdef __APPLE__
+#ifdef __APPLE__
   return MMCoreMidi_GetDevices();
-  #elif __linux__
+#elif __linux__
   return MMAlsa_GetDevices();
-  #endif
+#endif
 }
 
 Device *MM_CreateVirtualDevice(char *name) {

@@ -1,6 +1,6 @@
 #ifdef __APPLE__
-#include <stdlib.h>
 #include "midi/internals/coremidi.h"
+#include <stdlib.h>
 
 void MMCoreMidi_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                              void *connRefCon) {

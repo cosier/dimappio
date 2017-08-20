@@ -10,8 +10,8 @@
 
 #include <AudioToolbox/AudioToolbox.h>
 
-#include "utils.h"
 #include "midi/driver.h"
+#include "utils.h"
 
 typedef struct Device {
   char *name;
@@ -22,7 +22,6 @@ typedef struct Devices {
   Device **store;
   int count;
 } Devices;
-
 
 Device *MMCoreMidi_CreateVirtualDevice();
 Devices *MMCoreMidi_GetDevices();

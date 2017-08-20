@@ -17,8 +17,6 @@ typedef struct Devices {
   int count;
 } Devices;
 
-
-
 typedef int64_t MIDITimestamp;
 
 typedef struct MidiPacket {
@@ -37,8 +35,8 @@ typedef struct MIDIPacketList {
   MidiPacket packet;
 } MIDIPacketList;
 
-
 Devices *MMAlsa_GetDevices();
+Device *MMAlsa_CreateVirtualDevice(char *name);
 
 #endif
 #endif
