@@ -9,6 +9,18 @@
 
 #include <AudioToolbox/AudioToolbox.h>
 
+typedef struct Device {
+  char *name;
+  MIDIEndpointRef endpoint;
+} Device;
+
+typedef struct Devices {
+  Device **store;
+  int count;
+} Devices;
+
+
+
 extern int MMCreateVirtualDevice();
 extern Devices *MMGetDevices();
 

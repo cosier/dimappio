@@ -1,4 +1,5 @@
 #ifdef __APPLE__
+#include <stdlib.h>
 
 void MMCoreMidi_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                              void *connRefCon) {
@@ -29,13 +30,14 @@ Devices *MMCoreMidi_GetDevices() {
   Devices *devices = NULL;
 
   // Allocate master device sentinel
-  devices = malloc(sizeof(Devices *));
+  devices = malloc(sizeof(Devices));
   devices->count = 0;
 
   // Allocate a collection of pointers to Device pointers
   devices->store = malloc(srcs * sizeof(Device *));
 
   for (int i = 0; i < srcs; ++i) {
+    // Allocate actual device here
     devices->store[i] = (Device *)malloc(sizeof(Device));
     /* MIDIDeviceRef dev = MIDIGetDevice(i); */
     MIDIDeviceRef src = MIDIGetSource(i);

@@ -1,12 +1,23 @@
 #ifndef MIDI_INTERNAL_ALSA_H
 #define MIDI_INTERNAL_ALSA_H
-#ifdef __LINUX_ALSA__
+#ifdef __linux__
 
 #include <stdint.h>
-typedef struct Devices Devices;
 
 typedef int32_t MIDIObjectRef;
 typedef MIDIObjectRef MIDIEndpointRef;
+
+typedef struct Device {
+  char *name;
+  MIDIEndpointRef endpoint;
+} Device;
+
+typedef struct Devices {
+  Device **store;
+  int count;
+} Devices;
+
+
 
 typedef int64_t MIDITimestamp;
 

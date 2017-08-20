@@ -7,15 +7,7 @@
 
 #include "utils.h"
 
-typedef struct Device {
-  char *name;
-  MIDIEndpointRef endpoint;
-} Device;
-
-typedef struct Devices {
-  Device **store;
-  int count;
-} Devices;
+typedef struct Devices Devices;
 
 extern int MM_CreateVirtualDevice(char *name);
 extern Devices *MM_GetDevices();
