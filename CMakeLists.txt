@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(midimapper)
+project(midi-mapper)
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
@@ -18,7 +18,7 @@ endforeach( PATH )
 
 
 add_library(midimap ${SRC_LIB})
-add_executable(midimapper ${SRC_MAIN})
+add_executable(midi-mapper ${SRC_MAIN})
 
 # Break into conditionals for audio driver support
 if (APPLE)
@@ -39,7 +39,8 @@ if (APPLE)
   set( _midi_defs __MACOSX_AU__ __MACOSX_CORE__ )
 
 elseif (MSVC)
-  # TODO:
+  set( _midi_libs winmm )
+  set( _midi_defs __WINDOWS_MM__ )
 
 elseif (UNIX)
   find_package( ALSA REQUIRED )
@@ -53,13 +54,12 @@ endif ()
 find_library( ncurses_lib ncurses )
 
 # Link up our two targets (main exe and library support)
-target_link_libraries( midimap ${_midi_libs} ${ncurses_lib} )
+target_include_directories( midimap PUBLIC src)
 target_compile_definitions( midimap PUBLIC ${_midi_defs} )
+target_link_libraries( midimap ${_midi_libs} ${ncurses_lib} )
 
-target_include_directories(midi-mapper PUBLIC src)
-target_include_directories(midimap PUBLIC src)
-
-target_link_libraries( midimapper midimap )
+target_include_directories( midi-mapper PUBLIC src )
+target_link_libraries( midi-mapper midimap )
 
 
 unset( _midi_libs )

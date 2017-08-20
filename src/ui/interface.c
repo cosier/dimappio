@@ -1,3 +1,1 @@
-void MMInterfaceStart() {
- 
-}
+void MMInterfaceStart() {}

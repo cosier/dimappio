@@ -1,13 +1,10 @@
-#include <CoreAudio/HostTime.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
+#ifndef DRIVER_H
+#define DRIVER_H
+#include "midi/internals/alsa.h"
+#include "midi/internals/coremidi.h"
+#include "midi/internals/winmm.h"
 
-#include <CoreMIDI/CoreMIDI.h>
-#include <CoreMIDI/MIDIServices.h>
-
-#include <AudioToolbox/AudioToolbox.h>
-
-#import "utils.h"
+#include "utils.h"
 
 typedef struct Device {
   char *name;
@@ -19,9 +16,15 @@ typedef struct Devices {
   int count;
 } Devices;
 
-extern int MMCreateVirtualDevice();
-extern Devices *MMGetDevices();
+extern int MM_CreateVirtualDevice();
+extern Devices *MM_GetDevices();
 
-void MMMIDIReadProc(const MIDIPacketList *pktlist, void *refCon, void *connRefCon);
-void MMMIDINotifyProc(const MIDINotification *message, void *refCon);
-void MMAttachListener();
+void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
+                     void *connRefCon);
+void MM_MIDINotifyProc(const MIDINotification *message, void *refCon);
+
+void MM_AttachListener(Device *dev,
+                       void (*func)(const MIDIPacketList *message, void *refCon,
+                                    void *connRefCon));
+
+#endif

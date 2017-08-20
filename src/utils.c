@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#ifdef __APPLE__
 char *CFStringRefToChars(CFStringRef string) {
   if (string == NULL) {
     return NULL;
@@ -23,8 +24,7 @@ char *CFStringRefToChars(CFStringRef string) {
 }
 
 CFStringRef CharToCFStringRef(char *c) {
-  return CFStringCreateWithCStringNoCopy(NULL,
-                                         c,
-                                         kCFStringEncodingUTF8,
-                                         NULL);
+  return CFStringCreateWithCStringNoCopy(NULL, c, kCFStringEncodingUTF8, NULL);
 }
+
+#endif

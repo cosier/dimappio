@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  Devices *devices = MMGetDevices();
+  Devices *devices = MM_GetDevices();
 
   if (devices->count > 0) {
     printf("midimapper found devices:\n");
@@ -21,10 +21,7 @@ int main(int argc, char **argv) {
       printf(" %02d: %s\n", i, devices->store[i]->name);
     }
 
-    void (*pFunc)(const MIDIPacketList *message, void *refCon, void *connRefCon);
-    pFunc = &MMMIDIReadProc;
-
-    MMAttachListener(devices->store[0], pFunc);
+    MM_AttachListener(devices->store[0], &MM_MIDIReadProc);
 
     // Kick off the application UI thread
     MMInterfaceStart();
