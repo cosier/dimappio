@@ -1,15 +1,16 @@
 #include "midi/internals/alsa.h"
 #ifdef __linux__
 
-#include <alsa/asoundlib.h>
-#include <ncurses.h>
-#include <stdlib.h>
-#include "utils.h"
-
-void iterate_midi_devices_on_card();
-void iterate_subdevice_info();
+void rawmidi_devices_on_card();
+void rawmidi_subdevice_info();
 int is_input();
 int is_output();
+
+Device *MMAlsa_CreateVirtualDevice(char *name) {
+  /* printw("Creating virtual device: alsa\n"); */
+  Device *dev;
+  return dev;
+}
 
 Devices *MMAlsa_GetDevices() {
   Devices *devices = malloc(sizeof(Devices));
@@ -30,7 +31,7 @@ Devices *MMAlsa_GetDevices() {
   snd_ctl_t *ctl;
 
   while (card >= 0) {
-    iterate_midi_devices_on_card(ctl, card);
+    rawmidi_devices_on_card(ctl, card);
 
     if ((status = snd_card_next(&card)) < 0) {
       error("No other cards available: %s", snd_strerror(status));
@@ -38,16 +39,78 @@ Devices *MMAlsa_GetDevices() {
     }
   }
 
+
   return devices;
 }
 
-Device *MMAlsa_CreateVirtualDevice(char *name) {
-  /* printw("Creating virtual device: alsa\n"); */
-  Device *dev;
-  return dev;
+MidiClients *MMAlsa_GetClients() {
+  MidiClients *clients = malloc(sizeof(MidiClients));
+
+  // TODO: remove this hard limit and make dynamic via realloc
+  clients->store = malloc(32 * sizeof(MidiClient*));
+  clients->count = 0;
+
+  snd_seq_t *seq;
+
+  if (snd_seq_open(&seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
+    error("failed to open sequencer");
+    return clients;
+  }
+
+  snd_seq_client_info_t *cinfo;
+  snd_seq_port_info_t *pinfo;
+  MidiClient *client;
+
+  snd_seq_client_info_alloca(&cinfo);
+  snd_seq_port_info_alloca(&pinfo);
+
+  snd_seq_client_info_set_client(cinfo, -1);
+
+  int port_count;
+  int client_id;
+  int count = 0;
+  while (snd_seq_query_next_client(seq, cinfo) >= 0) {
+
+    clients->count++;
+
+    /////////////////////////////////////////
+    // Create a MidiClient to start attaching new query results to.
+    client = malloc(sizeof(MidiClient));
+    client->name = strdup(snd_seq_client_info_get_name(cinfo));
+
+    /////////////////////////////////////////
+    // Reset query info per parent iteration
+
+    // 1. Get client_id from client_info container
+    client_id = snd_seq_client_info_get_client(cinfo);
+
+    // 2. set the client_id for this client_port info
+    snd_seq_port_info_set_client(pinfo, client_id);
+
+    // 3. Set the port info to start the searching
+    snd_seq_port_info_set_port(pinfo, -1);
+
+
+    ///////////////////////////////////////////
+    // Iterate ports for accounting
+    port_count = 0;
+    while (snd_seq_query_next_port(seq, pinfo) >= 0) {
+      port_count++;
+    }
+
+    client->ports = port_count;
+    client->card = snd_seq_client_info_get_card(cinfo);
+
+    // Assign the client data to the collection
+    clients->store[count] = client;
+
+    count++;
+  }
+
+  return clients;
 }
 
-void iterate_midi_devices_on_card(snd_ctl_t *ctl, int card) {
+void rawmidi_devices_on_card(snd_ctl_t *ctl, int card) {
   int device = -1;
   char name[32];
   int status;
@@ -68,7 +131,7 @@ void iterate_midi_devices_on_card(snd_ctl_t *ctl, int card) {
       }
 
       if (device >= 0) {
-        iterate_subdevice_info(ctl, card, device);
+        rawmidi_subdevice_info(ctl, card, device);
 
       } else {
         /* printf("unable to open rawmidi for device: %s %d\n", */
@@ -78,7 +141,7 @@ void iterate_midi_devices_on_card(snd_ctl_t *ctl, int card) {
   }
 }
 
-void iterate_subdevice_info(snd_ctl_t *ctl, int card, int device) {
+void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   pdebug("reading subdevice info");
   snd_rawmidi_info_t *info;
 

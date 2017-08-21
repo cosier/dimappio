@@ -10,8 +10,12 @@
 typedef struct Devices Devices;
 typedef struct Device Device;
 
+typedef struct MidiClients MidiClients;
+typedef struct MidiClient MidiClient;
+
 Device *MM_CreateVirtualDevice(char *name);
 Devices *MM_GetDevices();
+MidiClients *MM_GetClients();
 
 void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                      void *connRefCon);

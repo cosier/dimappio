@@ -14,20 +14,20 @@ void MM_InterfaceStart() {
   uiStartup();
   MM_CreateVirtualDevice("midi-mapper");
 
-  Devices *devices = MM_GetDevices();
+  pdebug("Querying Midi Clients");
+  MidiClients *clients = MM_GetClients();
 
-  if (devices->count > 0) {
-    printf("midi-mapper found devices:\n");
+  if (clients->count > 0) {
+    pdebug("\nmidi clients:\n");
 
-    for (int i = 0; i < devices->count; ++i) {
-      printf(" %02d: %s\n", i, devices->store[i]->name);
+    for (int i = 0; i < clients->count; ++i) {
+      pdebug(" %d) %s (card: %d)", i,
+             clients->store[i]->name,
+             clients->store[i]->card
+             );
     }
 
-    void (*pFunc)(const MIDIPacketList *message, void *refCon,
-                  void *connRefCon);
-    pFunc = &MM_MIDIReadProc;
-
-    MM_AttachListener(devices->store[0], pFunc);
+    /* MM_AttachListener(clients->store[0], &&MM_MIDIReadProc); */
 
   } else {
     printf("no midi devices available\n");
