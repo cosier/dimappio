@@ -60,6 +60,7 @@ MidiClients *MMAlsa_GetClients() {
   snd_seq_client_info_t *cinfo;
   snd_seq_port_info_t *pinfo;
   MidiClient *client;
+  MidiClientPort *port;
 
   snd_seq_client_info_alloca(&cinfo);
   snd_seq_port_info_alloca(&pinfo);
@@ -69,6 +70,7 @@ MidiClients *MMAlsa_GetClients() {
   int port_count;
   int client_id;
   int count = 0;
+
   while (snd_seq_query_next_client(seq, cinfo) >= 0) {
 
     clients->count++;
@@ -77,6 +79,9 @@ MidiClients *MMAlsa_GetClients() {
     // Create a MidiClient to start attaching new query results to.
     client = malloc(sizeof(MidiClient));
     client->name = strdup(snd_seq_client_info_get_name(cinfo));
+
+    // TODO: dynamically realloc port space
+    client->ports = malloc(16 * sizeof(MidiClientPort *));
 
     /////////////////////////////////////////
     // Reset query info per parent iteration
@@ -90,16 +95,27 @@ MidiClients *MMAlsa_GetClients() {
     // 3. Set the port info to start the searching
     snd_seq_port_info_set_port(pinfo, -1);
 
-
     ///////////////////////////////////////////
     // Iterate ports for accounting
     port_count = 0;
     while (snd_seq_query_next_port(seq, pinfo) >= 0) {
+      port = malloc(sizeof(MidiClientPort));
+      port->name = strdup(snd_seq_port_info_get_name(pinfo));
+      port->addr = snd_seq_port_info_get_addr(pinfo);
+      port->type = snd_seq_port_info_get_type(pinfo);
+      port->port_id = snd_seq_port_info_get_port(pinfo);
+      port->channels = snd_seq_port_info_get_midi_channels(pinfo);
+      port->capability = snd_seq_port_info_get_capability(pinfo);
+
+      client->ports[port_count] = port;
       port_count++;
     }
 
-    client->ports = port_count;
+    client->num_ports = port_count;
+    client->client_id = client_id;
     client->card = snd_seq_client_info_get_card(cinfo);
+    client->pid = snd_seq_client_info_get_pid(cinfo);
+    client->type = snd_seq_client_info_get_type(cinfo);
 
     // Assign the client data to the collection
     clients->store[count] = client;

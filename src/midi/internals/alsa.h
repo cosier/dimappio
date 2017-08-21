@@ -11,13 +11,24 @@
 typedef int32_t MIDIObjectRef;
 typedef MIDIObjectRef MIDIEndpointRef;
 
+typedef struct MidiClientPort {
+  const char *name;
+  int capability;
+  int channels;
+  int port_id;
+  uint type;
+  const snd_seq_addr_t *addr;
+
+} MidiClientPort;
+
 typedef struct MidiClient {
-  char *name;
+  const char *name;
   snd_seq_client_type_t type;
   int client_id;
   int card;
   int pid;
-  int ports;
+  int num_ports;
+  MidiClientPort **ports;
 } MidiClient;
 
 
