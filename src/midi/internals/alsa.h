@@ -70,5 +70,14 @@ MIDIClients *MMAlsa_GetClients();
 Device *MMAlsa_CreateVirtualDevice(char *name);
 void MMAlsa_ClientDump(MIDIClient *client);
 
+void rawmidi_devices_on_card(snd_ctl_t *ctl, int card);
+void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device);
+
+char *char_port_types(unsigned index);
+char *char_port_capabilities(unsigned index);
+
+int is_input(snd_ctl_t *ctl, int card, int device, int sub);
+int is_output(snd_ctl_t *ctl, int card, int device, int sub);
+
 #endif
 #endif
