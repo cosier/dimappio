@@ -26,5 +26,6 @@ void MM_AttachListener(Device *dev,
                                     void *connRefCon));
 
 void MM_ClientDump(MIDIClient *client);
+void MM_DumpAllClients();
 
 #endif

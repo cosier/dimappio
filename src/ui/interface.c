@@ -15,8 +15,6 @@ void MM_InterfaceStart() {
   MIDIClients *clients = MM_GetClients();
 
   if (clients->count > 0) {
-    pdebug("\nmidi clients:\n");
-
     for (int i = 0; i < clients->count; ++i) {
       MM_ClientDump(clients->store[i]);
     }

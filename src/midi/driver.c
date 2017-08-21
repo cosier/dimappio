@@ -32,6 +32,14 @@ void MM_ClientDump(MIDIClient *client) {
 #endif
 }
 
+void MM_DumpAllClients() {
+    MIDIClients *clients = MM_GetClients();
+    
+    for (int i = 0; i < clients->count; i++) {
+        MM_ClientDump(clients->store[i]);
+    }
+}
+
 void MM_MIDINotifyProc(const MIDINotification *message, void *refCon) {
   // TODO:
 }

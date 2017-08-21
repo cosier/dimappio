@@ -45,7 +45,11 @@ void MMAlsa_ClientDump(MIDIClient *client) {
     } else if (client->type == SND_SEQ_KERNEL_CLIENT) {
         type = "kernel";
     }
-    printf("%s (type: %s, card: %d)\n", client->name, type, client->card);
+    printf("[%d] %s (type: %s, card: %d)\n",
+           client->client_id,
+           client->name,
+           type,
+           client->card);
     /* printf("  ports (%d)\n", client->num_ports); */
     MIDIClientPort *port;
     char * caps;
