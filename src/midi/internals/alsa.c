@@ -43,11 +43,11 @@ Devices *MMAlsa_GetDevices() {
   return devices;
 }
 
-MidiClients *MMAlsa_GetClients() {
-  MidiClients *clients = malloc(sizeof(MidiClients));
+MIDIClients *MMAlsa_GetClients() {
+  MIDIClients *clients = malloc(sizeof(MIDIClients));
 
   // TODO: remove this hard limit and make dynamic via realloc
-  clients->store = malloc(32 * sizeof(MidiClient*));
+  clients->store = malloc(32 * sizeof(MIDIClient*));
   clients->count = 0;
 
   snd_seq_t *seq;
@@ -59,8 +59,8 @@ MidiClients *MMAlsa_GetClients() {
 
   snd_seq_client_info_t *cinfo;
   snd_seq_port_info_t *pinfo;
-  MidiClient *client;
-  MidiClientPort *port;
+  MIDIClient *client;
+  MIDIClientPort *port;
 
   snd_seq_client_info_alloca(&cinfo);
   snd_seq_port_info_alloca(&pinfo);
@@ -76,12 +76,12 @@ MidiClients *MMAlsa_GetClients() {
     clients->count++;
 
     /////////////////////////////////////////
-    // Create a MidiClient to start attaching new query results to.
-    client = malloc(sizeof(MidiClient));
+    // Create a MIDIClient to start attaching new query results to.
+    client = malloc(sizeof(MIDIClient));
     client->name = strdup(snd_seq_client_info_get_name(cinfo));
 
     // TODO: dynamically realloc port space
-    client->ports = malloc(16 * sizeof(MidiClientPort *));
+    client->ports = malloc(16 * sizeof(MIDIClientPort *));
 
     /////////////////////////////////////////
     // Reset query info per parent iteration
@@ -99,7 +99,7 @@ MidiClients *MMAlsa_GetClients() {
     // Iterate ports for accounting
     port_count = 0;
     while (snd_seq_query_next_port(seq, pinfo) >= 0) {
-      port = malloc(sizeof(MidiClientPort));
+      port = malloc(sizeof(MIDIClientPort));
       port->name = strdup(snd_seq_port_info_get_name(pinfo));
       port->addr = snd_seq_port_info_get_addr(pinfo);
       port->type = snd_seq_port_info_get_type(pinfo);

@@ -15,7 +15,7 @@ void MM_InterfaceStart() {
   MM_CreateVirtualDevice("midi-mapper");
 
   pdebug("Querying Midi Clients");
-  MidiClients *clients = MM_GetClients();
+  MIDIClients *clients = MM_GetClients();
 
   if (clients->count > 0) {
     pdebug("\nmidi clients:\n");

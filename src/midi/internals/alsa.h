@@ -11,7 +11,7 @@
 typedef int32_t MIDIObjectRef;
 typedef MIDIObjectRef MIDIEndpointRef;
 
-typedef struct MidiClientPort {
+typedef struct MIDIClientPort {
   const char *name;
   int capability;
   int channels;
@@ -19,23 +19,23 @@ typedef struct MidiClientPort {
   uint type;
   const snd_seq_addr_t *addr;
 
-} MidiClientPort;
+} MIDIClientPort;
 
-typedef struct MidiClient {
+typedef struct MIDIClient {
   const char *name;
   snd_seq_client_type_t type;
   int client_id;
   int card;
   int pid;
   int num_ports;
-  MidiClientPort **ports;
-} MidiClient;
+  MIDIClientPort **ports;
+} MIDIClient;
 
 
-typedef struct MidiClients {
+typedef struct MIDIClients {
   int8_t count;
-  MidiClient **store;
-} MidiClients;
+  MIDIClient **store;
+} MIDIClients;
 
 
 typedef struct Device {
@@ -68,7 +68,7 @@ typedef struct MIDIPacketList {
 
 
 Devices *MMAlsa_GetDevices();
-MidiClients *MMAlsa_GetClients();
+MIDIClients *MMAlsa_GetClients();
 
 Device *MMAlsa_CreateVirtualDevice(char *name);
 

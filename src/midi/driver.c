@@ -8,7 +8,7 @@ Devices *MM_GetDevices() {
 #endif
 }
 
-MidiClients *MM_GetClients() {
+MIDIClients *MM_GetClients() {
 #ifdef __APPLE__
   /* return MMCoreMidi_GetDevices(); */
 #elif __linux__
