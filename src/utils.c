@@ -31,19 +31,22 @@ CFStringRef CharToCFStringRef(char *c) {
 
 #endif
 
-
 void pdebug(const char *format, ...) {
-    va_list ap;
-    va_start(ap, format);
-    vfprintf(stdout, format, ap);
-    va_end(ap);
-    putc('\n', stdout);
+  va_list ap;
+  va_start(ap, format);
+  vfprintf(stdout, format, ap);
+  va_end(ap);
+  putc('\n', stdout);
 }
 
 void error(const char *format, ...) {
-    va_list ap;
-    va_start(ap, format);
-    vfprintf(stderr, format, ap);
-    va_end(ap);
-    putc('\n', stderr);
+  va_list ap;
+  va_start(ap, format);
+  vfprintf(stderr, format, ap);
+  va_end(ap);
+  putc('\n', stderr);
+}
+
+bool contains_bit(unsigned val, unsigned bitindex) {
+    return (val & (1 << bitindex)) != 0;
 }

@@ -10,7 +10,7 @@ Devices *MM_GetDevices() {
 
 MIDIClients *MM_GetClients() {
 #ifdef __APPLE__
-  /* return MMCoreMidi_GetDevices(); */
+/* return MMCoreMidi_GetDevices(); */
 #elif __linux__
   return MMAlsa_GetClients();
 #endif
@@ -21,6 +21,14 @@ Device *MM_CreateVirtualDevice(char *name) {
   return MMCoreMidi_CreateVirtualDevice(name);
 #elif __linux__
   return MMAlsa_CreateVirtualDevice(name);
+#endif
+}
+
+void MM_ClientDump(MIDIClient *client) {
+#ifdef __APPLE__
+#TODO : implement.
+#elif __linux__
+  MMAlsa_ClientDump(client);
 #endif
 }
 

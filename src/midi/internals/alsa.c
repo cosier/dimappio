@@ -39,15 +39,78 @@ Devices *MMAlsa_GetDevices() {
     }
   }
 
-
   return devices;
+}
+
+void MMAlsa_ClientDump(MIDIClient *client) {
+    char *type = "unknown";
+    if (client->type == SND_SEQ_USER_CLIENT) {
+        type = "user";
+
+    } else if (client->type == SND_SEQ_KERNEL_CLIENT) {
+        type = "kernel";
+    }
+    printf("%s (type: %s, card: %d)\n", client->name, type, client->card);
+    printf("  ports (%d)\n", client->num_ports);
+    MIDIClientPort *port;
+    char * caps;
+    unsigned cindex;
+    for (int i = 0; i < client->num_ports; i++) {
+        port = client->ports[i];
+        printf("    %d -------\n", i);
+        printf("    - port_name: %s\n", port->name);
+        printf("    - port_id: %d\n", port->port_id);
+        printf("    - channels: %d\n", port->channels);
+        printf("    - type: %d\n", port->type);
+
+        cindex = port->capability;
+        caps = malloc(256 * sizeof(char));
+        caps[0] = " ";
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_READ)) {
+            sprintf(caps, "READ", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_WRITE)) {
+            sprintf(caps, "%s, WRITE", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_SYNC_READ)) {
+            sprintf(caps, "%s, SYNC_READ", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_SYNC_WRITE)) {
+            sprintf(caps, "%s, SYNC_WRITE", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_DUPLEX)) {
+            sprintf(caps, "%s, DUPLEX", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_SUBS_READ)) {
+            sprintf(caps, "%s, SUBS_READ", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_SUBS_READ)) {
+            sprintf(caps, "%s, SUBS_WRITE", caps);
+        }
+
+        if (contains_bit(cindex,  SND_SEQ_PORT_CAP_NO_EXPORT)) {
+            sprintf(caps, "%s, NO_EXPORT", caps);
+        }
+
+        printf("    - capability: \n       %s\n", caps);
+        printf("\n");
+    }
+
+    printf("\n\n");
 }
 
 MIDIClients *MMAlsa_GetClients() {
   MIDIClients *clients = malloc(sizeof(MIDIClients));
 
   // TODO: remove this hard limit and make dynamic via realloc
-  clients->store = malloc(32 * sizeof(MIDIClient*));
+  clients->store = malloc(32 * sizeof(MIDIClient *));
   clients->count = 0;
 
   snd_seq_t *seq;
@@ -131,7 +194,7 @@ void rawmidi_devices_on_card(snd_ctl_t *ctl, int card) {
   char name[32];
   int status;
 
-  sprintf(name, "hw:%d"  , card);
+  sprintf(name, "hw:%d", card);
 
   if ((status = snd_ctl_open(&ctl, name, 0)) < 0) {
     error("Could not open ctl for sound card: %s\n", name);
@@ -195,8 +258,8 @@ void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
 
   if ((status = is_output(ctl, card, device, sub)) < 0) {
     // is_output failed with a status code
-    error("cannot get rawmidi sub output information %d:%d %s",
-           card, device, snd_strerror(status));
+    error("cannot get rawmidi sub output information %d:%d %s", card, device,
+          snd_strerror(status));
     return;
   } else if (status) {
     // is_output determined the sub is an output
@@ -207,8 +270,8 @@ void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   if (status) {
     if ((status = is_input(ctl, card, device, sub)) < 0) {
       // is_output failed with a status code
-      error("cannot get rawmidi sub input information %d:%d %s",
-            card, device, snd_strerror(status));
+      error("cannot get rawmidi sub input information %d:%d %s", card, device,
+            snd_strerror(status));
       return;
     } else if (status) {
       // is_output determined the sub is an output
@@ -233,10 +296,8 @@ void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   } else {
     sub = 0;
     for (;;) {
-      pdebug("%c%c hw:%d,%d,%d %s",
-             in ? 'I' : ' ',
-             out? 'O' : ' ',
-             card, device, sub, sub_name);
+      pdebug("%c%c hw:%d,%d,%d %s", in ? 'I' : ' ', out ? 'O' : ' ', card,
+             device, sub, sub_name);
       if (++sub >= subs) {
         break;
       }
@@ -248,15 +309,15 @@ void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
       if (out) {
         snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_OUTPUT);
         if ((status = snd_ctl_rawmidi_info(ctl, info)) < 0) {
-          error("could not get rawmidi info from hw:%d,%d,%d %s",
-                card, device, sub, sub_name);
+          error("could not get rawmidi info from hw:%d,%d,%d %s", card, device,
+                sub, sub_name);
           break;
         }
       } else {
         snd_rawmidi_info_set_stream(info, SND_RAWMIDI_STREAM_INPUT);
         if ((status = snd_ctl_rawmidi_info(ctl, info)) < 0) {
-          error("could not get rawmidi info from hw:%d,%d,%d %s",
-                card, device, sub, sub_name);
+          error("could not get rawmidi info from hw:%d,%d,%d %s", card, device,
+                sub, sub_name);
           break;
         }
       }
@@ -264,7 +325,6 @@ void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
       sub_name = snd_rawmidi_info_get_subdevice_name(info);
     }
   }
-
 }
 
 // Returns true if given card/device/sub can output MIDI
@@ -307,7 +367,6 @@ int is_input(snd_ctl_t *ctl, int card, int device, int sub) {
 
   // nope
   return 0;
-
 }
 
 #endif

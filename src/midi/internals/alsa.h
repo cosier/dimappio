@@ -2,9 +2,9 @@
 #define MIDI_INTERNAL_ALSA_H
 #ifdef __linux__
 
+#include <alsa/asoundlib.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <alsa/asoundlib.h>
 
 #include "utils.h"
 
@@ -31,12 +31,10 @@ typedef struct MIDIClient {
   MIDIClientPort **ports;
 } MIDIClient;
 
-
 typedef struct MIDIClients {
   int8_t count;
   MIDIClient **store;
 } MIDIClients;
-
 
 typedef struct Device {
   char *name;
@@ -66,11 +64,11 @@ typedef struct MIDIPacketList {
   MidiPacket packet;
 } MIDIPacketList;
 
-
 Devices *MMAlsa_GetDevices();
 MIDIClients *MMAlsa_GetClients();
 
 Device *MMAlsa_CreateVirtualDevice(char *name);
+void MMAlsa_ClientDump(MIDIClient *client);
 
 #endif
 #endif

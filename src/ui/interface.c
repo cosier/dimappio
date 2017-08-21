@@ -6,25 +6,19 @@ void uiStartup() {
   /* raw(); */
 }
 
-void uiShutdown() {
-  /* endwin(); */
-}
+void uiShutdown() { /* endwin(); */ }
 
 void MM_InterfaceStart() {
   uiStartup();
   MM_CreateVirtualDevice("midi-mapper");
 
-  pdebug("Querying Midi Clients");
   MIDIClients *clients = MM_GetClients();
 
   if (clients->count > 0) {
     pdebug("\nmidi clients:\n");
 
     for (int i = 0; i < clients->count; ++i) {
-      pdebug(" %d) %s (card: %d)", i,
-             clients->store[i]->name,
-             clients->store[i]->card
-             );
+      MM_ClientDump(clients->store[i]);
     }
 
     /* MM_AttachListener(clients->store[0], &&MM_MIDIReadProc); */
