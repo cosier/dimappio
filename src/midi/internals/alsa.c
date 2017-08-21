@@ -37,7 +37,7 @@ Devices *MMAlsa_GetDevices() {
   return devices;
 }
 
-void MMAlsa_ClientDump(MIDIClient *client) {
+void MMAlsa_ClientDetails(MIDIClient *client) {
     char *type = "unknown";
     if (client->type == SND_SEQ_USER_CLIENT) {
         type = "user";

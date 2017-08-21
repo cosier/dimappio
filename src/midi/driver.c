@@ -24,19 +24,19 @@ Device *MM_CreateVirtualDevice(char *name) {
 #endif
 }
 
-void MM_ClientDump(MIDIClient *client) {
+void MM_ClientDetails(MIDIClient *client) {
 #ifdef __APPLE__
 #TODO : implement.
 #elif __linux__
-  MMAlsa_ClientDump(client);
+  MMAlsa_ClientDetails(client);
 #endif
 }
 
-void MM_DumpAllClients() {
+void MM_ListClients() {
     MIDIClients *clients = MM_GetClients();
-    
+
     for (int i = 0; i < clients->count; i++) {
-        MM_ClientDump(clients->store[i]);
+        MM_ClientDetails(clients->store[i]);
     }
 }
 
@@ -52,5 +52,10 @@ void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
 void MM_AttachListener(Device *dev,
                        void (*func)(const MIDIPacketList *message, void *refcon,
                                     void *connRefCon)) {
-  // TODO:
+  // TODO: implement
+}
+
+void MM_SendMidiNote(char *client, char *port, char *note) {
+    printf("Sending Midi note -> %s:%s [%s]", client, port, note);
+    // TODO: implement
 }

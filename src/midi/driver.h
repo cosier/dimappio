@@ -25,7 +25,8 @@ void MM_AttachListener(Device *dev,
                        void (*func)(const MIDIPacketList *message, void *refCon,
                                     void *connRefCon));
 
-void MM_ClientDump(MIDIClient *client);
-void MM_DumpAllClients();
+void MM_ClientDetails(MIDIClient *client);
+void MM_ListClients();
+void MM_SendMidiNote(char *client, char *port, char *note);
 
 #endif

@@ -68,7 +68,7 @@ Devices *MMAlsa_GetDevices();
 MIDIClients *MMAlsa_GetClients();
 
 Device *MMAlsa_CreateVirtualDevice(char *name);
-void MMAlsa_ClientDump(MIDIClient *client);
+void MMAlsa_ClientDetails(MIDIClient *client);
 
 void rawmidi_devices_on_card(snd_ctl_t *ctl, int card);
 void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device);

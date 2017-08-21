@@ -16,7 +16,7 @@ void MM_InterfaceStart() {
 
   if (clients->count > 0) {
     for (int i = 0; i < clients->count; ++i) {
-      MM_ClientDump(clients->store[i]);
+      MM_ClientDetails(clients->store[i]);
     }
 
     /* MM_AttachListener(clients->store[0], &&MM_MIDIReadProc); */
@@ -31,5 +31,5 @@ void MM_InterfaceStart() {
   /*   /\* loop = false; *\/ */
   /* } */
 
-  uiShutdown();
+  /* uiShutdown(); */
 }
