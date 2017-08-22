@@ -107,13 +107,177 @@ void MMAlsa_MonitorDevice(char* client_with_port) {
     snd_seq_close(seq);
 }
 
-static void process_event(MIDIEvent* event) {
+static void process_event(MIDIEvent* ev) {
   char note[] = "NOTE";
 
-  printf("[%3d:%3d]: %s\n",
-         event->source.client,
-         event->source.port,
-         note);
+  printf("[%3d:%2d ] ",
+         ev->source.client,
+         ev->source.port);
+
+	switch (ev->type) {
+	case SND_SEQ_EVENT_NOTEON:
+		if (ev->data.note.velocity)
+			printf("Note on                %2d, note %d, velocity %d\n",
+			       ev->data.note.channel, ev->data.note.note, ev->data.note.velocity);
+		else
+			printf("Note off               %2d, note %d\n",
+			       ev->data.note.channel, ev->data.note.note);
+		break;
+	case SND_SEQ_EVENT_NOTEOFF:
+		printf("Note off               %2d, note %d, velocity %d\n",
+		       ev->data.note.channel, ev->data.note.note, ev->data.note.velocity);
+		break;
+	case SND_SEQ_EVENT_KEYPRESS:
+		printf("Polyphonic aftertouch  %2d, note %d, value %d\n",
+		       ev->data.note.channel, ev->data.note.note, ev->data.note.velocity);
+		break;
+	case SND_SEQ_EVENT_CONTROLLER:
+		printf("Control change         %2d, controller %d, value %d\n",
+		       ev->data.control.channel, ev->data.control.param, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_PGMCHANGE:
+		printf("Program change         %2d, program %d\n",
+		       ev->data.control.channel, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_CHANPRESS:
+		printf("Channel aftertouch     %2d, value %d\n",
+		       ev->data.control.channel, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_PITCHBEND:
+		printf("Pitch bend             %2d, value %d\n",
+		       ev->data.control.channel, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_CONTROL14:
+		printf("Control change         %2d, controller %d, value %5d\n",
+		       ev->data.control.channel, ev->data.control.param, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_NONREGPARAM:
+		printf("Non-reg. parameter     %2d, parameter %d, value %d\n",
+		       ev->data.control.channel, ev->data.control.param, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_REGPARAM:
+		printf("Reg. parameter         %2d, parameter %d, value %d\n",
+		       ev->data.control.channel, ev->data.control.param, ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_SONGPOS:
+		printf("Song position pointer      value %d\n",
+		       ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_SONGSEL:
+		printf("Song select                value %d\n",
+		       ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_QFRAME:
+		printf("MTC quarter frame          %02xh\n",
+		       ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_TIMESIGN:
+		// XXX how is this encoded?
+		printf("SMF time signature         (%#010x)\n",
+		       ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_KEYSIGN:
+		// XXX how is this encoded?
+		printf("SMF key signature          (%#010x)\n",
+		       ev->data.control.value);
+		break;
+	case SND_SEQ_EVENT_START:
+		if (ev->source.client == SND_SEQ_CLIENT_SYSTEM &&
+		    ev->source.port == SND_SEQ_PORT_SYSTEM_TIMER)
+			printf("Queue start                queue %d\n",
+			       ev->data.queue.queue);
+		else
+			printf("Start\n");
+		break;
+	case SND_SEQ_EVENT_CONTINUE:
+		if (ev->source.client == SND_SEQ_CLIENT_SYSTEM &&
+		    ev->source.port == SND_SEQ_PORT_SYSTEM_TIMER)
+			printf("Queue continue             queue %d\n",
+			       ev->data.queue.queue);
+		else
+			printf("Continue\n");
+		break;
+	case SND_SEQ_EVENT_STOP:
+		if (ev->source.client == SND_SEQ_CLIENT_SYSTEM &&
+		    ev->source.port == SND_SEQ_PORT_SYSTEM_TIMER)
+			printf("Queue stop                 queue %d\n",
+			       ev->data.queue.queue);
+		else
+			printf("Stop\n");
+		break;
+	case SND_SEQ_EVENT_SETPOS_TICK:
+		printf("Set tick queue pos.        queue %d\n", ev->data.queue.queue);
+		break;
+	case SND_SEQ_EVENT_SETPOS_TIME:
+		printf("Set rt queue pos.          queue %d\n", ev->data.queue.queue);
+		break;
+	case SND_SEQ_EVENT_TEMPO:
+		printf("Set queue tempo            queue %d\n", ev->data.queue.queue);
+		break;
+	case SND_SEQ_EVENT_CLOCK:
+		printf("Clock\n");
+		break;
+	case SND_SEQ_EVENT_TICK:
+		printf("Tick\n");
+		break;
+	case SND_SEQ_EVENT_QUEUE_SKEW:
+		printf("Queue timer skew           queue %d\n", ev->data.queue.queue);
+		break;
+	case SND_SEQ_EVENT_TUNE_REQUEST:
+		printf("Tune request\n");
+		break;
+	case SND_SEQ_EVENT_RESET:
+		printf("Reset\n");
+		break;
+	case SND_SEQ_EVENT_SENSING:
+		printf("Active Sensing\n");
+		break;
+	case SND_SEQ_EVENT_CLIENT_START:
+		printf("Client start               client %d\n",
+		       ev->data.addr.client);
+		break;
+	case SND_SEQ_EVENT_CLIENT_EXIT:
+		printf("Client exit                client %d\n",
+		       ev->data.addr.client);
+		break;
+	case SND_SEQ_EVENT_CLIENT_CHANGE:
+		printf("Client changed             client %d\n",
+		       ev->data.addr.client);
+		break;
+	case SND_SEQ_EVENT_PORT_START:
+		printf("Port start                 %d:%d\n",
+		       ev->data.addr.client, ev->data.addr.port);
+		break;
+	case SND_SEQ_EVENT_PORT_EXIT:
+		printf("Port exit                  %d:%d\n",
+		       ev->data.addr.client, ev->data.addr.port);
+		break;
+	case SND_SEQ_EVENT_PORT_CHANGE:
+		printf("Port changed               %d:%d\n",
+		       ev->data.addr.client, ev->data.addr.port);
+		break;
+	case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+		printf("Port subscribed            %d:%d -> %d:%d\n",
+		       ev->data.connect.sender.client, ev->data.connect.sender.port,
+		       ev->data.connect.dest.client, ev->data.connect.dest.port);
+		break;
+	case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
+		printf("Port unsubscribed          %d:%d -> %d:%d\n",
+		       ev->data.connect.sender.client, ev->data.connect.sender.port,
+		       ev->data.connect.dest.client, ev->data.connect.dest.port);
+		break;
+	case SND_SEQ_EVENT_SYSEX:
+		{
+			unsigned int i;
+			printf("System exclusive          ");
+			for (i = 0; i < ev->data.ext.len; ++i)
+				printf(" %02X", ((unsigned char*)ev->data.ext.ptr)[i]);
+			printf("\n");
+		}
+		break;
+	default:
+		printf("Event type %d\n",  ev->type);
+	}
 }
 
 bool MMAlsa_ClientExists(char* client_with_port) {
