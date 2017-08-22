@@ -38,7 +38,18 @@ Devices *MMAlsa_GetDevices() {
 }
 
 void MMAlsa_MonitorDevice(char *client_with_port) {
-  snd_seq_port_info_t *c = MMAlsa_GetClientPortInfo(client_with_port);
+  snd_seq_port_info_t *pinfo = MMAlsa_GetClientPortInfo(client_with_port);
+  if (pinfo == NULL) {
+      exit(EXIT_FAILURE);
+  }
+  snd_seq_t *seq = init_sequencer("midimap-monitor");
+
+  const char *pname = snd_seq_port_info_get_name(pinfo);
+
+  printf("Monitoring: %s", pname);
+
+
+  snd_seq_close(seq);
 }
 
 bool MMAlsa_ClientExists(char *client_with_port) {
@@ -52,7 +63,7 @@ bool MMAlsa_ClientExists(char *client_with_port) {
 }
 
 snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port) {
-  snd_seq_t *seq = AlsaOpenSequencer();
+  snd_seq_t *seq = init_sequencer("midi-mapper-gcpi-query");
   if (seq == NULL) {
     error("\nCannot continue without alsa sequencer access...\n\n");
     exit(EXIT_FAILURE);
@@ -97,9 +108,8 @@ snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port) {
   }
 
   snd_seq_close(seq);
-  free(info);
-  free(pinfo);
 
+  if (info != NULL) free(info);
   return NULL;
 }
 
@@ -136,9 +146,10 @@ MIDIClients *MMAlsa_GetClients() {
   clients->store = malloc(32 * sizeof(MIDIClient *));
   clients->count = 0;
 
-  snd_seq_t *seq = AlsaOpenSequencer();
+  snd_seq_t *seq = init_sequencer("midimap-gc-query");
   if (seq == NULL) {
-    return clients;
+      error("Failed to init_sequencer");
+      return clients;
   }
 
   snd_seq_client_info_t *cinfo;
@@ -207,10 +218,14 @@ MIDIClients *MMAlsa_GetClients() {
     count++;
   }
 
+  free(cinfo);
+  free(pinfo);
+  snd_seq_close(seq);
+
   return clients;
 }
 
-void rawmidi_devices_on_card(snd_ctl_t *ctl, int card) {
+static void rawmidi_devices_on_card(snd_ctl_t *ctl, int card) {
   int device = -1;
   char name[32];
   int status;
@@ -241,7 +256,7 @@ void rawmidi_devices_on_card(snd_ctl_t *ctl, int card) {
   }
 }
 
-void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
+static void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
   pdebug("reading subdevice info");
   snd_rawmidi_info_t *info;
 
@@ -349,7 +364,7 @@ void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device) {
 }
 
 // Returns true if given card/device/sub can output MIDI
-int is_output(snd_ctl_t *ctl, int card, int device, int sub) {
+static int is_output(snd_ctl_t *ctl, int card, int device, int sub) {
   snd_rawmidi_info_t *info;
   int status;
 
@@ -370,7 +385,7 @@ int is_output(snd_ctl_t *ctl, int card, int device, int sub) {
 }
 
 // Returns true if specify card/device/sub can input MIDI
-int is_input(snd_ctl_t *ctl, int card, int device, int sub) {
+static int is_input(snd_ctl_t *ctl, int card, int device, int sub) {
   snd_rawmidi_info_t *info;
   int status;
 
@@ -390,7 +405,7 @@ int is_input(snd_ctl_t *ctl, int card, int device, int sub) {
   return 0;
 }
 
-char *char_port_types(unsigned index) {
+static char *char_port_types(unsigned index) {
   char *types = malloc(256 * sizeof(char));
   types[0] = '\0';
 
@@ -457,7 +472,7 @@ char *char_port_types(unsigned index) {
   return types;
 }
 
-char *char_port_capabilities(unsigned index) {
+static char *char_port_capabilities(unsigned index) {
   char *caps = malloc(256 * sizeof(char));
   caps[0] = '\0';
 
@@ -496,13 +511,17 @@ char *char_port_capabilities(unsigned index) {
   return caps;
 }
 
-snd_seq_t *AlsaOpenSequencer() {
+static snd_seq_t *init_sequencer(char *name) {
   snd_seq_t *seq;
   int status;
 
   if (status = snd_seq_open(&seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
     error("Could not open sequencer: %s", snd_strerror(status));
     return NULL;
+  }
+
+  if (name != NULL) {
+      snd_seq_set_client_name(seq, name);
   }
 
   return seq;

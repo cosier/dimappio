@@ -66,24 +66,25 @@ typedef struct MIDIPacketList {
 } MIDIPacketList;
 
 Devices *MMAlsa_GetDevices();
+Device *MMAlsa_CreateVirtualDevice(char *name);
+
 MIDIClients *MMAlsa_GetClients();
 
-Device *MMAlsa_CreateVirtualDevice(char *name);
 void MMAlsa_ClientDetails(MIDIClient *client);
 bool MMAlsa_ClientExists(char *client);
 snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port);
 
 void MMAlsa_MonitorDevice(char *client_with_port);
 
-void rawmidi_devices_on_card(snd_ctl_t *ctl, int card);
-void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device);
+static void rawmidi_devices_on_card(snd_ctl_t *ctl, int card);
+static void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device);
 
-char *char_port_types(unsigned index);
-char *char_port_capabilities(unsigned index);
+static char *char_port_types(unsigned index);
+static char *char_port_capabilities(unsigned index);
 
-int is_input(snd_ctl_t *ctl, int card, int device, int sub);
-int is_output(snd_ctl_t *ctl, int card, int device, int sub);
+static int is_input(snd_ctl_t *ctl, int card, int device, int sub);
+static int is_output(snd_ctl_t *ctl, int card, int device, int sub);
 
-snd_seq_t *AlsaOpenSequencer();
+static snd_seq_t *init_sequencer(char *name);
 #endif
 #endif
