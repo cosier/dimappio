@@ -9,12 +9,12 @@ void print_usage() {
     printf("Usage: midi-mapper\n");
 
     printf("  -m, --monitor=<id:port> Monitor a MIDI Client\n");
+    printf("  -s, --send=<note>       Send midi note to a specifc client\n");
     printf("  -t, --target=<id:port>  Specify a target Midi Client\n");
     printf(
         "  -x, --source=<id:port>  Specify a Midi Client source for mapping\n");
     printf("  -r, --remap=<note:note> Remap a list (comma delimited) of "
            "note<>note\n");
-    printf("  -s, --send=<note>       Send midi note to a specifc client\n");
     printf("\n");
 
     printf("  -l, --list     List all available midi clients\n");
