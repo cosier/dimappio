@@ -18,6 +18,8 @@ Device *MM_CreateVirtualDevice(char *name);
 Devices *MM_GetDevices();
 MIDIClients *MM_GetClients();
 
+void MM_MonitorClient(char *client_with_port);
+
 void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
                      void *connRefCon);
 void MM_MIDINotifyProc(const MIDINotification *message, void *refCon);

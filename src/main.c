@@ -10,8 +10,10 @@ void print_usage() {
 
   printf("  -m, --monitor=<id:port> Monitor a MIDI Client\n");
   printf("  -t, --target=<id:port>  Specify a target Midi Client\n");
-  printf("  -x, --source=<id:port>  Specify a Midi Client source for mapping\n");
-  printf("  -r, --remap=<note:note> Remap a list (comma delimited) of note<>note\n");
+  printf(
+      "  -x, --source=<id:port>  Specify a Midi Client source for mapping\n");
+  printf("  -r, --remap=<note:note> Remap a list (comma delimited) of "
+         "note<>note\n");
   printf("  -s, --send=<note>       Send midi note to a specifc client\n");
   printf("\n");
 
@@ -89,8 +91,8 @@ int main(int argc, char **argv) {
                                          {0, 0, 0, 0}};
 
   int long_index = 0;
-  while ((opt = getopt_long(argc, argv, "lhvzm:r:s:t:x:", long_options, &long_index)) !=
-         -1) {
+  while ((opt = getopt_long(argc, argv, "lhvzm:r:s:t:x:", long_options,
+                            &long_index)) != -1) {
 
     switch (opt) {
     case 'l':
@@ -135,7 +137,6 @@ int main(int argc, char **argv) {
     }
   }
 
-
   if (version) {
     print_version();
     exit(EXIT_SUCCESS);
@@ -153,6 +154,7 @@ int main(int argc, char **argv) {
 
   if (monitor != NULL) {
     verify_valid_midi_client(monitor);
+    MM_MonitorClient(monitor);
     exit(EXIT_SUCCESS);
   }
 

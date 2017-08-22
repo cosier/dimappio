@@ -37,6 +37,10 @@ Devices *MMAlsa_GetDevices() {
   return devices;
 }
 
+void MMAlsa_MonitorDevice(char *client_with_port) {
+  snd_seq_port_info_t *c = MMAlsa_GetClientPortInfo(client_with_port);
+}
+
 bool MMAlsa_ClientExists(char *client_with_port) {
   snd_seq_port_info_t *c = MMAlsa_GetClientPortInfo(client_with_port);
 
@@ -56,6 +60,7 @@ snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port) {
 
   int status;
   snd_seq_client_info_t *info;
+  snd_seq_port_info_t *pinfo;
 
   if (status = snd_seq_client_info_malloc(&info) > 0) {
     error("Failed to allocate client_info_t space: %s\n\n",
@@ -71,34 +76,33 @@ snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port) {
   int match = snd_seq_query_next_client(seq, info);
 
   if (match == 0 && snd_seq_client_info_get_client(info) == client_id) {
-    const char *found = snd_seq_client_info_get_name(info);
-    pdebug("MATCHED CLIENT: %d = %s\n", client_id, found);
+    const char *client_found_name = snd_seq_client_info_get_name(info);
 
-    snd_seq_port_info_t *pinfo;
     snd_seq_port_info_alloca(&pinfo);
 
     snd_seq_port_info_set_client(pinfo, client_id);
-    snd_seq_port_info_set_port(pinfo, port_id);
+    snd_seq_port_info_set_port(pinfo, port_id - 1);
 
     int port_match = snd_seq_query_next_port(seq, pinfo);
     if (port_match == 0 && snd_seq_port_info_get_port(pinfo) == port_id) {
-      printf("MATCHED PORT: %d", port_id);
       free(info);
+      snd_seq_close(seq);
 
-      exit(EXIT_FAILURE);
       return pinfo;
     } else {
-      pdebug("Could not find port: %d", port_id);
+      pdebug("Client(%s) port not found(%d)", client_found_name, port_id);
     }
   } else {
     pdebug("Could not find client: %d", client_id);
   }
 
-  printf("\nTEST EXIT!!");
-  exit(EXIT_FAILURE);
+  snd_seq_close(seq);
+  free(info);
+  free(pinfo);
 
   return NULL;
 }
+
 void MMAlsa_ClientDetails(MIDIClient *client) {
   char *type = "unknown";
   if (client->type == SND_SEQ_USER_CLIENT) {

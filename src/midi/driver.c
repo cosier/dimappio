@@ -40,6 +40,14 @@ void MM_ClientDetails(MIDIClient *client) {
 #endif
 }
 
+void MM_MonitorClient(char *client_with_port) {
+#ifdef __APPLE__
+#TODO : implement.
+#elif __linux__
+  MMAlsa_MonitorDevice(client_with_port);
+#endif
+}
+
 void MM_ListClients() {
   MIDIClients *clients = MM_GetClients();
 
@@ -68,6 +76,4 @@ void MM_SendMidiNote(char *client, char *port, char *note) {
   // TODO: implement
 }
 
-void MM_DriverDebug() {
-  MM_driver_debug_mode = true;
-}
+void MM_DriverDebug() { MM_driver_debug_mode = true; }

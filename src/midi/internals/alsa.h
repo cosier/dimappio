@@ -73,6 +73,8 @@ void MMAlsa_ClientDetails(MIDIClient *client);
 bool MMAlsa_ClientExists(char *client);
 snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port);
 
+void MMAlsa_MonitorDevice(char *client_with_port);
+
 void rawmidi_devices_on_card(snd_ctl_t *ctl, int card);
 void rawmidi_subdevice_info(snd_ctl_t *ctl, int card, int device);
 
