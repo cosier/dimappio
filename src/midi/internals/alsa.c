@@ -50,27 +50,55 @@ static volatile sig_atomic_t stop = 0;
 void sighandler() { stop = 1; }
 
 void MMAlsa_MonitorDevice(char* client_with_port) {
-    snd_seq_t* seq = init_sequencer("midimap-monitor");
-
-    snd_seq_port_info_t* pinfo =
-        MMAlsa_GetClientPortInfo(seq, client_with_port);
-
-    if (pinfo == NULL) {
-        exit(EXIT_FAILURE);
-    }
-    const char* pname = snd_seq_port_info_get_name(pinfo);
-    printf("TEST: %s\n", pname);
-
-    const snd_seq_addr_t* addr = snd_seq_port_info_get_addr(pinfo);
+    snd_seq_t* seq;
+    init_sequencer(&seq, "midimap-monitor");
+    snd_seq_nonblock(seq, 1);
 
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
+    const MIDIPortInfo* pinfo = MMAlsa_GetPortInfo(client_with_port);
+    const MIDIAddr* addr = snd_seq_port_info_get_addr(pinfo);
+    const char* pname = snd_seq_port_info_get_name(pinfo);
+    const ClientPort * cp = parseStringToClientPort(client_with_port);
+
+    create_ports(seq);
+    connect_ports(seq, cp);
+
     printf("Monitoring: %s [%d:%d]\n", pname, addr->client, addr->port);
-    fflush(stdout);
+
+    int err;
+    int pfds_num = snd_seq_poll_descriptors_count(seq, POLLIN);
+    struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
 
     for (;;) {
-        sleep(1);
+
+        // gather poll descriptors for this sequencer
+        snd_seq_poll_descriptors(seq, pfds, pfds_num, POLLIN);
+        fflush(stdout);
+
+        // wait on sequencer events
+        if (poll(pfds, pfds_num, -1) < 0) {
+            error("poll failed");
+            break;
+        }
+
+
+        // iterate over available events
+        do {
+            MIDIEvent* event;
+            err = snd_seq_event_input(seq, &event);
+
+            if (err < 0) {
+                break;
+            }
+
+            if (event) {
+                process_event(event);
+            }
+
+        } while (err > 0);
+
         if (stop) {
             break;
         }
@@ -79,75 +107,37 @@ void MMAlsa_MonitorDevice(char* client_with_port) {
     snd_seq_close(seq);
 }
 
-bool MMAlsa_ClientExists(char* client_with_port) {
-    /* return true; */
-    snd_seq_t* seq = init_sequencer("client-exists-check");
+static void process_event(MIDIEvent* event) {
+  char note[] = "NOTE";
 
-    if (seq == NULL) {
-        error("\nCannot continue without alsa sequencer access...\n\n");
-        exit(EXIT_FAILURE);
-    }
-
-    snd_seq_port_info_t* p = MMAlsa_GetClientPortInfo(seq, client_with_port);
-    bool exists = (p != NULL);
-    snd_seq_close(seq);
-
-    return exists;
+  printf("[%3d:%3d]: %s\n",
+         event->source.client,
+         event->source.port,
+         note);
 }
 
-snd_seq_port_info_t* MMAlsa_GetClientPortInfo(snd_seq_t* seq,
-                                              char* client_with_port) {
-    if (seq == NULL) {
-        error("SEQ Cannot be NULL");
-        exit(EXIT_FAILURE);
-    }
+bool MMAlsa_ClientExists(char* client_with_port) {
+    return (MMAlsa_GetPortInfo(client_with_port) != NULL);
+}
 
-    int status;
-    snd_seq_client_info_t* info;
-    snd_seq_port_info_t* pinfo;
-
-    if (status = snd_seq_client_info_malloc(&info) > 0) {
-        error("Failed to allocate client_info_t space: %s\n\n",
-              snd_strerror(status));
-        exit(EXIT_FAILURE);
-    }
-
+MIDIPortInfo* MMAlsa_GetPortInfo(char* client_with_port) {
     ClientPort* cp = parseStringToClientPort(client_with_port);
-    int client_id = cp->client;
-    int port_id = cp->port;
 
-    snd_seq_client_info_set_client(info, client_id - 1);
-    int match = snd_seq_query_next_client(seq, info);
+    snd_seq_t* seq;
+    init_sequencer(&seq, NULL);
 
-    if (match == 0 && snd_seq_client_info_get_client(info) == client_id) {
-        const char* client_found_name = snd_seq_client_info_get_name(info);
+    MIDIPortInfo* pinfo;
+    snd_seq_port_info_malloc(&pinfo);
 
-        snd_seq_port_info_alloca(&pinfo);
+    int found = snd_seq_get_any_port_info(seq, cp->client, cp->port, pinfo);
 
-        snd_seq_port_info_set_client(pinfo, client_id);
-        snd_seq_port_info_set_port(pinfo, port_id - 1);
+    if (found == 0) {
+        return pinfo;
 
-        int port_match = snd_seq_query_next_port(seq, pinfo);
-        if (port_match == 0 && snd_seq_port_info_get_port(pinfo) == port_id) {
-            /* free(info); */
-            /* snd_seq_close(seq); */
-            printf("RETURNING MATCH: [%d:%d] of %s\n", client_id, port_id,
-                   snd_seq_port_info_get_name(pinfo));
-
-            return pinfo;
-        } else {
-            pdebug("Client(%s) port not found(%d)", client_found_name, port_id);
-        }
     } else {
-        pdebug("Could not find client: %d", client_id);
+        pdebug("Client(%d) port not found(%d)", cp->client, cp->port);
+        return NULL;
     }
-
-    /* snd_seq_close(seq); */
-
-    if (info != NULL)
-        free(info);
-
-    return NULL;
 }
 
 void MMAlsa_ClientDetails(MIDIClient* client) {
@@ -180,7 +170,7 @@ MIDIClients* MMAlsa_GetClients(snd_seq_t* seq) {
     bool created_seq = false;
     if (seq == NULL) {
         created_seq = true;
-        seq = init_sequencer("midimap-gc");
+        init_sequencer(&seq, "midimap-gc");
     }
 
     MIDIClients* clients = malloc(sizeof(MIDIClients));
@@ -548,19 +538,40 @@ static char* char_port_capabilities(unsigned index) {
     return caps;
 }
 
-static snd_seq_t* init_sequencer(char* name) {
-    snd_seq_t* seq;
+static void init_sequencer(snd_seq_t** seq, char* name) {
+    /* snd_seq_t* seq; */
     int status;
 
-    if (status = snd_seq_open(&seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
+    if (status = snd_seq_open(*&seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
         error("Could not open sequencer: %s", snd_strerror(status));
-        return NULL;
+        /* return NULL; */
     }
 
     if (name != NULL) {
-        snd_seq_set_client_name(seq, name);
+        snd_seq_set_client_name(*seq, name);
     }
 
-    return seq;
+    /* return seq; */
+}
+
+static void create_ports(snd_seq_t* seq) {
+    check_snd("create ports",
+              snd_seq_create_simple_port(seq, "midi-mapper",
+                                         SND_SEQ_PORT_CAP_WRITE |
+                                             SND_SEQ_PORT_CAP_SUBS_WRITE,
+                                         SND_SEQ_PORT_TYPE_MIDI_GENERIC |
+                                             SND_SEQ_PORT_TYPE_APPLICATION));
+}
+
+static void connect_ports(snd_seq_t* seq, const ClientPort *cp) {
+  int err = snd_seq_connect_from(seq, 0, cp->client, cp->port);
+  check_snd("connecting ports", err);
+}
+
+static void check_snd(char* desc, int err) {
+  if (err > 0) {
+    error("Alsa Subsystem error: failed to %s", desc);
+    exit(EXIT_FAILURE);
+  }
 }
 #endif

@@ -14,6 +14,11 @@
 typedef int32_t MIDIObjectRef;
 typedef MIDIObjectRef MIDIEndpointRef;
 
+typedef snd_seq_port_info_t MIDIPortInfo;
+typedef snd_seq_client_info_t MIDIClientInfo;
+typedef snd_seq_addr_t MIDIAddr;
+typedef snd_seq_event_t MIDIEvent;
+
 typedef struct MIDIClientPort {
     const char* name;
     int capability;
@@ -71,12 +76,10 @@ Devices* MMAlsa_GetDevices();
 Device* MMAlsa_CreateVirtualDevice(char* name);
 
 MIDIClients* MMAlsa_GetClients(snd_seq_t* seq);
+MIDIPortInfo* MMAlsa_GetPortInfo(char* client_with_port);
 
 void MMAlsa_ClientDetails(MIDIClient* client);
 bool MMAlsa_ClientExists(char* client);
-snd_seq_port_info_t* MMAlsa_GetClientPortInfo(snd_seq_t* seq,
-                                              char* client_with_port);
-
 void MMAlsa_MonitorDevice(char* client_with_port);
 
 static void rawmidi_devices_on_card(snd_ctl_t* ctl, int card);
@@ -88,6 +91,11 @@ static char* char_port_capabilities(unsigned index);
 static int is_input(snd_ctl_t* ctl, int card, int device, int sub);
 static int is_output(snd_ctl_t* ctl, int card, int device, int sub);
 
-static snd_seq_t* init_sequencer(char* name);
+static void init_sequencer(snd_seq_t** seq, char* name);
+static void process_event(snd_seq_event_t* event);
+
+static void create_ports(snd_seq_t* seq);
+static void connect_ports(snd_seq_t* seq, const ClientPort *cp);
+static void check_snd(char* desc, int err);
 #endif
 #endif

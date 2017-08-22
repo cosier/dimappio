@@ -55,7 +55,7 @@ bool verify_valid_midi_client(char* client) {
                client);
 
         printf("For example, here is a valid Midi Client: \"123:0\"\n\n");
-        exit(EXIT_FAILURE);
+        return false;
     }
 
     if (!MM_ClientExists(client)) {
@@ -63,6 +63,7 @@ bool verify_valid_midi_client(char* client) {
                client);
         printf("Try \"midi-mapper --list\" to list available Midi Clients.\n");
         printf("The [xx:x] denotes the client id + port number.\n\n");
+        return false;
     }
 
     return true;
@@ -156,7 +157,9 @@ int main(int argc, char** argv) {
     }
 
     if (monitor != NULL) {
-        verify_valid_midi_client(monitor);
+        if (!verify_valid_midi_client(monitor)) {
+            exit(EXIT_FAILURE);
+        }
         MM_MonitorClient(monitor);
         exit(EXIT_SUCCESS);
     }
