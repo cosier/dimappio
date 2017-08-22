@@ -37,42 +37,92 @@ Devices *MMAlsa_GetDevices() {
   return devices;
 }
 
+bool MMAlsa_ClientExists(char *client_with_port) {
+  snd_seq_port_info_t *c = MMAlsa_GetClientPortInfo(client_with_port);
+
+  if (c == NULL) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+snd_seq_port_info_t *MMAlsa_GetClientPortInfo(char *client_with_port) {
+  snd_seq_t *seq = AlsaOpenSequencer();
+  if (seq == NULL) {
+    error("\nCannot continue without alsa sequencer access...\n\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int status;
+  snd_seq_client_info_t *info;
+
+  if (status = snd_seq_client_info_malloc(&info) > 0) {
+    error("Failed to allocate client_info_t space: %s\n\n",
+          snd_strerror(status));
+    exit(EXIT_FAILURE);
+  }
+
+  ClientPort *cp = parseStringToClientPort(client_with_port);
+  int client_id = cp->client;
+  int port_id = cp->port;
+
+  snd_seq_client_info_set_client(info, client_id - 1);
+  int match = snd_seq_query_next_client(seq, info);
+
+  if (match == 0 && snd_seq_client_info_get_client(info) == client_id) {
+    const char *found = snd_seq_client_info_get_name(info);
+    pdebug("MATCHED CLIENT: %d = %s\n", client_id, found);
+
+    snd_seq_port_info_t *pinfo;
+    snd_seq_port_info_alloca(&pinfo);
+
+    snd_seq_port_info_set_client(pinfo, client_id);
+    snd_seq_port_info_set_port(pinfo, port_id);
+
+    int port_match = snd_seq_query_next_port(seq, pinfo);
+    if (port_match == 0 && snd_seq_port_info_get_port(pinfo) == port_id) {
+      printf("MATCHED PORT: %d", port_id);
+      free(info);
+
+      exit(EXIT_FAILURE);
+      return pinfo;
+    } else {
+      pdebug("Could not find port: %d", port_id);
+    }
+  } else {
+    pdebug("Could not find client: %d", client_id);
+  }
+
+  printf("\nTEST EXIT!!");
+  exit(EXIT_FAILURE);
+
+  return NULL;
+}
 void MMAlsa_ClientDetails(MIDIClient *client) {
-    char *type = "unknown";
-    if (client->type == SND_SEQ_USER_CLIENT) {
-        type = "user";
+  char *type = "unknown";
+  if (client->type == SND_SEQ_USER_CLIENT) {
+    type = "user";
 
-    } else if (client->type == SND_SEQ_KERNEL_CLIENT) {
-        type = "kernel";
-    }
-    /* printf("[%d] %s (type: %s, card: %d)\n", */
-    /*        client->client_id, */
-    /*        client->name, */
-    /*        type, */
-    /*        client->card); */
-    /* printf("  ports (%d)\n", client->num_ports); */
+  } else if (client->type == SND_SEQ_KERNEL_CLIENT) {
+    type = "kernel";
+  }
 
-    MIDIClientPort *port;
-    char * caps;
-    char * types;
-    unsigned cindex;
-    for (int i = 0; i < client->num_ports; i++) {
-        port = client->ports[i];
-        types = char_port_types(port->type);
-        printf("[%d:%d]: %s (ch: %d): %s\n",
-               client->client_id,
-               port->port_id,
-               port->name,
-               port->channels,
-               types
-            );
+  MIDIClientPort *port;
+  char *caps;
+  char *types;
 
+  for (int i = 0; i < client->num_ports; i++) {
+    port = client->ports[i];
+    types = char_port_types(port->type);
+    printf("[%d:%d]: %s (ch: %d): [%s: %s]\n", client->client_id, port->port_id,
+           port->name, port->channels, type, types);
 
-        caps = char_port_capabilities(port->capability);
-        printf("    • %s\n", caps);
+    caps = char_port_capabilities(port->capability);
+    printf("    • %s\n", caps);
 
-        printf("\n");
-    }
+    printf("\n");
+  }
 }
 
 MIDIClients *MMAlsa_GetClients() {
@@ -82,10 +132,8 @@ MIDIClients *MMAlsa_GetClients() {
   clients->store = malloc(32 * sizeof(MIDIClient *));
   clients->count = 0;
 
-  snd_seq_t *seq;
-
-  if (snd_seq_open(&seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
-    error("failed to open sequencer");
+  snd_seq_t *seq = AlsaOpenSequencer();
+  if (seq == NULL) {
     return clients;
   }
 
@@ -338,110 +386,121 @@ int is_input(snd_ctl_t *ctl, int card, int device, int sub) {
   return 0;
 }
 
-char* char_port_types(unsigned index) {
-    char *types = malloc(256 * sizeof(char));
-    types[0] = '\0';
+char *char_port_types(unsigned index) {
+  char *types = malloc(256 * sizeof(char));
+  types[0] = '\0';
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_SPECIFIC)) {
-        sprintf(types, "SPECIFIC");
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_SPECIFIC)) {
+    sprintf(types, "SPECIFIC");
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_MIDI_GENERIC)) {
-        sprintf(types, "%s, MIDI_GENERIC", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GENERIC)) {
+    sprintf(types, "%s, MIDI_GENERIC", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_MIDI_GM)) {
-        sprintf(types, "%s, MMIDI_GM", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GM)) {
+    sprintf(types, "%s, MMIDI_GM", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_MIDI_GS)) {
-        sprintf(types, "%s, MIDI_GS", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GS)) {
+    sprintf(types, "%s, MIDI_GS", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_MIDI_XG)) {
-        sprintf(types, "%s, MIDI_XG", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_XG)) {
+    sprintf(types, "%s, MIDI_XG", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_MIDI_MT32)) {
-        sprintf(types, "%s, MIDI_MT32", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_MT32)) {
+    sprintf(types, "%s, MIDI_MT32", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_MIDI_GM2)) {
-        sprintf(types, "%s, MIDI_GM2", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GM2)) {
+    sprintf(types, "%s, MIDI_GM2", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_SYNTH)) {
-        sprintf(types, "%s, SYNTH", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_SYNTH)) {
+    sprintf(types, "%s, SYNTH", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_DIRECT_SAMPLE)) {
-        sprintf(types, "%s, DIRECT_SAMPLE", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_DIRECT_SAMPLE)) {
+    sprintf(types, "%s, DIRECT_SAMPLE", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_SAMPLE)) {
-        sprintf(types, "%s, SAMPLE", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_SAMPLE)) {
+    sprintf(types, "%s, SAMPLE", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_HARDWARE)) {
-        sprintf(types, "%s, HARDWARE", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_HARDWARE)) {
+    sprintf(types, "%s, HARDWARE", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_SOFTWARE)) {
-        sprintf(types, "%s, SOFTWARE", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_SOFTWARE)) {
+    sprintf(types, "%s, SOFTWARE", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_SYNTHESIZER)) {
-        sprintf(types, "%s, SYNTHESIZER", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_SYNTHESIZER)) {
+    sprintf(types, "%s, SYNTHESIZER", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_PORT)) {
-        sprintf(types, "%s, PORT", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_PORT)) {
+    sprintf(types, "%s, PORT", types);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_TYPE_APPLICATION)) {
-        sprintf(types, "%s, APPLICATION", types);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_TYPE_APPLICATION)) {
+    sprintf(types, "%s, APPLICATION", types);
+  }
 
-    return types;
+  return types;
 }
 
-char* char_port_capabilities(unsigned index) {
-    char *caps = malloc(256 * sizeof(char));
-    caps[0] = '\0';
+char *char_port_capabilities(unsigned index) {
+  char *caps = malloc(256 * sizeof(char));
+  caps[0] = '\0';
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_READ)) {
-        sprintf(caps, "READ");
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_READ)) {
+    sprintf(caps, "READ");
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_WRITE)) {
-        sprintf(caps, "%s, WRITE", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_WRITE)) {
+    sprintf(caps, "%s, WRITE", caps);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_SYNC_READ)) {
-        sprintf(caps, "%s, SYNC_READ", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_SYNC_READ)) {
+    sprintf(caps, "%s, SYNC_READ", caps);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_SYNC_WRITE)) {
-        sprintf(caps, "%s, SYNC_WRITE", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_SYNC_WRITE)) {
+    sprintf(caps, "%s, SYNC_WRITE", caps);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_DUPLEX)) {
-        sprintf(caps, "%s, DUPLEX", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_DUPLEX)) {
+    sprintf(caps, "%s, DUPLEX", caps);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_SUBS_READ)) {
-        sprintf(caps, "%s, SUBS_READ", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_SUBS_READ)) {
+    sprintf(caps, "%s, SUBS_READ", caps);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_SUBS_READ)) {
-        sprintf(caps, "%s, SUBS_WRITE", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_SUBS_READ)) {
+    sprintf(caps, "%s, SUBS_WRITE", caps);
+  }
 
-    if (contains_bit(index,  SND_SEQ_PORT_CAP_NO_EXPORT)) {
-        sprintf(caps, "%s, NO_EXPORT", caps);
-    }
+  if (contains_bit(index, SND_SEQ_PORT_CAP_NO_EXPORT)) {
+    sprintf(caps, "%s, NO_EXPORT", caps);
+  }
 
-    return caps;
+  return caps;
 }
 
+snd_seq_t *AlsaOpenSequencer() {
+  snd_seq_t *seq;
+  int status;
+
+  if (status = snd_seq_open(&seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
+    error("Could not open sequencer: %s", snd_strerror(status));
+    return NULL;
+  }
+
+  return seq;
+}
 #endif

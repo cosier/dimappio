@@ -1,12 +1,22 @@
 cmake_minimum_required(VERSION 3.6)
 project(midi-mapper)
 
-set(CMAKE_INSTALL_MESSAGE LAZY)
+# This project uses C11 Standard
+set( CMAKE_C_STANDARD 11 )
+
+# Treat all warnings as intense errors.
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+
+add_definitions( -D__STDC_WANT_LIB_EXT1__=1 )
 
 # Main executable has a single file
 SET ( SRC_MAIN src/main.c )
 
-file(GLOB_RECURSE SRC_LIB      src/*.c src/*.h)
+# Glob'n all C source + headers under src/
+#
+# Below we iterate and remove any tmp files that
+# Would otherwise break the Make build system.
+file(GLOB_RECURSE SRC_LIB src/*.c src/*.h)
 
 # Remove tmp files from source tree
 foreach ( PATH ${SRC_LIB} )
@@ -16,7 +26,9 @@ foreach ( PATH ${SRC_LIB} )
   endif()
 endforeach( PATH )
 
-
+# Setup 2 targets for build output.
+# 1. A library for ... library reuse.
+# 2. A Executable that utilises the library.
 add_library(midimap ${SRC_LIB})
 add_executable(midi-mapper ${SRC_MAIN})
 
@@ -53,15 +65,16 @@ endif ()
 # Everybody needs curses
 find_library( ncurses_lib ncurses )
 
-# Link up our two targets (main exe and library support)
-target_include_directories( midimap PUBLIC src)
-target_compile_definitions( midimap PUBLIC ${_midi_defs} )
+# Link Library support: libmidimap
+target_include_directories( midimap PUBLIC src )
+target_compile_definitions( midimap PUBLIC ${_midi_defs} ${_app_defs} )
 target_link_libraries( midimap ${_midi_libs} ${ncurses_lib} )
 
+# Link up main executable with our Library: midi-mapper.exe
 target_include_directories( midi-mapper PUBLIC src )
 target_link_libraries( midi-mapper midimap )
 
-
+# Cleanup after ourselves.
 unset( _midi_libs )
 unset( _midi_defs )
 

@@ -6,7 +6,8 @@ void uiStartup() {
   /* raw(); */
 }
 
-void uiShutdown() { /* endwin(); */ }
+void uiShutdown() { /* endwin(); */
+}
 
 void MM_InterfaceStart() {
   uiStartup();

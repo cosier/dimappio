@@ -6,6 +6,7 @@
 #include "midi/internals/winmm.h"
 
 #include "utils.h"
+extern bool MM_driver_debug_mode;
 
 typedef struct Devices Devices;
 typedef struct Device Device;
@@ -25,8 +26,11 @@ void MM_AttachListener(Device *dev,
                        void (*func)(const MIDIPacketList *message, void *refCon,
                                     void *connRefCon));
 
-void MM_ClientDetails(MIDIClient *client);
 void MM_ListClients();
+void MM_ClientDetails(MIDIClient *client);
+bool MM_ClientExists(char *client);
 void MM_SendMidiNote(char *client, char *port, char *note);
+
+void MM_DriverDebug();
 
 #endif

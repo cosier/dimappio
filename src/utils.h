@@ -2,6 +2,10 @@
 #define MIDI_UTILS_H
 
 #include <stdbool.h>
+#include <stdarg.h>
+#include <stdio.h>
+
+extern bool MM_driver_debug_mode;
 
 void pdebug(const char *format, ...);
 void error(const char *format, ...);

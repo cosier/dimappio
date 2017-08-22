@@ -9,11 +9,11 @@ function block_for_change() {
     $ROOT/src
 }
 
-# Run initially 
-$ROOT/bin/run build $@
+# Run initially
+$ROOT/bin/run clean build $@
 
 # Now block and watch
 while block_for_change; do
   echo "File changed: $filename"
-  $ROOT/bin/run build $@
+  $ROOT/bin/run clean build $@
 done
