@@ -14,24 +14,24 @@ typedef struct Device Device;
 typedef struct MIDIClient MIDIClient;
 typedef struct MIDIClient MIDIClient;
 
-Device *MM_CreateVirtualDevice(char *name);
-Devices *MM_GetDevices();
-MIDIClients *MM_GetClients();
+Device* MM_CreateVirtualDevice(char* name);
+Devices* MM_GetDevices();
+MIDIClients* MM_GetClients();
 
-void MM_MonitorClient(char *client_with_port);
+void MM_MonitorClient(char* client_with_port);
 
-void MM_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
-                     void *connRefCon);
-void MM_MIDINotifyProc(const MIDINotification *message, void *refCon);
+void MM_MIDIReadProc(const MIDIPacketList* pktlist, void* refCon,
+                     void* connRefCon);
+void MM_MIDINotifyProc(const MIDINotification* message, void* refCon);
 
-void MM_AttachListener(Device *dev,
-                       void (*func)(const MIDIPacketList *message, void *refCon,
-                                    void *connRefCon));
+void MM_AttachListener(Device* dev,
+                       void (*func)(const MIDIPacketList* message, void* refCon,
+                                    void* connRefCon));
 
 void MM_ListClients();
-void MM_ClientDetails(MIDIClient *client);
-bool MM_ClientExists(char *client);
-void MM_SendMidiNote(char *client, char *port, char *note);
+void MM_ClientDetails(MIDIClient* client);
+bool MM_ClientExists(char* client);
+void MM_SendMidiNote(char* client, char* port, char* note);
 
 void MM_DriverDebug();
 

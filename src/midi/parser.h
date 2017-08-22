@@ -8,8 +8,8 @@
 #include "utils.h"
 
 typedef struct ClientPort {
-  int client;
-  int port;
+    int client;
+    int port;
 } ClientPort;
 
-ClientPort *parseStringToClientPort(char *client_with_port);
+ClientPort* parseStringToClientPort(char* client_with_port);

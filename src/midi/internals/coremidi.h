@@ -14,24 +14,24 @@
 #include "utils.h"
 
 typedef struct Device {
-  char *name;
-  MIDIEndpointRef endpoint;
+    char* name;
+    MIDIEndpointRef endpoint;
 } Device;
 
 typedef struct Devices {
-  Device **store;
-  int count;
+    Device** store;
+    int count;
 } Devices;
 
-Device *MMCoreMidi_CreateVirtualDevice();
-Devices *MMCoreMidi_GetDevices();
+Device* MMCoreMidi_CreateVirtualDevice();
+Devices* MMCoreMidi_GetDevices();
 
-void MMCoreMidi_MIDIReadProc(const MIDIPacketList *pktlist, void *refCon,
-                             void *connRefCon);
-void MMCoreMidi_MIDINotifyProc(const MIDINotification *message, void *refCon);
+void MMCoreMidi_MIDIReadProc(const MIDIPacketList* pktlist, void* refCon,
+                             void* connRefCon);
+void MMCoreMidi_MIDINotifyProc(const MIDINotification* message, void* refCon);
 void MMCoreMidi_AttachListener(Device dev,
-                               void (*func)(const MIDINotification *message,
-                                            void *refCon));
+                               void (*func)(const MIDINotification* message,
+                                            void* refCon));
 
 #endif
 #endif
