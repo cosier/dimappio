@@ -6,7 +6,7 @@ ROOT=$( cd $DIR/../ && pwd )
 mkdir -p $ROOT/build && cd $ROOT/build;
 
 if [[ ! -f $ROOT/build/Makefile ]]; then
-  cmake ..
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
   if [ ! $? -eq 0 ]; then
     exit 1
   fi

@@ -8,7 +8,7 @@ cfmt() {
   declare INPUT=${@:-$(</dev/stdin)}
   for f in $INPUT; do
     echo $f
-    clang-format -i -style=LLVM $f
+    clang-format -i -style=file $f
   done
 }
 
