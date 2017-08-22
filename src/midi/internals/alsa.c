@@ -45,30 +45,34 @@ void MMAlsa_ClientDetails(MIDIClient *client) {
     } else if (client->type == SND_SEQ_KERNEL_CLIENT) {
         type = "kernel";
     }
-    printf("[%d] %s (type: %s, card: %d)\n",
-           client->client_id,
-           client->name,
-           type,
-           client->card);
+    /* printf("[%d] %s (type: %s, card: %d)\n", */
+    /*        client->client_id, */
+    /*        client->name, */
+    /*        type, */
+    /*        client->card); */
     /* printf("  ports (%d)\n", client->num_ports); */
+
     MIDIClientPort *port;
     char * caps;
     char * types;
     unsigned cindex;
     for (int i = 0; i < client->num_ports; i++) {
         port = client->ports[i];
-        printf("  %d: %s (ch: %d)\n", port->port_id, port->name, port->channels);
-
         types = char_port_types(port->type);
-        printf("    - type: %s\n", types);
+        printf("[%d:%d]: %s (ch: %d): %s\n",
+               client->client_id,
+               port->port_id,
+               port->name,
+               port->channels,
+               types
+            );
+
 
         caps = char_port_capabilities(port->capability);
-        printf("    - capability: %s\n", caps);
+        printf("    • %s\n", caps);
 
         printf("\n");
     }
-
-    printf("\n\n");
 }
 
 MIDIClients *MMAlsa_GetClients() {
