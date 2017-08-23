@@ -1,3 +1,4 @@
+#ifdef __linux__
 #include "midi/internals/alsa_raw_midi.h"
 
 void MMA_rawmidi_devices_on_card(snd_ctl_t* ctl, int card) {
@@ -179,3 +180,5 @@ static int is_input(snd_ctl_t* ctl, int card, int device, int sub) {
     // nope
     return 0;
 }
+
+#endif

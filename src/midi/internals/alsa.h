@@ -1,6 +1,6 @@
+#ifdef __linux__
 #ifndef MIDI_INTERNAL_ALSA_H
 #define MIDI_INTERNAL_ALSA_H
-#ifdef __linux__
 
 #include <alsa/asoundlib.h>
 #include <signal.h>
@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <sys/poll.h>
 
-#include "midi/parser.h"
+#include "midi/internals/alsa_decoder.h"
 #include "midi/internals/alsa_raw_midi.h"
+#include "midi/parser.h"
 #include "utils.h"
 
 typedef int32_t MIDIObjectRef;
@@ -83,14 +84,11 @@ void MMAlsa_ClientDetails(MIDIClient* client);
 bool MMAlsa_ClientExists(char* client);
 void MMAlsa_MonitorDevice(char* client_with_port);
 
-static char* char_port_types(unsigned index);
-static char* char_port_capabilities(unsigned index);
+static int init_sequencer(snd_seq_t** seq, char* name);
+static void process_event(snd_seq_event_t* event, int seq_id, int seq_port);
 
-static void init_sequencer(snd_seq_t** seq, char* name);
-static void process_event(snd_seq_event_t* event);
-
-static void create_ports(snd_seq_t* seq);
-static void connect_ports(snd_seq_t* seq, const ClientPort *cp);
+static int create_port(snd_seq_t* seq);
+static void connect_ports(snd_seq_t* seq, const ClientPort* cp);
 static void check_snd(char* desc, int err);
 #endif
 #endif
