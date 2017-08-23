@@ -1,6 +1,18 @@
 #include "midi/internals/alsa.h"
 #ifdef __linux__
 
+/**
+ * Stop Flag.
+ * Flip to 1 to exit.
+ */
+static volatile sig_atomic_t stop = 0;
+
+/**
+ * Sets the stop flag to true,
+ * which is monitored by a fd loop.
+ */
+static void sighandler() { stop = 1; }
+
 Device* MMAlsa_CreateVirtualDevice(char* name) {
     /* printw("Creating virtual device: alsa\n"); */
     Device* dev;
@@ -36,18 +48,6 @@ Devices* MMAlsa_GetDevices() {
 
     return devices;
 }
-
-/**
- * Stop Flag.
- * Flip to 1 to exit.
- */
-static volatile sig_atomic_t stop = 0;
-
-/**
- * Sets the stop flag to true,
- * which is monitored by a fd loop.
- */
-void sighandler() { stop = 1; }
 
 void MMAlsa_MonitorDevice(char* client_with_port) {
     snd_seq_t* seq;
