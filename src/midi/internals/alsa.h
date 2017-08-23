@@ -11,7 +11,7 @@
 #include "midi/internals/alsa_decoder.h"
 #include "midi/internals/alsa_raw_midi.h"
 #include "midi/parser.h"
-#include "midi/mappings.h"
+#include "midi/mapping.h"
 #include "utils.h"
 
 typedef int32_t MIDIObjectRef;

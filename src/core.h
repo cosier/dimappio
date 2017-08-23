@@ -3,7 +3,7 @@
 
 #include "midi/driver.h"
 #include "midi/globals.h"
-#include "midi/mappings.h"
+#include "midi/mapping.h"
 
 #include "ui/interface.h"
 #endif

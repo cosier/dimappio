@@ -6,11 +6,21 @@
 #define MAX_MIDI_NOTES 128
 
 typedef struct mm_key_map {
+
+    // Array of target keys to activate
     int *dst_group;
+    // Target keys array size
     int dst_count;
 
+    // Array of related party members.
+    // All of which must be present to
+    // initiate the key map.
     int *party_group;
+
+    // Party array member size
     int party_count;
+
+    // Source key for this definition
     int key;
 } mm_key_map;
 

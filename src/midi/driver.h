@@ -4,7 +4,7 @@
 #include "midi/internals/alsa.h"
 #include "midi/internals/coremidi.h"
 #include "midi/internals/winmm.h"
-#include "midi/mappings.h"
+#include "midi/mapping.h"
 
 #include "utils.h"
 extern bool mm_driver_debug_mode;

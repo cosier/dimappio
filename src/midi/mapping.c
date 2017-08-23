@@ -1,4 +1,4 @@
-#include "midi/mappings.h"
+#include "midi/mapping.h"
 
 
 void mm_mapping_print(mm_mapping *mappings) {
@@ -21,6 +21,9 @@ mm_mapping *mm_mapping_from_list(char *list) {
     if (list == NULL) {
         return mappings;
     }
+
+    printf("Mapping Source: %s\n", list);
+    exit(EXIT_FAILURE);
 
     return mappings;
 }
