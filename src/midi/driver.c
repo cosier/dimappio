@@ -40,11 +40,11 @@ void MM_ClientDetails(MIDIClient* client) {
 #endif
 }
 
-void MM_MonitorClient(char* client_with_port) {
+void MM_MonitorClient(char* client_with_port, MappingDefs *mappings) {
 #ifdef __APPLE__
 #TODO : implement.
 #elif __linux__
-    MMAlsa_MonitorDevice(client_with_port);
+    MMAlsa_MonitorDevice(client_with_port, mappings);
 #endif
 }
 
@@ -54,15 +54,6 @@ void MM_ListClients() {
     for (int i = 0; i < clients->count; i++) {
         MM_ClientDetails(clients->store[i]);
     }
-}
-
-void MM_MIDINotifyProc(const MIDINotification* message, void* refCon) {
-    // TODO:
-}
-
-void MM_MIDIReadProc(const MIDIPacketList* pktlist, void* refCon,
-                     void* connRefCon) {
-    // TODO:
 }
 
 void MM_AttachListener(Device* dev,

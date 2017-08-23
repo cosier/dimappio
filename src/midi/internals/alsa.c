@@ -49,7 +49,7 @@ Devices* MMAlsa_GetDevices() {
     return devices;
 }
 
-void MMAlsa_MonitorDevice(char* client_with_port) {
+void MMAlsa_MonitorDevice(char* client_with_port, MappingDefs *mappings) {
     snd_seq_t* seq;
 
     int seq_id = init_sequencer(&seq, "midimap-monitor");
@@ -94,8 +94,10 @@ void MMAlsa_MonitorDevice(char* client_with_port) {
             }
 
             if (event) {
-                process_event(event, seq_id, seq_port);
+                process_event(event, seq, seq_port);
             }
+
+            snd_seq_free_event(event);
 
         } while (err > 0);
 
@@ -107,12 +109,41 @@ void MMAlsa_MonitorDevice(char* client_with_port) {
     snd_seq_close(seq);
 }
 
-static void process_event(MIDIEvent* ev, int seq_id, int seq_port) {
+static void process_event(MIDIEvent* ev, snd_seq_t *seq, int seq_port) {
     char note[] = "NOTE";
 
     printf("[%3d:%2d ] ", ev->source.client, ev->source.port);
-    char *edesc = MMA_event_decoder(ev);
-    printf("%s", edesc);
+
+    switch (ev->type) {
+    case SND_SEQ_EVENT_NOTEON:
+        puts(MMA_event_decoder(ev));
+        break;
+
+    case SND_SEQ_EVENT_NOTEOFF:
+        puts(MMA_event_decoder(ev));
+        break;
+
+    case SND_SEQ_EVENT_CONTROLLER:
+        puts(MMA_event_decoder(ev));
+        break;
+
+    default: {
+        puts(MMA_event_decoder(ev));
+    }
+    }
+
+    // set event broadcast to subscribers
+    snd_seq_ev_set_subs(ev);
+
+    // set output to direct
+    snd_seq_ev_set_direct(ev);
+
+    // set event source
+    snd_seq_ev_set_source(ev, seq_port);
+
+    // output event immediately
+    snd_seq_event_output_direct(seq, ev);
+
 }
 
 bool MMAlsa_ClientExists(char* client_with_port) {

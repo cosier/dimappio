@@ -11,6 +11,7 @@
 #include "midi/internals/alsa_decoder.h"
 #include "midi/internals/alsa_raw_midi.h"
 #include "midi/parser.h"
+#include "midi/mappings.h"
 #include "utils.h"
 
 typedef int32_t MIDIObjectRef;
@@ -82,10 +83,10 @@ MIDIPortInfo* MMAlsa_GetPortInfo(char* client_with_port);
 
 void MMAlsa_ClientDetails(MIDIClient* client);
 bool MMAlsa_ClientExists(char* client);
-void MMAlsa_MonitorDevice(char* client_with_port);
+void MMAlsa_MonitorDevice(char* client_with_port, MappingDefs *mappings);
 
 static int init_sequencer(snd_seq_t** seq, char* name);
-static void process_event(snd_seq_event_t* event, int seq_id, int seq_port);
+static void process_event(snd_seq_event_t* event, snd_seq_t *seq, int seq_port);
 
 static int create_port(snd_seq_t* seq);
 static void connect_ports(snd_seq_t* seq, const ClientPort* cp);

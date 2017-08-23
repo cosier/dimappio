@@ -72,13 +72,18 @@ bool verify_valid_midi_client(char* client) {
 int main(int argc, char** argv) {
     int opt = 0;
 
-    int list = 0, version = 0, help = 0;
+    bool list = false,
+        version = false,
+        help = false,
+        monitor = false,
+        debug = false;
 
-    char* monitor = NULL;
     char* target = NULL;
     char* source = NULL;
     char* send_note = NULL;
     char* mapping = NULL;
+
+    MappingDefs *mappings = NULL;
 
     // Specifying the expected options
     // The two options l and b expect numbers as argument
@@ -87,7 +92,7 @@ int main(int argc, char** argv) {
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'z'},
-        {"monitor", required_argument, 0, 'm'},
+        {"monitor", no_argument, 0, 'm'},
         {"remap", required_argument, 0, 'r'},
         {"send", required_argument, 0, 's'},
         {"target", required_argument, 0, 't'},
@@ -95,20 +100,32 @@ int main(int argc, char** argv) {
         {0, 0, 0, 0}};
 
     int long_index = 0;
-    while ((opt = getopt_long(argc, argv, "lhvzm:r:s:t:x:", long_options,
+    while ((opt = getopt_long(argc, argv, "lhvzmr:s:t:x:", long_options,
                               &long_index)) != -1) {
 
         switch (opt) {
         case 'l':
-            list = 1;
+            list = true;
             break;
 
         case 'v':
-            version = 1;
+            version = true;
             break;
 
         case 'h':
-            help = 1;
+            help = true;
+            break;
+
+        case 'm':
+            monitor = true;
+            break;
+
+        case 'z':
+            debug = true;
+            break;
+
+        case 't':
+            target = optarg;
             break;
 
         case 's':
@@ -123,63 +140,50 @@ int main(int argc, char** argv) {
             mapping = optarg;
             break;
 
-        case 'm':
-            monitor = optarg;
-            break;
-
-        case 't':
-            target = optarg;
-            break;
-
-        case 'z':
-            MM_DriverDebug();
-            break;
-
         default:
             print_usage();
             exit(EXIT_FAILURE);
         }
     }
 
+    // Flip global debug flag.
+    if (debug) {
+        MM_DriverDebug();
+    }
+
+    // Version output and then exit.
     if (version) {
         print_version();
         exit(EXIT_SUCCESS);
     }
 
+    // Show cli help usage and exit.
     if (help) {
         print_usage();
         exit(EXIT_SUCCESS);
     }
 
+    // List available midi client ports then exit.
     if (list) {
         MM_ListClients();
         exit(EXIT_SUCCESS);
     }
 
-    if (monitor != NULL) {
-        if (!verify_valid_midi_client(monitor)) {
+    // If target client:port is specified, verify that it exists.
+    if (target != NULL) {
+        if (!verify_valid_midi_client(target)) {
             exit(EXIT_FAILURE);
         }
-        MM_MonitorClient(monitor);
-        exit(EXIT_SUCCESS);
     }
 
-    if (target != NULL) {
-        // TODO: verify target correctness (id:port)
-    }
-
-    if (mapping != NULL) {
-        // TODO: implement remapping from source to target
-
-        if (target == NULL) {
-            requires_target_specified("mapping");
-        }
-
-        if (source == NULL) {
-            requires_source_specified("remap");
+    // If source client:port is specified, verify that it exists.
+    if (source != NULL) {
+        if (!verify_valid_midi_client(source)) {
+            exit(EXIT_FAILURE);
         }
     }
 
+    // Send a midi note to a specific client.
     if (send_note != NULL) {
         if (target == NULL) {
             requires_target_specified("send");
@@ -192,10 +196,35 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
+    // If mappings are provided, check for a valid target and source.
+    // Build a MapDefinition struct from cli remap definition.
+    if (mapping != NULL) {
+        if (source == NULL) {
+            requires_source_specified("remap");
+        } else {
+            if (!verify_valid_midi_client(source)) {
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    // Engage in monitor loop.
+    // Uses a source to poll events from.
+    //
+    // Sourced events are passed through the remap filter
+    // before being broadcast to any subscribers.
+    if (monitor) {
+        if (source == NULL) {
+            requires_source_specified("monitor");
+        }
+
+        MM_MonitorClient(source, mappings);
+        exit(EXIT_SUCCESS);
+    }
+
     // Kick off the application UI thread
     /* MM_InterfaceStart(); */
 
-    pdebug("\n[end]\n");
     print_usage();
     return 0;
 }

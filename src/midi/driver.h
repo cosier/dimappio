@@ -4,6 +4,7 @@
 #include "midi/internals/alsa.h"
 #include "midi/internals/coremidi.h"
 #include "midi/internals/winmm.h"
+#include "midi/mappings.h"
 
 #include "utils.h"
 extern bool MM_driver_debug_mode;
@@ -18,11 +19,7 @@ Device* MM_CreateVirtualDevice(char* name);
 Devices* MM_GetDevices();
 MIDIClients* MM_GetClients();
 
-void MM_MonitorClient(char* client_with_port);
-
-void MM_MIDIReadProc(const MIDIPacketList* pktlist, void* refCon,
-                     void* connRefCon);
-void MM_MIDINotifyProc(const MIDINotification* message, void* refCon);
+void MM_MonitorClient(char* client_with_port, MappingDefs *mappings);
 
 void MM_AttachListener(Device* dev,
                        void (*func)(const MIDIPacketList* message, void* refCon,

@@ -23,13 +23,13 @@ typedef struct Devices {
     int count;
 } Devices;
 
-Device* MMCoreMidi_CreateVirtualDevice();
-Devices* MMCoreMidi_GetDevices();
+Device* MMC_CreateVirtualDevice();
+Devices* MMC_GetDevices();
 
-void MMCoreMidi_MIDIReadProc(const MIDIPacketList* pktlist, void* refCon,
+void MMC_MIDIReadProc(const MIDIPacketList* pktlist, void* refCon,
                              void* connRefCon);
-void MMCoreMidi_MIDINotifyProc(const MIDINotification* message, void* refCon);
-void MMCoreMidi_AttachListener(Device dev,
+void MMC_MIDINotifyProc(const MIDINotification* message, void* refCon);
+void MMC_AttachListener(Device dev,
                                void (*func)(const MIDINotification* message,
                                             void* refCon));
 
