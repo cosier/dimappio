@@ -1,6 +1,6 @@
 #include "midi/parser.h"
 
-ClientPort* parseStringToClientPort(char* client_with_port) {
+ClientPort* parse_client_port(char* client_with_port) {
     ClientPort* cp = malloc(sizeof(ClientPort));
     cp->client = 0;
     cp->port = 0;

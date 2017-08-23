@@ -7,7 +7,7 @@
 #include "midi/mappings.h"
 
 #include "utils.h"
-extern bool MM_driver_debug_mode;
+extern bool mm_driver_debug_mode;
 
 typedef struct Devices Devices;
 typedef struct Device Device;
@@ -15,21 +15,21 @@ typedef struct Device Device;
 typedef struct MIDIClient MIDIClient;
 typedef struct MIDIClient MIDIClient;
 
-Device* MM_CreateVirtualDevice(char* name);
-Devices* MM_GetDevices();
-MIDIClients* MM_GetClients();
+Device* mm_create_virtual_device(char* name);
+Devices* mm_get_devices();
+MIDIClients* mm_get_clients();
 
-void MM_MonitorClient(char* client_with_port, MappingDefs *mappings);
+void mm_monitor_client(char* client_with_port, mm_mapping *mappings);
 
-void MM_AttachListener(Device* dev,
+void mm_attach_listener(Device* dev,
                        void (*func)(const MIDIPacketList* message, void* refCon,
                                     void* connRefCon));
 
-void MM_ListClients();
-void MM_ClientDetails(MIDIClient* client);
-bool MM_ClientExists(char* client);
-void MM_SendMidiNote(char* client, char* port, char* note);
+void mm_list_clients();
+void mm_client_details(MIDIClient* client);
+bool mm_client_exists(char* client);
+void mm_send_midi_note(char* client, char* port, char* note);
 
-void MM_DriverDebug();
+void mm_driver_debug();
 
 #endif

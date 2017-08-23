@@ -1,70 +1,70 @@
 #include "driver.h"
 
-Devices* MM_GetDevices() {
+Devices* mm_get_devices() {
 #ifdef __APPLE__
-    return MMCoreMidi_GetDevices();
+    return mmc_get_devices();
 #elif __linux__
-    return MMAlsa_GetDevices();
+    return mma_get_devices();
 #endif
 }
 
-MIDIClients* MM_GetClients() {
+MIDIClients* mm_get_clients() {
 #ifdef __APPLE__
-/* return MMCoreMidi_GetDevices(); */
+/* return mmc_get_devices(); */
 #elif __linux__
-    return MMAlsa_GetClients(NULL);
+    return mma_get_clients(NULL);
 #endif
 }
 
-Device* MM_CreateVirtualDevice(char* name) {
+Device* mm_create_virtual_device(char* name) {
 #ifdef __APPLE__
-    return MMCoreMidi_CreateVirtualDevice(name);
+    return mmc_create_virtual_device(name);
 #elif __linux__
-    return MMAlsa_CreateVirtualDevice(name);
+    return mma_create_virtual_device(name);
 #endif
 }
 
-bool MM_ClientExists(char* client) {
-#ifdef __APPLE__
-#TODO : implement.
-#elif __linux__
-    return MMAlsa_ClientExists(client);
-#endif
-}
-
-void MM_ClientDetails(MIDIClient* client) {
+bool mm_client_exists(char* client) {
 #ifdef __APPLE__
 #TODO : implement.
 #elif __linux__
-    MMAlsa_ClientDetails(client);
+    return mma_client_exists(client);
 #endif
 }
 
-void MM_MonitorClient(char* client_with_port, MappingDefs *mappings) {
+void mm_client_details(MIDIClient* client) {
 #ifdef __APPLE__
 #TODO : implement.
 #elif __linux__
-    MMAlsa_MonitorDevice(client_with_port, mappings);
+    mma_client_details(client);
 #endif
 }
 
-void MM_ListClients() {
-    MIDIClients* clients = MM_GetClients(NULL);
+void mm_monitor_client(char* client_with_port, mm_mapping *mappings) {
+#ifdef __APPLE__
+#TODO : implement.
+#elif __linux__
+    mma_monitor_device(client_with_port, mappings);
+#endif
+}
+
+void mm_list_clients() {
+    MIDIClients* clients = mm_get_clients(NULL);
 
     for (int i = 0; i < clients->count; i++) {
-        MM_ClientDetails(clients->store[i]);
+        mm_client_details(clients->store[i]);
     }
 }
 
-void MM_AttachListener(Device* dev,
+void mm_attach_listener(Device* dev,
                        void (*func)(const MIDIPacketList* message, void* refcon,
                                     void* connRefCon)) {
     // TODO: implement
 }
 
-void MM_SendMidiNote(char* client, char* port, char* note) {
+void mm_send_midi_note(char* client, char* port, char* note) {
     printf("Sending Midi note -> %s:%s [%s]", client, port, note);
     // TODO: implement
 }
 
-void MM_DriverDebug() { MM_driver_debug_mode = true; }
+void mm_driver_debug() { mm_driver_debug_mode = true; }

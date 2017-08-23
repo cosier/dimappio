@@ -1,6 +1,6 @@
 #include "midi/internals/alsa_decoder.h"
 
-char* MMA_event_decoder(MIDIEvent* ev) {
+char* mma_event_decoder(MIDIEvent* ev) {
     char* buf = malloc(sizeof(char) * 128);
 
     switch (ev->type) {
@@ -179,7 +179,7 @@ char* MMA_event_decoder(MIDIEvent* ev) {
     return buf;
 }
 
-char* MMA_char_port_types(unsigned index) {
+char* mma_char_port_types(unsigned index) {
     char* types = malloc(256 * sizeof(char));
     types[0] = '\0';
 
@@ -246,7 +246,7 @@ char* MMA_char_port_types(unsigned index) {
     return types;
 }
 
-char* MMA_char_port_capabilities(unsigned index) {
+char* mma_char_port_capabilities(unsigned index) {
     char* caps = malloc(256 * sizeof(char));
     caps[0] = '\0';
 

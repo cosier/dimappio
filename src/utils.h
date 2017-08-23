@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-extern bool MM_driver_debug_mode;
+extern bool mm_driver_debug_mode;
 
 void pdebug(const char* format, ...);
 void error(const char* format, ...);
@@ -15,8 +15,8 @@ bool contains_bit(unsigned val, unsigned bitindex);
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
 
-char* CFStringRefToChars(CFStringRef string);
-CFStringRef CharToCFStringRef(char* c);
+char* cf_string_ref_to_chars(CFStringRef string);
+CFStringRef char_to_cf_string_ref(char* c);
 #endif
 
 #endif

@@ -13,13 +13,13 @@ static volatile sig_atomic_t stop = 0;
  */
 static void sighandler() { stop = 1; }
 
-Device* MMAlsa_CreateVirtualDevice(char* name) {
+Device* mma_create_virtual_device(char* name) {
     /* printw("Creating virtual device: alsa\n"); */
     Device* dev;
     return dev;
 }
 
-Devices* MMAlsa_GetDevices() {
+Devices* mma_get_devices() {
     Devices* devices = malloc(sizeof(Devices));
     devices->count = 0;
 
@@ -38,7 +38,7 @@ Devices* MMAlsa_GetDevices() {
     snd_ctl_t* ctl;
 
     while (card >= 0) {
-        MMA_rawmidi_devices_on_card(ctl, card);
+        mma_rawmidi_devices_on_card(ctl, card);
 
         if ((status = snd_card_next(&card)) < 0) {
             error("No other cards available: %s", snd_strerror(status));
@@ -49,7 +49,7 @@ Devices* MMAlsa_GetDevices() {
     return devices;
 }
 
-void MMAlsa_MonitorDevice(char* client_with_port, MappingDefs *mappings) {
+void mma_monitor_device(char* client_with_port, mm_mapping *mappings) {
     snd_seq_t* seq;
 
     int seq_id = init_sequencer(&seq, "midimap-monitor");
@@ -58,10 +58,10 @@ void MMAlsa_MonitorDevice(char* client_with_port, MappingDefs *mappings) {
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
-    const MIDIPortInfo* pinfo = MMAlsa_GetPortInfo(client_with_port);
+    const MIDIPortInfo* pinfo = mma_get_port_info(client_with_port);
     const MIDIAddr* addr = snd_seq_port_info_get_addr(pinfo);
     const char* pname = snd_seq_port_info_get_name(pinfo);
-    const ClientPort* cp = parseStringToClientPort(client_with_port);
+    const ClientPort* cp = parse_client_port(client_with_port);
 
     int seq_port = create_port(seq);
     connect_ports(seq, cp);
@@ -116,19 +116,19 @@ static void process_event(MIDIEvent* ev, snd_seq_t *seq, int seq_port) {
 
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
-        puts(MMA_event_decoder(ev));
+        puts(mma_event_decoder(ev));
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
-        puts(MMA_event_decoder(ev));
+        puts(mma_event_decoder(ev));
         break;
 
     case SND_SEQ_EVENT_CONTROLLER:
-        puts(MMA_event_decoder(ev));
+        puts(mma_event_decoder(ev));
         break;
 
     default: {
-        puts(MMA_event_decoder(ev));
+        puts(mma_event_decoder(ev));
     }
     }
 
@@ -146,12 +146,12 @@ static void process_event(MIDIEvent* ev, snd_seq_t *seq, int seq_port) {
 
 }
 
-bool MMAlsa_ClientExists(char* client_with_port) {
-    return (MMAlsa_GetPortInfo(client_with_port) != NULL);
+bool mma_client_exists(char* client_with_port) {
+    return (mma_get_port_info(client_with_port) != NULL);
 }
 
-MIDIPortInfo* MMAlsa_GetPortInfo(char* client_with_port) {
-    ClientPort* cp = parseStringToClientPort(client_with_port);
+MIDIPortInfo* mma_get_port_info(char* client_with_port) {
+    ClientPort* cp = parse_client_port(client_with_port);
 
     snd_seq_t* seq;
     init_sequencer(&seq, NULL);
@@ -170,7 +170,7 @@ MIDIPortInfo* MMAlsa_GetPortInfo(char* client_with_port) {
     }
 }
 
-void MMAlsa_ClientDetails(MIDIClient* client) {
+void mma_client_details(MIDIClient* client) {
     char* type = "unknown";
     if (client->type == SND_SEQ_USER_CLIENT) {
         type = "user";
@@ -185,19 +185,19 @@ void MMAlsa_ClientDetails(MIDIClient* client) {
 
     for (int i = 0; i < client->num_ports; i++) {
         port = client->ports[i];
-        types = MMA_char_port_types(port->type);
+        types = mma_char_port_types(port->type);
         printf("[%d:%d] %s : %s (ch: %d): [%s: %s]\n", client->client_id,
                port->port_id, client->name, port->name, port->channels, type,
                types);
 
-        caps = MMA_char_port_capabilities(port->capability);
+        caps = mma_char_port_capabilities(port->capability);
         printf("    • %s\n", caps);
 
         printf("\n");
     }
 }
 
-MIDIClients* MMAlsa_GetClients(snd_seq_t* seq) {
+MIDIClients* mma_get_clients(snd_seq_t* seq) {
     bool created_seq = false;
     if (seq == NULL) {
         created_seq = true;

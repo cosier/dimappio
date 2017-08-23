@@ -8,15 +8,14 @@
 void print_usage() {
     printf("Usage: midi-mapper\n");
 
-    printf("  -m, --monitor=<id:port> Monitor a MIDI Client\n");
-    printf("  -s, --send=<note>       Send midi note to a specifc client\n");
-    printf("  -t, --target=<id:port>  Specify a target Midi Client\n");
-    printf(
-        "  -x, --source=<id:port>  Specify a Midi Client source for mapping\n");
     printf("  -r, --remap=<note:note> Remap a list (comma delimited) of "
            "note<>note\n");
+    printf("  -s, --send=<note>       Send midi note to a specifc client\n");
+    printf("  -t, --target=<id:port>  Specify a target Midi Client\n");
+    printf("  -x, --source=<id:port>  Specify a Midi Client source\n");
     printf("\n");
 
+    printf("  -m, --monitor           Monitor a MIDI Client\n");
     printf("  -l, --list     List all available midi clients\n");
     printf("  -z, --debug    Turn on debug mode\n");
     printf("\n");
@@ -58,7 +57,7 @@ bool verify_valid_midi_client(char* client) {
         return false;
     }
 
-    if (!MM_ClientExists(client)) {
+    if (!mm_client_exists(client)) {
         printf("Midi Client (%s) was not found or is no longer available.\n\n",
                client);
         printf("Try \"midi-mapper --list\" to list available Midi Clients.\n");
@@ -83,7 +82,7 @@ int main(int argc, char** argv) {
     char* send_note = NULL;
     char* mapping = NULL;
 
-    MappingDefs *mappings = NULL;
+    mm_mapping *mappings = NULL;
 
     // Specifying the expected options
     // The two options l and b expect numbers as argument
@@ -148,7 +147,7 @@ int main(int argc, char** argv) {
 
     // Flip global debug flag.
     if (debug) {
-        MM_DriverDebug();
+        mm_driver_debug();
     }
 
     // Version output and then exit.
@@ -165,7 +164,7 @@ int main(int argc, char** argv) {
 
     // List available midi client ports then exit.
     if (list) {
-        MM_ListClients();
+        mm_list_clients();
         exit(EXIT_SUCCESS);
     }
 
@@ -192,7 +191,7 @@ int main(int argc, char** argv) {
         char* target_client = "30";
         char* target_port = "0";
 
-        MM_SendMidiNote(target_client, target_port, send_note);
+        mm_send_midi_note(target_client, target_port, send_note);
         exit(EXIT_SUCCESS);
     }
 
@@ -206,7 +205,15 @@ int main(int argc, char** argv) {
                 exit(EXIT_FAILURE);
             }
         }
+
+        // Build mappings from a comma delimited string.
+        mappings = mm_mapping_from_list(mapping);
+
+        // TODO: optional, build mappings from a file (ie. yaml parser)
+    } else {
+        mappings = mm_build_mapping();
     }
+
 
     // Engage in monitor loop.
     // Uses a source to poll events from.
@@ -218,12 +225,12 @@ int main(int argc, char** argv) {
             requires_source_specified("monitor");
         }
 
-        MM_MonitorClient(source, mappings);
+        mm_monitor_client(source, mappings);
         exit(EXIT_SUCCESS);
     }
 
     // Kick off the application UI thread
-    /* MM_InterfaceStart(); */
+    /* mm_interface_start(); */
 
     print_usage();
     return 0;

@@ -1,7 +1,7 @@
 #include "utils.h"
 
 #ifdef __APPLE__
-char* CFStringRefToChars(CFStringRef string) {
+char* cf_string_ref_to_chars(CFStringRef string) {
     if (string == NULL) {
         return NULL;
     }
@@ -23,7 +23,7 @@ char* CFStringRefToChars(CFStringRef string) {
     return NULL;
 }
 
-CFStringRef CharToCFStringRef(char* c) {
+CFStringRef char_to_cf_string_ref(char* c) {
     return CFStringCreateWithCStringNoCopy(NULL, c, kCFStringEncodingUTF8,
                                            NULL);
 }
@@ -31,7 +31,7 @@ CFStringRef CharToCFStringRef(char* c) {
 #endif
 
 void pdebug(const char* format, ...) {
-    if (MM_driver_debug_mode) {
+    if (mm_driver_debug_mode) {
         va_list ap;
         va_start(ap, format);
         vfprintf(stdout, format, ap);

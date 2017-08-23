@@ -1,26 +1,26 @@
 #include "ui/interface.h"
 
-void uiStartup() {
+static void ui_startup() {
     /* initscr(); /\* Start curses mode 		  *\/ */
     /* printw("Midi Mapper\n"); */
     /* raw(); */
 }
 
-void uiShutdown() { /* endwin(); */
+static void ui_shutdown() { /* endwin(); */
 }
 
-void MM_InterfaceStart() {
-    uiStartup();
-    MM_CreateVirtualDevice("midi-mapper");
+void mm_interface_start() {
+    ui_startup();
+    mm_create_virtual_device("midi-mapper");
 
-    MIDIClients* clients = MM_GetClients(NULL);
+    MIDIClients* clients = mm_get_clients(NULL);
 
     if (clients->count > 0) {
         for (int i = 0; i < clients->count; ++i) {
-            MM_ClientDetails(clients->store[i]);
+            mm_client_details(clients->store[i]);
         }
 
-        /* MM_AttachListener(clients->store[0], &&MM_MIDIReadProc); */
+        /* mm_attach_listener(clients->store[0], &&MM_MIDIReadProc); */
 
     } else {
         printf("no midi devices available\n");
@@ -32,5 +32,5 @@ void MM_InterfaceStart() {
     /*   /\* loop = false; *\/ */
     /* } */
 
-    /* uiShutdown(); */
+    /* ui_shutdown(); */
 }

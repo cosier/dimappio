@@ -1,7 +1,7 @@
 #ifdef __linux__
 #include "midi/internals/alsa_raw_midi.h"
 
-void MMA_rawmidi_devices_on_card(snd_ctl_t* ctl, int card) {
+void mma_rawmidi_devices_on_card(snd_ctl_t* ctl, int card) {
     int device = -1;
     char name[32];
     int status;
@@ -22,7 +22,7 @@ void MMA_rawmidi_devices_on_card(snd_ctl_t* ctl, int card) {
             }
 
             if (device >= 0) {
-                MMA_rawmidi_subdevice_info(ctl, card, device);
+                mma_rawmidi_subdevice_info(ctl, card, device);
 
             } else {
                 /* printf("unable to open rawmidi for device: %s %d\n", */
@@ -32,7 +32,7 @@ void MMA_rawmidi_devices_on_card(snd_ctl_t* ctl, int card) {
     }
 }
 
-void MMA_rawmidi_subdevice_info(snd_ctl_t* ctl, int card, int device) {
+void mma_rawmidi_subdevice_info(snd_ctl_t* ctl, int card, int device) {
     pdebug("reading subdevice info");
     snd_rawmidi_info_t* info;
 

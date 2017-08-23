@@ -75,15 +75,15 @@ typedef struct MIDIPacketList {
     MidiPacket packet;
 } MIDIPacketList;
 
-Devices* MMAlsa_GetDevices();
-Device* MMAlsa_CreateVirtualDevice(char* name);
+Devices* mma_get_devices();
+Device* mma_create_virtual_device(char* name);
 
-MIDIClients* MMAlsa_GetClients(snd_seq_t* seq);
-MIDIPortInfo* MMAlsa_GetPortInfo(char* client_with_port);
+MIDIClients* mma_get_clients(snd_seq_t* seq);
+MIDIPortInfo* mma_get_port_info(char* client_with_port);
 
-void MMAlsa_ClientDetails(MIDIClient* client);
-bool MMAlsa_ClientExists(char* client);
-void MMAlsa_MonitorDevice(char* client_with_port, MappingDefs *mappings);
+void mma_client_details(MIDIClient* client);
+bool mma_client_exists(char* client);
+void mma_monitor_device(char* client_with_port, mm_mapping *mappings);
 
 static int init_sequencer(snd_seq_t** seq, char* name);
 static void process_event(snd_seq_event_t* event, snd_seq_t *seq, int seq_port);

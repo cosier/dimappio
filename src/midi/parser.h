@@ -12,4 +12,4 @@ typedef struct ClientPort {
     int port;
 } ClientPort;
 
-ClientPort* parseStringToClientPort(char* client_with_port);
+ClientPort* parse_client_port(char* client_with_port);
