@@ -62,7 +62,7 @@ Devices* mmc_get_devices() {
 }
 
 Device* mmc_create_virtual_device(char* cname) {
-    CFStringRef name = CharToCFStringRef(cname);
+    CFStringRef name = char_to_cf_string_ref(cname);
 
     MIDIClientRef client;
     MIDIEndpointRef endpoint;
