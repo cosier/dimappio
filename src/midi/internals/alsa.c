@@ -320,8 +320,13 @@ void MMAlsa_ClientDetails(MIDIClient* client) {
     for (int i = 0; i < client->num_ports; i++) {
         port = client->ports[i];
         types = char_port_types(port->type);
-        printf("[%d:%d]: %s (ch: %d): [%s: %s]\n", client->client_id,
-               port->port_id, port->name, port->channels, type, types);
+        printf("[%d:%d] %s : %s (ch: %d): [%s: %s]\n",
+               client->client_id,
+               port->port_id,
+               client->name,
+               port->name,
+               port->channels,
+               type, types);
 
         caps = char_port_capabilities(port->capability);
         printf("    • %s\n", caps);
