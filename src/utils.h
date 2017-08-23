@@ -4,6 +4,8 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 extern bool mm_driver_debug_mode;
 
@@ -12,6 +14,10 @@ void error(const char* format, ...);
 
 bool contains_bit(unsigned val, unsigned bitindex);
 
+int mm_tokenize(char* src, char* delim, char** result);
+
+//////////////////////////////////////////////////////////
+// HERE BE APPLES
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
 

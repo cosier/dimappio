@@ -71,18 +71,15 @@ bool verify_valid_midi_client(char* client) {
 int main(int argc, char** argv) {
     int opt = 0;
 
-    bool list = false,
-        version = false,
-        help = false,
-        monitor = false,
-        debug = false;
+    bool list = false, version = false, help = false, monitor = false,
+         debug = false;
 
     char* target = NULL;
     char* source = NULL;
     char* send_note = NULL;
-    char* mapping = NULL;
+    char* mapsrc = NULL;
 
-    mm_mapping *mappings = NULL;
+    mm_mapping* mapping = NULL;
 
     // Specifying the expected options
     // The two options l and b expect numbers as argument
@@ -136,7 +133,7 @@ int main(int argc, char** argv) {
             break;
 
         case 'r':
-            mapping = optarg;
+            mapsrc = optarg;
             break;
 
         default:
@@ -197,7 +194,7 @@ int main(int argc, char** argv) {
 
     // If mappings are provided, check for a valid target and source.
     // Build a MapDefinition struct from cli remap definition.
-    if (mapping != NULL) {
+    if (mapsrc != NULL) {
         if (source == NULL) {
             requires_source_specified("remap");
         } else {
@@ -207,13 +204,17 @@ int main(int argc, char** argv) {
         }
 
         // Build mappings from a comma delimited string.
-        mappings = mm_mapping_from_list(mapping);
+        mapping = mm_mapping_from_list(mapsrc);
 
         // TODO: optional, build mappings from a file (ie. yaml parser)
     } else {
-        mappings = mm_build_mapping();
+        mapping = mm_build_mapping();
     }
 
+    if (mapping == NULL) {
+        error("Invalid Mapping provided");
+        exit(EXIT_FAILURE);
+    }
 
     // Engage in monitor loop.
     // Uses a source to poll events from.
@@ -225,7 +226,7 @@ int main(int argc, char** argv) {
             requires_source_specified("monitor");
         }
 
-        mm_monitor_client(source, mappings);
+        mm_monitor_client(source, mapping);
         exit(EXIT_SUCCESS);
     }
 

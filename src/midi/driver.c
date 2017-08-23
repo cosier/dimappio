@@ -40,7 +40,7 @@ void mm_client_details(MIDIClient* client) {
 #endif
 }
 
-void mm_monitor_client(char* client_with_port, mm_mapping *mappings) {
+void mm_monitor_client(char* client_with_port, mm_mapping* mappings) {
 #ifdef __APPLE__
 #TODO : implement.
 #elif __linux__
@@ -57,8 +57,8 @@ void mm_list_clients() {
 }
 
 void mm_attach_listener(Device* dev,
-                       void (*func)(const MIDIPacketList* message, void* refcon,
-                                    void* connRefCon)) {
+                        void (*func)(const MIDIPacketList* message,
+                                     void* refcon, void* connRefCon)) {
     // TODO: implement
 }
 

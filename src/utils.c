@@ -51,3 +51,19 @@ void error(const char* format, ...) {
 bool contains_bit(unsigned val, unsigned bitindex) {
     return (val & (1 << bitindex)) != 0;
 }
+
+int mm_tokenize(char* src, char* delim, char** result) {
+    char* container = NULL;
+    char* token = NULL;
+    int i = 0;
+    do {
+        token = strtok_r(src, delim, &container);
+        src = NULL;
+        if (token != NULL) {
+            result[i] = strdup(token);
+            i++;
+        }
+    } while (token != NULL);
+
+    return i;
+}

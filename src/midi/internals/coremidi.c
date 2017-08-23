@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 void mm_midi_read_proc(const MIDIPacketList* pktlist, void* refCon,
-                             void* connRefCon) {
+                       void* connRefCon) {
 
     Device* dev = (Device*)refCon;
     printf("received midi: %s\n", dev->name);
@@ -15,8 +15,8 @@ void mmc_midi_notify_proc(const MIDINotification* message, void* refCon) {
 }
 
 void mmc_attach_listener(Device dev,
-                               void (*func)(const MIDINotification* message,
-                                            void* refCon)) {}
+                         void (*func)(const MIDINotification* message,
+                                      void* refCon)) {}
 
 Devices* mmc_get_devices() {
     int srcs = MIDIGetNumberOfSources();
@@ -76,7 +76,8 @@ Device* mmc_create_virtual_device(char* cname) {
     MIDIClientCreate(name, mm_midi_notify_proc, &dev, &client);
 
     MIDIOutputPortCreate(client, CFSTR("output"), output);
-    MIDIInputPortCreate(client, CFSTR("input"), mm_midi_read_proc, &dev, output);
+    MIDIInputPortCreate(client, CFSTR("input"), mm_midi_read_proc, &dev,
+                        output);
 
     MIDIDestinationCreate(client, name, mm_midi_read_proc, &dev, &endpoint);
     dev.endpoint = endpoint;

@@ -49,7 +49,7 @@ Devices* mma_get_devices() {
     return devices;
 }
 
-void mma_monitor_device(char* client_with_port, mm_mapping *mappings) {
+void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
     snd_seq_t* seq;
 
     int seq_id = init_sequencer(&seq, "midimap-monitor");
@@ -109,7 +109,7 @@ void mma_monitor_device(char* client_with_port, mm_mapping *mappings) {
     snd_seq_close(seq);
 }
 
-static void process_event(MIDIEvent* ev, snd_seq_t *seq, int seq_port) {
+static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port) {
     char note[] = "NOTE";
 
     printf("[%3d:%2d ] ", ev->source.client, ev->source.port);
@@ -127,9 +127,7 @@ static void process_event(MIDIEvent* ev, snd_seq_t *seq, int seq_port) {
         puts(mma_event_decoder(ev));
         break;
 
-    default: {
-        puts(mma_event_decoder(ev));
-    }
+    default: { puts(mma_event_decoder(ev)); }
     }
 
     // set event broadcast to subscribers
@@ -143,7 +141,6 @@ static void process_event(MIDIEvent* ev, snd_seq_t *seq, int seq_port) {
 
     // output event immediately
     snd_seq_event_output_direct(seq, ev);
-
 }
 
 bool mma_client_exists(char* client_with_port) {

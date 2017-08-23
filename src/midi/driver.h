@@ -19,11 +19,11 @@ Device* mm_create_virtual_device(char* name);
 Devices* mm_get_devices();
 MIDIClients* mm_get_clients();
 
-void mm_monitor_client(char* client_with_port, mm_mapping *mappings);
+void mm_monitor_client(char* client_with_port, mm_mapping* mappings);
 
 void mm_attach_listener(Device* dev,
-                       void (*func)(const MIDIPacketList* message, void* refCon,
-                                    void* connRefCon));
+                        void (*func)(const MIDIPacketList* message,
+                                     void* refCon, void* connRefCon));
 
 void mm_list_clients();
 void mm_client_details(MIDIClient* client);
