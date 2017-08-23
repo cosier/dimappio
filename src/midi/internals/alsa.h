@@ -9,6 +9,7 @@
 #include <sys/poll.h>
 
 #include "midi/parser.h"
+#include "midi/internals/alsa_raw_midi.h"
 #include "utils.h"
 
 typedef int32_t MIDIObjectRef;
@@ -82,14 +83,8 @@ void MMAlsa_ClientDetails(MIDIClient* client);
 bool MMAlsa_ClientExists(char* client);
 void MMAlsa_MonitorDevice(char* client_with_port);
 
-static void rawmidi_devices_on_card(snd_ctl_t* ctl, int card);
-static void rawmidi_subdevice_info(snd_ctl_t* ctl, int card, int device);
-
 static char* char_port_types(unsigned index);
 static char* char_port_capabilities(unsigned index);
-
-static int is_input(snd_ctl_t* ctl, int card, int device, int sub);
-static int is_output(snd_ctl_t* ctl, int card, int device, int sub);
 
 static void init_sequencer(snd_seq_t** seq, char* name);
 static void process_event(snd_seq_event_t* event);
