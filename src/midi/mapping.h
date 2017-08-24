@@ -9,6 +9,10 @@
 #define MAX_GROUPED_KEY_MAPS 16
 #define MAX_KEY_MAP_DSTS 16
 
+struct mm_key_map;
+struct mm_key_group;
+struct mm_mapping;
+
 /**
  * Container definition for each Key
  * that is mapped inside a mm_mapping struct.
@@ -22,10 +26,10 @@ typedef struct mm_key_map {
 
     // Array of related party members. All of which
     // must be present to initiate the key map.
-    int* party_group;
+    int* src_group;
 
     // Party array member size
-    int party_count;
+    int src_count;
 
     // Source key for this definition
     int key;
@@ -44,6 +48,12 @@ typedef struct mm_key_group {
     // Contains at least one mm_key_map
     mm_key_map** maps;
 
+    // Pointer back to the containing parent
+    struct mm_mapping* parent;
+
+    // track origin src key for this group;
+    int src;
+
 } mm_key_group;
 
 /**
@@ -55,24 +65,34 @@ typedef struct mm_mapping {
 
     // Preallocated, sparse array of key maps pointers.
     // Indexed by origin key and initialized to NULL.
-    mm_key_group** index;
+    struct mm_key_group** index;
     int group_count;
 
     // Array of key_map(s)
-    short* mapped;
+    struct mm_key_group** mapped;
 
     // Total key_map(s) in this mapping
-    short* mcount;
+    int count;
 
 } mm_mapping;
 
-void mm_mapping_dump(mm_mapping* mapping, char* container);
-
 mm_mapping* mm_build_mapping();
 mm_mapping* mm_mapping_from_list(char* list);
+void mm_mapping_dump(mm_mapping* mapping, char* buf);
+void mm_key_group_dump(mm_key_group* g, char* buf);
+void mm_key_map_dump(mm_key_map* k, char* buf);
 
-static mm_key_group* create_key_group(int src, int dst);
-static mm_key_map* create_key_map(int src, int dst);
-static void update_key_group(mm_key_group* group, int src, int dst);
+static void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
+                             int dst_count);
+
+static mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
+                                      char** dst_tokens, int src_count,
+                                      int dst_count);
+
+static mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
+                                  int src_count, int dst_count);
+
+static void update_key_group(mm_key_group* group, int src, char** src_tokens,
+                             char** dst_tokens, int src_count, int dst_count);
 
 #endif
