@@ -13,7 +13,7 @@ typedef struct Devices Devices;
 typedef struct Device Device;
 
 typedef struct MIDIClient MIDIClient;
-typedef struct MIDIClient MIDIClient;
+typedef struct MIDIClients MIDIClients;
 
 Device* mm_create_virtual_device(char* name);
 Devices* mm_get_devices();
