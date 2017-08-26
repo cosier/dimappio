@@ -72,7 +72,7 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
     struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
 
     mm_key_node* list = mm_key_node_head();
-    char *buf = malloc(sizeof(char*) * 512);
+    char* buf = malloc(sizeof(char*) * 512);
     for (;;) {
 
         // gather poll descriptors for this sequencer
@@ -101,8 +101,7 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
             snd_seq_free_event(event);
         } while (err > 0);
 
-        printf("\33[2K\r♬ %s: %s", buf,
-               mm_key_node_list(list));
+        printf("\33[2K\r♬ %s: %s", buf, mm_key_node_list(list));
 
         // clear string buffer view;
         buf[0] = 0;
@@ -116,7 +115,7 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
 }
 
 static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
-                          mm_key_node** tail, char *buf) {
+                          mm_key_node** tail, char* buf) {
     mm_key_node* node = NULL;
 
     switch (ev->type) {

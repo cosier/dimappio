@@ -30,9 +30,7 @@ CFStringRef char_to_cf_string_ref(char* c) {
 
 #endif
 
-void clearl() {
-   printf("\33[2K\r");
-}
+void clearl() { printf("\33[2K\r"); }
 
 void pdebug(const char* format, ...) {
     if (mm_driver_debug_mode) {

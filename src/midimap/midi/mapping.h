@@ -86,16 +86,15 @@ void mm_key_map_dump(mm_key_map* k, char* buf);
 mm_key_group* mm_get_key_group(mm_mapping* m, int src);
 
 void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
-                             int dst_count);
+                      int dst_count);
 
 mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
-                                      char** dst_tokens, int src_count,
-                                      int dst_count);
+                               char** dst_tokens, int src_count, int dst_count);
 
 mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
-                                  int src_count, int dst_count);
+                           int src_count, int dst_count);
 
 void update_key_group(mm_key_group* group, int src, char** src_tokens,
-                             char** dst_tokens, int src_count, int dst_count);
+                      char** dst_tokens, int src_count, int dst_count);
 
 #endif

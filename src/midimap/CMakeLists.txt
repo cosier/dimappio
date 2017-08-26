@@ -63,7 +63,7 @@ find_library( ncurses_lib ncurses )
 # Link Library support: libmidimap
 target_include_directories( midimap PUBLIC ./ )
 target_compile_definitions( midimap PUBLIC ${_midi_defs} ${_app_defs} )
-target_link_libraries( midimap ${_midi_libs} ${ncurses_lib} )
+target_link_libraries( midimap m ${_midi_libs} ${ncurses_lib} )
 
 # Cleanup after ourselves.
 unset( _midi_libs )

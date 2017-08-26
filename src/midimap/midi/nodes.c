@@ -9,7 +9,7 @@ mm_key_node* mm_key_node_create(int key) {
 }
 
 char* mm_key_node_list(mm_key_node* n) {
-    char *buf = malloc(sizeof(char *) * 128);
+    char* buf = malloc(sizeof(char*) * 128);
     mm_key_node* ptr = n->next;
     mm_key_node* last_ptr = NULL;
 
@@ -52,7 +52,7 @@ char* mm_key_node_list(mm_key_node* n) {
  * Search a list (singly linked list) for a given key
  */
 mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
-    mm_key_node *handle = *tail;
+    mm_key_node* handle = *tail;
 
     if (handle == NULL) {
         error("mm_key_node_search: handle is null, cannot possibly search for "
@@ -104,7 +104,7 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
 /**
  * Insert (append) a node onto a linked structure
  */
-void mm_key_node_insert(mm_key_node **tail, mm_key_node* node) {
+void mm_key_node_insert(mm_key_node** tail, mm_key_node* node) {
     // Set existing tail->next to be the new 'next' of
     // the node being appended to the end of the list.
     //
@@ -147,7 +147,8 @@ void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
     //         next = 0
     //   next->next = 30 # the next->next is circular! bad!
     if (n == next->next) {
-        /* printf("\n%p(%d):  - self_detected(%d)", *tail, (*tail)->key, n->key); */
+        /* printf("\n%p(%d):  - self_detected(%d)", *tail, (*tail)->key,
+         * n->key); */
         // assume next->next = head
         // ergo, assign head to itself (node len = 1)
         next->next = next;
@@ -159,7 +160,6 @@ void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
         free(n);
         return;
     }
-
 
     n->next = next->next;
     n->key = next->key;

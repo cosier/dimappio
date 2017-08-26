@@ -26,6 +26,6 @@ char* mm_key_node_list(mm_key_node* n);
 
 void mm_key_node_insert(mm_key_node** tail, mm_key_node* node);
 void mm_key_node_remove(mm_key_node** tail, mm_key_node* node);
-mm_key_node *mm_key_node_search(mm_key_node** tail, int key);
+mm_key_node* mm_key_node_search(mm_key_node** tail, int key);
 
 #endif
