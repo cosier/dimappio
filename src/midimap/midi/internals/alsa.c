@@ -65,21 +65,17 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
     int seq_port = create_port(seq);
     connect_ports(seq, cp);
 
-    printf("Monitoring: %s [%d:%d]\n\n\n", pname, addr->client, addr->port);
+    printf("Monitoring: %s [%d:%d]\n\n", pname, addr->client, addr->port);
 
     int err;
     int pfds_num = snd_seq_poll_descriptors_count(seq, POLLIN);
     struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
 
-    mm_key_node** index = malloc(sizeof(mm_key_node*) * 128);
-    for (int i = 0; i < 128; ++i) {
-        index[i] = NULL;
-    }
-
-    char* buf = malloc(sizeof(char*) * 256);
-    mm_key_node* list = mm_key_node_create(0);
-
-    list->next = list;
+    mm_key_node* list = mm_key_node_head();
+    mm_key_node_list(list);
+    /* mm_key_node_insert(&list, mm_key_node_create(0)); */
+    /* mm_key_node_insert(&list, mm_key_node_create(11)); */
+    /* mm_key_node_insert(&list, mm_key_node_create(12)); */
 
     for (;;) {
 
@@ -103,17 +99,18 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
             }
 
             if (event) {
-                process_event(event, seq, seq_port, list);
+                printf("\33[2K\r");
+                process_event(event, seq, seq_port, &list);
             }
 
             snd_seq_free_event(event);
         } while (err > 0);
 
         // print active keys
-        printf("active: %s\n", mm_key_node_list(buf, list));
+        mm_key_node_list(list);
+        /* printf("active: %s\n", mm_key_node_list(list)); */
         /* printf("[%d -> %d]\n", list->key, list->next->key); */
 
-        printf("\n");
 
         if (stop) {
             break;
@@ -124,29 +121,34 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
 }
 
 static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
-                          mm_key_node* tail) {
+                          mm_key_node** tail) {
     char buf[90];
-    sprintf(buf, "[%3d:%2d ] ", ev->source.client, ev->source.port);
+    /* sprintf(buf, "\n[%3d:%2d ] ", ev->source.client, ev->source.port); */
     mm_key_node* node = NULL;
 
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
-        sprintf(buf, "%s NOTE: %d", buf, ev->data.note.note);
+        /* sprintf(buf, "%s NOTE: %d (on) ", buf, ev->data.note.note); */
 
-        // Create the new node and set it up
-        node = mm_key_node_create(ev->data.note.note);
+        node = NULL;
+        node = mm_key_node_search(tail, ev->data.note.note);
 
-        // Insert the new into the list by adjoining with the tail.
-        mm_key_node_insert(&tail, node);
+        if (node == NULL) {
+            // Create the new node and set it up
+            node = mm_key_node_create(ev->data.note.note);
+
+            // Insert the new into the list by adjoining with the tail.
+            mm_key_node_insert(tail, node);
+        }
 
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
-        sprintf(buf, "%s NOTE: %d", buf, ev->data.note.note);
-        node = mm_key_node_search(&tail, ev->data.note.note);
+        /* sprintf(buf, "%s NOTE: %d (off) ", buf, ev->data.note.note); */
+        node = mm_key_node_search(tail, ev->data.note.note);
 
         if (node != NULL) {
-            mm_key_node_remove(&tail, node);
+            mm_key_node_remove(tail, node);
         }
 
         break;
@@ -168,7 +170,8 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
     // output event immediately
     snd_seq_event_output_direct(seq, ev);
 
-    printf("%s\n", buf);
+    /* printf("\33[2K\r %s", buf); */
+    /* printf("%s", buf); */
 }
 
 bool mma_client_exists(char* client_with_port) {

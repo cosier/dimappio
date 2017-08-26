@@ -25,8 +25,7 @@ void insertion_test() {
     mm_key_node *tail = create_list(3);
 
     // enough allocation to hold the resulting string.
-    char *list = malloc(sizeof(char *) * 128);
-    mm_key_node_list(list, tail);
+    char *list = mm_key_node_list(tail);
 
     printf("list(%lu): %s\n", strlen(list), list);
     char *expected = "0, 1, 2, 3, ";
@@ -39,7 +38,7 @@ void removal_test() {
     test_header("removal");
 
     mm_key_node *tail = create_list(10);
-    printf("created list: %s\n\n", mm_key_node_list(NULL, tail));
+    printf("created list: %s\n\n", mm_key_node_list(tail));
 
     printf("attempting to search!\n");
     mm_key_node *node = mm_key_node_search(&tail, 5);
@@ -47,8 +46,7 @@ void removal_test() {
     // Test for node removal
     mm_key_node_remove(&tail, node);
 
-    char *list = malloc(sizeof(char *) * 128);
-    mm_key_node_list(list, tail);
+    char *list = mm_key_node_list(tail);
 
     printf("list(%lu): \n%s\n\n", strlen(list), list);
     char *expected = "0, 1, 2, 3, 4, 6, 7, 8, 9, 10, ";
@@ -72,6 +70,28 @@ void search_test() {
     assert(get_5->key == 5);
 }
 
+void single_trigger_test() {
+    test_header("single_trigger");
+    mm_key_node *tail = create_list(1);
+    mm_key_node *node = mm_key_node_search(&tail, 1);
+    printf("created list: %s\n\n", mm_key_node_list(tail));
+    assert(node != NULL);
+
+    mm_key_node_remove(&tail, node);
+    printf("updated list: %s\n\n", mm_key_node_list(tail));
+
+    printf("node = %d\n", node->key);
+    printf("tail = %d\n", tail->key);
+
+    mm_key_node_insert(&tail, mm_key_node_create(3));
+    printf("updated list: %s\n\n", mm_key_node_list(tail));
+
+    mm_key_node_insert(&tail, mm_key_node_create(3));
+    printf("updated list: %s\n\n", mm_key_node_list(tail));
+
+    printf("\n\n");
+}
+
 /**
  * Testing the linkage of a mm_key_node's singly linked list.
  */
@@ -81,6 +101,7 @@ int main(int argc, char **argv) {
     insertion_test();
     removal_test();
     search_test();
+    single_trigger_test();
 
     printf("\n-----------------------------------\n%s",
            "key_nodes test successful\n\n");
