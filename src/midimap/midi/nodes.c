@@ -34,11 +34,13 @@ char* mm_key_node_list(mm_key_node* n) {
         }
 
         if (ptr != NULL) {
+            char *note = mm_note_print(mm_midi_to_note(ptr->key, true));
+            
             if (first) {
                 first = false;
-                sprintf(buf, "%d", ptr->key);
+                sprintf(buf, "%s", note);
             } else {
-                sprintf(buf, "%s, %d", buf, ptr->key);
+                sprintf(buf, "%s, %s", buf, note);
             }
             ptr = ptr->next;
         }

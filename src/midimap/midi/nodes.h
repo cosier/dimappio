@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "midi/mapping.h"
+#include "midi/parser.h"
 #include "utils.h"
 
 /**
