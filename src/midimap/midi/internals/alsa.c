@@ -111,13 +111,8 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
 
         // print active keys
         printf("active: %s\n", mm_key_node_list(buf, list));
-        printf("[%d -> %d]\n", list->key, list->next->key);
+        /* printf("[%d -> %d]\n", list->key, list->next->key); */
 
-        for (int i = 0; i < 128; ++i) {
-            if (index[i] != NULL) {
-                printf("[%d -> %d]\n", index[i]->key, index[i]->next->key);
-            }
-        }
         printf("\n");
 
         if (stop) {

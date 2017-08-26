@@ -9,10 +9,15 @@ mm_key_node* mm_key_node_create(int key) {
 }
 
 char* mm_key_node_list(char* buf, mm_key_node* n) {
+    if (buf == NULL) {
+        buf = malloc(sizeof(char *) * 256);
+    }
+
     mm_key_node* ptr = n->next;
 
-    if (ptr->next == n) {
+    if (ptr == n) {
         sprintf(buf, "[]");
+        return buf;
     }
 
     do {
@@ -47,16 +52,17 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
 
     int start = handle->key;
     mm_key_node* it = handle->next;
+    if (it == NULL) {
+        error("mm_key_node_search: invalid list iterator");
+        return NULL;
+    }
 
     if (it->key == key) {
         return it;
     }
 
-    if (it == NULL) {
-        error("mm_key_node_search: invalid list iterator");
-        return NULL;
-    }
-    printf("looking for: %d\n", key);
+    printf("starting at (%d), looking for: %d\n", it->key, key);
+
     while (it->key != key) {
         printf("searching on: %d\n", it->key);
         if (it->key == key) {
@@ -76,7 +82,11 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
         }
     }
 
-    error("mm_key_node_search: search was unsuccessful :(");
+    if (it->key == key) {
+        return it;
+    }
+
+    error("mm_key_node_search: search for (%d) was unsuccessful", key);
     return NULL;
 }
 
@@ -97,7 +107,7 @@ void mm_key_node_insert(mm_key_node** tail, mm_key_node* node) {
     // Set the old tail to point to the new node tail
     (*tail)->next = node;
 
-    pdebug("mm_key_node inserted %d -> %d", (*tail)->key, (*tail)->next->key);
+    /* pdebug("mm_key_node inserted %d -> %d", (*tail)->key, (*tail)->next->key); */
 
     // Turn a pointer to a pointer into a pointer,
     // then make that pointer point to node, which is a pointer.
@@ -129,5 +139,8 @@ void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
         *tail = n;
     }
 
-    free(next);
+    if (next != NULL) {
+        printf("freeing: %d\n", next->key);
+        free(next);
+    }
 }
