@@ -126,7 +126,7 @@ mm_mapping* mm_mapping_from_list(char* list) {
     return mapping;
 }
 
-static void update_key_group(mm_key_group* group, int src, char** src_tokens,
+void update_key_group(mm_key_group* group, int src, char** src_tokens,
                              char** dst_tokens, int src_count, int dst_count) {
     group->maps[group->count] =
         create_key_map(src, src_tokens, dst_tokens, src_count, dst_count);
@@ -135,7 +135,7 @@ static void update_key_group(mm_key_group* group, int src, char** src_tokens,
     group->count++;
 }
 
-static mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
+mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
                                       char** dst_tokens, int src_count,
                                       int dst_count) {
 
@@ -158,7 +158,7 @@ static mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
     return group;
 }
 
-static mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
+mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
                                   int src_count, int dst_count) {
 
     mm_key_map* km = malloc(sizeof(mm_key_map));

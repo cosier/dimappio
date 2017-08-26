@@ -78,23 +78,24 @@ typedef struct mm_mapping {
 
 mm_mapping* mm_build_mapping();
 mm_mapping* mm_mapping_from_list(char* list);
+
 void mm_mapping_dump(mm_mapping* mapping, char* buf);
 void mm_key_group_dump(mm_key_group* g, char* buf);
 void mm_key_map_dump(mm_key_map* k, char* buf);
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src);
 
-static void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
+void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
                              int dst_count);
 
-static mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
+mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
                                       char** dst_tokens, int src_count,
                                       int dst_count);
 
-static mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
+mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
                                   int src_count, int dst_count);
 
-static void update_key_group(mm_key_group* group, int src, char** src_tokens,
+void update_key_group(mm_key_group* group, int src, char** src_tokens,
                              char** dst_tokens, int src_count, int dst_count);
 
 #endif
