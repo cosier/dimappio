@@ -66,11 +66,21 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
     int seq_port = create_port(seq);
     connect_ports(seq, cp);
 
-    printf("Monitoring: %s [%d:%d]\n", pname, addr->client, addr->port);
+    printf("Monitoring: %s [%d:%d]\n\n\n", pname, addr->client, addr->port);
 
     int err;
     int pfds_num = snd_seq_poll_descriptors_count(seq, POLLIN);
     struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
+
+    mm_key_node** index = malloc(sizeof(mm_key_node*) * 128);
+    for (int i = 0; i < 128; ++i) {
+        index[i] = NULL;
+    }
+
+    char* buf = malloc(sizeof(char*) * 256);
+    mm_key_node* list = mm_key_node_create();
+    list->next = list;
+    list->key = -1;
 
     for (;;) {
 
@@ -80,7 +90,7 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
 
         // wait on sequencer events
         if (poll(pfds, pfds_num, -1) < 0) {
-            error("poll failed");
+            /* error("poll exit"); */
             break;
         }
 
@@ -94,12 +104,22 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
             }
 
             if (event) {
-                process_event(event, seq, seq_port);
+                process_event(event, seq, seq_port, index, list);
             }
 
             snd_seq_free_event(event);
-
         } while (err > 0);
+
+        // print active keys
+        /* printf("active: %s\n", mm_key_node_list(buf, list)); */
+        printf("[%d -> %d]\n", list->key, list->next->key);
+
+        for (int i = 0; i < 128; ++i) {
+          if (index[i] != NULL) {
+            printf("[%d -> %d]\n", index[i]->key, index[i]->next->key);
+          }
+        }
+        printf("\n");
 
         if (stop) {
             break;
@@ -109,25 +129,38 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
     snd_seq_close(seq);
 }
 
-static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port) {
-    char note[] = "NOTE";
-
-    printf("[%3d:%2d ] ", ev->source.client, ev->source.port);
+static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
+                          mm_key_node** index, mm_key_node* tail) {
+    char buf[90];
+    sprintf(buf, "[%3d:%2d ] ", ev->source.client, ev->source.port);
+    mm_key_node *node = NULL;
 
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
-        puts(mma_event_decoder(ev));
+        sprintf(buf, "%s NOTE: %d", buf, ev->data.note.note);
+
+        // Create the new node and set it up
+        node = mm_key_node_create();
+        node->key = ev->data.note.note;
+
+        // Insert the new into the list by adjoining with the tail.
+        mm_key_node_insert(index, &tail, node);
+
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
-        puts(mma_event_decoder(ev));
+        sprintf(buf, "%s NOTE: %d", buf, ev->data.note.note);
+        node = index[ev->data.note.note];
+
+        if (node != NULL) {
+            mm_key_node_remove(index, node);
+        }
+
         break;
 
     case SND_SEQ_EVENT_CONTROLLER:
         puts(mma_event_decoder(ev));
         break;
-
-    default: { puts(mma_event_decoder(ev)); }
     }
 
     // set event broadcast to subscribers
@@ -141,6 +174,8 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port) {
 
     // output event immediately
     snd_seq_event_output_direct(seq, ev);
+
+    printf("%s\n", buf);
 }
 
 bool mma_client_exists(char* client_with_port) {
@@ -297,11 +332,17 @@ static int init_sequencer(snd_seq_t** seq, char* name) {
 }
 
 static int create_port(snd_seq_t* seq) {
-    int port_result = snd_seq_create_simple_port(
-        seq, "midi-mapper",
-        SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE |
-            SND_SEQ_PORT_CAP_SUBS_READ | SND_SEQ_PORT_CAP_SUBS_WRITE,
-        SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
+    unsigned int port_caps = SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE |
+                             SND_SEQ_PORT_CAP_SUBS_READ |
+                             SND_SEQ_PORT_CAP_SUBS_WRITE;
+
+    unsigned int port_type =
+        SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION |
+        SND_SEQ_PORT_TYPE_MIDI_GM | SND_SEQ_PORT_TYPE_HARDWARE;
+
+    int port_result =
+        snd_seq_create_simple_port(seq, "midimap-port", port_caps, port_type);
+
     return port_result;
 }
 

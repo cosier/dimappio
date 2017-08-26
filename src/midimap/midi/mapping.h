@@ -82,6 +82,8 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf);
 void mm_key_group_dump(mm_key_group* g, char* buf);
 void mm_key_map_dump(mm_key_map* k, char* buf);
 
+mm_key_group* mm_get_key_group(mm_mapping* m, int src);
+
 static void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
                              int dst_count);
 

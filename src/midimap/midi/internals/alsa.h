@@ -11,6 +11,7 @@
 #include "midi/internals/alsa_decoder.h"
 #include "midi/internals/alsa_raw_midi.h"
 #include "midi/mapping.h"
+#include "midi/nodes.h"
 #include "midi/parser.h"
 #include "utils.h"
 
@@ -86,7 +87,8 @@ bool mma_client_exists(char* client);
 void mma_monitor_device(char* client_with_port, mm_mapping* mappings);
 
 static int init_sequencer(snd_seq_t** seq, char* name);
-static void process_event(snd_seq_event_t* event, snd_seq_t* seq, int seq_port);
+static void process_event(snd_seq_event_t* event, snd_seq_t* seq, int seq_port,
+                          mm_key_node** index, mm_key_node* n);
 
 static int create_port(snd_seq_t* seq);
 static void connect_ports(snd_seq_t* seq, const ClientPort* cp);

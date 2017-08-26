@@ -216,6 +216,11 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
+    char* buf = malloc(sizeof(char) * 128 * mapping->count);
+    mm_mapping_dump(mapping, buf);
+
+    pdebug("%s", buf);
+
     // Engage in monitor loop.
     // Uses a source to poll events from.
     //

@@ -12,20 +12,18 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
     sprintf(buf, "Mapping -> \n");
     for (int i = 0; i < mapping->group_count; ++i) {
         mm_key_group_dump(mapping->mapped[i], buf);
-
     }
 }
 
-void mm_key_group_dump(mm_key_group *g, char *buf) {
+void mm_key_group_dump(mm_key_group* g, char* buf) {
     /* sprintf(buf, "%s\n  %d. group(%d)", buf, i, g->src); */
     for (int i = 0; i < g->count; ++i) {
         mm_key_map_dump(g->maps[i], buf);
     }
 }
 
-void mm_key_map_dump(mm_key_map *k, char *buf) {
-    sprintf(buf, "%s\n - key(%d) ", buf,
-            k->key);
+void mm_key_map_dump(mm_key_map* k, char* buf) {
+    sprintf(buf, "%s\n - key(%d) ", buf, k->key);
     if (k->src_count > 1) {
         sprintf(buf, "%s [%d: -> ", buf, k->src_count);
         for (int isrc = 0; isrc < k->src_count; ++isrc) {
@@ -38,8 +36,9 @@ void mm_key_map_dump(mm_key_map *k, char *buf) {
     for (int di = 0; di < k->dst_count; ++di) {
         sprintf(buf, "%s   • dst: %d\n", buf, k->dst_group[di]);
     }
-
 }
+
+mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }
 
 /**
  * Build and Initialize a Mapping object on the heap.
@@ -110,30 +109,20 @@ mm_mapping* mm_mapping_from_list(char* list) {
         }
 
         for (int isrc = 0; isrc < src_count; ++isrc) {
-            printf("src_tokens[0] = %s\n", src_tokens[0]);
             src = atoi(src_tokens[isrc]);
             if (mapping->index[src] == NULL) {
-                pdebug("creating new key_group_map");
-
-                // Finally, stash our new group into the index
+                // Stash our new group into the index
                 mapping->index[src] = create_key_group(
                     mapping, src, src_tokens, dst_tokens, src_count, dst_count);
                 mapping->group_count++;
 
             } else {
-                pdebug("updating existing key_group_map");
                 update_key_group(mapping->index[src], src, src_tokens,
                                  dst_tokens, src_count, dst_count);
             }
         }
     }
 
-    char* buf = malloc(sizeof(char) * 128 * kt_count);
-    mm_mapping_dump(mapping, buf);
-
-    pdebug("%s", buf);
-
-    exit(EXIT_FAILURE);
     return mapping;
 }
 

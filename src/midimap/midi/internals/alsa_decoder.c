@@ -6,163 +6,163 @@ char* mma_event_decoder(MIDIEvent* ev) {
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
         if (ev->data.note.velocity)
-            sprintf(buf, "Note on                %2d, note %d, velocity %d\n",
+            sprintf(buf, "Note on                %2d, note %d, velocity %d",
                     ev->data.note.channel, ev->data.note.note,
                     ev->data.note.velocity);
         else
-            sprintf(buf, "Note off               %2d, note %d\n",
+            sprintf(buf, "Note off               %2d, note %d",
                     ev->data.note.channel, ev->data.note.note);
         break;
     case SND_SEQ_EVENT_NOTEOFF:
-        sprintf(buf, "Note off               %2d, note %d, velocity %d\n",
+        sprintf(buf, "Note off               %2d, note %d, velocity %d",
                 ev->data.note.channel, ev->data.note.note,
                 ev->data.note.velocity);
         break;
     case SND_SEQ_EVENT_KEYPRESS:
-        sprintf(buf, "Polyphonic aftertouch  %2d, note %d, value %d\n",
+        sprintf(buf, "Polyphonic aftertouch  %2d, note %d, value %d",
                 ev->data.note.channel, ev->data.note.note,
                 ev->data.note.velocity);
         break;
     case SND_SEQ_EVENT_CONTROLLER:
-        sprintf(buf, "Control change         %2d, controller %d, value %d\n",
+        sprintf(buf, "Control change         %2d, controller %d, value %d",
                 ev->data.control.channel, ev->data.control.param,
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_PGMCHANGE:
-        sprintf(buf, "Program change         %2d, program %d\n",
+        sprintf(buf, "Program change         %2d, program %d",
                 ev->data.control.channel, ev->data.control.value);
         break;
     case SND_SEQ_EVENT_CHANPRESS:
-        sprintf(buf, "Channel aftertouch     %2d, value %d\n",
+        sprintf(buf, "Channel aftertouch     %2d, value %d",
                 ev->data.control.channel, ev->data.control.value);
         break;
     case SND_SEQ_EVENT_PITCHBEND:
-        sprintf(buf, "Pitch bend             %2d, value %d\n",
+        sprintf(buf, "Pitch bend             %2d, value %d",
                 ev->data.control.channel, ev->data.control.value);
         break;
     case SND_SEQ_EVENT_CONTROL14:
-        sprintf(buf, "Control change         %2d, controller %d, value %5d\n",
+        sprintf(buf, "Control change         %2d, controller %d, value %5d",
                 ev->data.control.channel, ev->data.control.param,
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_NONREGPARAM:
-        sprintf(buf, "Non-reg. parameter     %2d, parameter %d, value %d\n",
+        sprintf(buf, "Non-reg. parameter     %2d, parameter %d, value %d",
                 ev->data.control.channel, ev->data.control.param,
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_REGPARAM:
-        sprintf(buf, "Reg. parameter         %2d, parameter %d, value %d\n",
+        sprintf(buf, "Reg. parameter         %2d, parameter %d, value %d",
                 ev->data.control.channel, ev->data.control.param,
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_SONGPOS:
-        sprintf(buf, "Song position pointer      value %d\n",
+        sprintf(buf, "Song position pointer      value %d",
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_SONGSEL:
-        sprintf(buf, "Song select                value %d\n",
+        sprintf(buf, "Song select                value %d",
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_QFRAME:
-        sprintf(buf, "MTC quarter frame          %02xh\n",
+        sprintf(buf, "MTC quarter frame          %02xh",
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_TIMESIGN:
         // XXX how is this encoded?
-        sprintf(buf, "SMF time signature         (%#010x)\n",
+        sprintf(buf, "SMF time signature         (%#010x)",
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_KEYSIGN:
         // XXX how is this encoded?
-        sprintf(buf, "SMF key signature          (%#010x)\n",
+        sprintf(buf, "SMF key signature          (%#010x)",
                 ev->data.control.value);
         break;
     case SND_SEQ_EVENT_START:
         if (ev->source.client == SND_SEQ_CLIENT_SYSTEM &&
             ev->source.port == SND_SEQ_PORT_SYSTEM_TIMER)
-            sprintf(buf, "Queue start                queue %d\n",
+            sprintf(buf, "Queue start                queue %d",
                     ev->data.queue.queue);
         else
-            sprintf(buf, "Start\n");
+            sprintf(buf, "Start");
         break;
     case SND_SEQ_EVENT_CONTINUE:
         if (ev->source.client == SND_SEQ_CLIENT_SYSTEM &&
             ev->source.port == SND_SEQ_PORT_SYSTEM_TIMER)
-            sprintf(buf, "Queue continue             queue %d\n",
+            sprintf(buf, "Queue continue             queue %d",
                     ev->data.queue.queue);
         else
-            sprintf(buf, "Continue\n");
+            sprintf(buf, "Continue");
         break;
     case SND_SEQ_EVENT_STOP:
         if (ev->source.client == SND_SEQ_CLIENT_SYSTEM &&
             ev->source.port == SND_SEQ_PORT_SYSTEM_TIMER)
-            sprintf(buf, "Queue stop                 queue %d\n",
+            sprintf(buf, "Queue stop                 queue %d",
                     ev->data.queue.queue);
         else
-            sprintf(buf, "Stop\n");
+            sprintf(buf, "Stop");
         break;
     case SND_SEQ_EVENT_SETPOS_TICK:
-        sprintf(buf, "Set tick queue pos.        queue %d\n",
+        sprintf(buf, "Set tick queue pos.        queue %d",
                 ev->data.queue.queue);
         break;
     case SND_SEQ_EVENT_SETPOS_TIME:
-        sprintf(buf, "Set rt queue pos.          queue %d\n",
+        sprintf(buf, "Set rt queue pos.          queue %d",
                 ev->data.queue.queue);
         break;
     case SND_SEQ_EVENT_TEMPO:
-        sprintf(buf, "Set queue tempo            queue %d\n",
+        sprintf(buf, "Set queue tempo            queue %d",
                 ev->data.queue.queue);
         break;
     case SND_SEQ_EVENT_CLOCK:
-        sprintf(buf, "Clock\n");
+        sprintf(buf, "Clock");
         break;
     case SND_SEQ_EVENT_TICK:
-        sprintf(buf, "Tick\n");
+        sprintf(buf, "Tick");
         break;
     case SND_SEQ_EVENT_QUEUE_SKEW:
-        sprintf(buf, "Queue timer skew           queue %d\n",
+        sprintf(buf, "Queue timer skew           queue %d",
                 ev->data.queue.queue);
         break;
     case SND_SEQ_EVENT_TUNE_REQUEST:
-        sprintf(buf, "Tune request\n");
+        sprintf(buf, "Tune request");
         break;
     case SND_SEQ_EVENT_RESET:
-        sprintf(buf, "Reset\n");
+        sprintf(buf, "Reset");
         break;
     case SND_SEQ_EVENT_SENSING:
-        sprintf(buf, "Active Sensing\n");
+        sprintf(buf, "Active Sensing");
         break;
     case SND_SEQ_EVENT_CLIENT_START:
-        sprintf(buf, "Client start               client %d\n",
+        sprintf(buf, "Client start               client %d",
                 ev->data.addr.client);
         break;
     case SND_SEQ_EVENT_CLIENT_EXIT:
-        sprintf(buf, "Client exit                client %d\n",
+        sprintf(buf, "Client exit                client %d",
                 ev->data.addr.client);
         break;
     case SND_SEQ_EVENT_CLIENT_CHANGE:
-        sprintf(buf, "Client changed             client %d\n",
+        sprintf(buf, "Client changed             client %d",
                 ev->data.addr.client);
         break;
     case SND_SEQ_EVENT_PORT_START:
-        sprintf(buf, "Port start                 %d:%d\n", ev->data.addr.client,
+        sprintf(buf, "Port start                 %d:%d", ev->data.addr.client,
                 ev->data.addr.port);
         break;
     case SND_SEQ_EVENT_PORT_EXIT:
-        sprintf(buf, "Port exit                  %d:%d\n", ev->data.addr.client,
+        sprintf(buf, "Port exit                  %d:%d", ev->data.addr.client,
                 ev->data.addr.port);
         break;
     case SND_SEQ_EVENT_PORT_CHANGE:
-        sprintf(buf, "Port changed               %d:%d\n", ev->data.addr.client,
+        sprintf(buf, "Port changed               %d:%d", ev->data.addr.client,
                 ev->data.addr.port);
         break;
     case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-        sprintf(buf, "Port subscribed            %d:%d -> %d:%d\n",
+        sprintf(buf, "Port subscribed            %d:%d -> %d:%d",
                 ev->data.connect.sender.client, ev->data.connect.sender.port,
                 ev->data.connect.dest.client, ev->data.connect.dest.port);
         break;
     case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-        sprintf(buf, "Port unsubscribed          %d:%d -> %d:%d\n",
+        sprintf(buf, "Port unsubscribed          %d:%d -> %d:%d",
                 ev->data.connect.sender.client, ev->data.connect.sender.port,
                 ev->data.connect.dest.client, ev->data.connect.dest.port);
         break;
@@ -171,10 +171,10 @@ char* mma_event_decoder(MIDIEvent* ev) {
         sprintf(buf, "System exclusive          ");
         for (i = 0; i < ev->data.ext.len; ++i)
             sprintf(buf, " %02X", ((unsigned char*)ev->data.ext.ptr)[i]);
-        sprintf(buf, "\n");
+        /* sprintf(buf, "\n"); */
     } break;
     default:
-        sprintf(buf, "Event type %d\n", ev->type);
+        sprintf(buf, "Event type %d", ev->type);
     }
     return buf;
 }
