@@ -14,7 +14,11 @@ char* mm_key_node_list(mm_key_node* n) {
     mm_key_node* last_ptr = NULL;
 
     if (ptr == n) {
-        sprintf(buf, "%d", ptr->key);
+        if (ptr->key >= 0) {
+            sprintf(buf, "%d", ptr->key);
+        } else {
+            buf[0] = 0;
+        }
         return buf;
     }
 
@@ -34,13 +38,15 @@ char* mm_key_node_list(mm_key_node* n) {
         }
 
         if (ptr != NULL) {
-            char *note = mm_note_print(mm_midi_to_note(ptr->key, true));
-            
-            if (first) {
-                first = false;
-                sprintf(buf, "%s", note);
-            } else {
-                sprintf(buf, "%s, %s", buf, note);
+            if (ptr->key >= 0){
+                char *note = mm_note_print(mm_midi_to_note(ptr->key, true));
+
+                if (first) {
+                    first = false;
+                    sprintf(buf, "%s", note);
+                } else {
+                    sprintf(buf, "%s, %s", buf, note);
+                }
             }
             ptr = ptr->next;
         }
@@ -128,7 +134,7 @@ void mm_key_node_insert(mm_key_node** tail, mm_key_node* node) {
 mm_key_node* mm_key_node_head() {
     mm_key_node* head = malloc(sizeof(mm_key_node));
     head->next = head;
-    head->key = 0;
+    head->key = -1;
     return head;
 }
 
