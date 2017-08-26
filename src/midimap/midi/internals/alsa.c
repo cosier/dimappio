@@ -73,6 +73,8 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
 
     mm_key_node* list = mm_key_node_head();
     char* buf = malloc(sizeof(char*) * 512);
+    buf[0] = 0;
+
     for (;;) {
 
         // gather poll descriptors for this sequencer
@@ -120,7 +122,7 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
 
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
-        sprintf(buf, "%s NOTE: %d (on) ", buf, ev->data.note.note);
+        sprintf(buf, "%s NOTE:", buf);
 
         node = NULL;
         node = mm_key_node_search(tail, ev->data.note.note);
@@ -136,7 +138,7 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
-        sprintf(buf, "%s NOTE: %d (off) ", buf, ev->data.note.note);
+        sprintf(buf, "%s NOTE:", buf);
         node = mm_key_node_search(tail, ev->data.note.note);
 
         if (node != NULL) {
