@@ -75,10 +75,7 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
         return it;
     }
 
-    /* printf("starting at (%d), looking for: %d\n", it->key, key); */
-
     while (it->key != key) {
-        /* printf("searching on: %d\n", it->key); */
         if (it->key == key) {
             return it;
         }
@@ -108,7 +105,6 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
  * Insert (append) a node onto a linked structure
  */
 void mm_key_node_insert(mm_key_node **tail, mm_key_node* node) {
-    /* printf("\n\n%p(%d)\" mm_key_node_insert(%d)", *tail, (*tail)->key, node->key); */
     // Set existing tail->next to be the new 'next' of
     // the node being appended to the end of the list.
     //
@@ -121,13 +117,10 @@ void mm_key_node_insert(mm_key_node **tail, mm_key_node* node) {
     // Set the old tail to point to the new node tail
     (*tail)->next = node;
 
-    /* pdebug("mm_key_node inserted %d -> %d", (*tail)->key, (*tail)->next->key); */
-
     // Turn a pointer to a pointer into a pointer,
     // then make that pointer point to node, which is a pointer.
     /* printf("\ntail update: %p = %p", *tail, node); */
     *tail = node;
-    /* printf("\ntail done:   %p = %p\n", *tail, node); */
 }
 
 mm_key_node* mm_key_node_head() {
@@ -145,7 +138,6 @@ mm_key_node* mm_key_node_head() {
  */
 void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
     mm_key_node* next = n->next;
-    /* printf("\n%p(%d): mm_key_node_remove(%d)", *tail, (*tail)->key, n->key); */
 
     // Catch attempt to remove last node of a 2 node chain.
     // ie. [0, 30]
@@ -164,7 +156,7 @@ void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
         *tail = next;
 
         // free myself and exit
-        /* free(n); */
+        free(n);
         return;
     }
 
@@ -179,7 +171,6 @@ void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
     }
 
     if (next != NULL) {
-        /* printf("freeing: %d\n", next->key); */
-        /* free(next); */
+        free(next);
     }
 }
