@@ -5,7 +5,7 @@ project(midimap)
 set( CMAKE_C_STANDARD 11 )
 
 # Treat all warnings as intense errors.
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wno-unused-function")
 add_definitions( -D__STDC_WANT_LIB_EXT1__=1 )
 
 # Glob'n all C source + headers under src/

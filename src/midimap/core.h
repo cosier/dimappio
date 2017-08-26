@@ -4,6 +4,7 @@
 #include "midi/driver.h"
 #include "midi/globals.h"
 #include "midi/mapping.h"
+#include "midi/parser.h"
 
 #include "ui/interface.h"
 #endif

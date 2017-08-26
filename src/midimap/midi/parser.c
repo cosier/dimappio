@@ -1,5 +1,16 @@
 #include "midi/parser.h"
 
+mm_note *mm_midi_to_note(int midi) {
+    mm_note *n = malloc(sizeof(mm_note));
+    n->midi = midi;
+
+    return n;
+}
+
+char *mm_note_print(mm_note *n) {
+    return "Ab0";
+}
+
 ClientPort* parse_client_port(char* client_with_port) {
     ClientPort* cp = malloc(sizeof(ClientPort));
     cp->client = 0;
