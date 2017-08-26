@@ -15,14 +15,17 @@
  * while presence in of itself represents active state.
  */
 typedef struct mm_key_node {
-    struct mm_key_node *next;
-    mm_key_map *map;
+    struct mm_key_node* next;
+    mm_key_map* map;
     int key;
 } mm_key_node;
 
-mm_key_node* mm_key_node_create();
-char* mm_key_node_list(char *buf, mm_key_node *n);
+mm_key_node* mm_key_node_head();
+mm_key_node* mm_key_node_create(int key);
+char* mm_key_node_list(char* buf, mm_key_node* n);
 
-void mm_key_node_remove(mm_key_node **index, mm_key_node *n);
-void mm_key_node_insert(mm_key_node **index, mm_key_node **tail, mm_key_node *n);
+void mm_key_node_insert(mm_key_node** tail, mm_key_node* node);
+void mm_key_node_remove(mm_key_node** tail, mm_key_node* node);
+mm_key_node *mm_key_node_search(mm_key_node** tail, int key);
+
 #endif

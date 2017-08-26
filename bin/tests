@@ -5,6 +5,7 @@ ROOT=$( cd $DIR/../ && pwd )
 
 if [[ "$1" == "clean" ]]; then
   rm -rf $ROOT/build
+  shift;
 fi
 
 mkdir -p $ROOT/build && cd $ROOT/build;
@@ -17,5 +18,18 @@ if [[ ! -f $ROOT/build/Makefile ]]; then
 fi
 
 clear
+
 make -j4
+
+if [ ! $? -eq 0 ]; then
+  exit 1
+fi
+
+make test
+
+if [[ "$1" != "" ]]; then
+  echo "Running test: $1"
+  echo
+  $ROOT/build/tests/$1
+fi
 

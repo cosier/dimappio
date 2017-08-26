@@ -18,7 +18,7 @@ if [[ $1 == "build" ]]; then
   fi
 fi
 
-if [ ! -f $ROOT/build/midi-mapper ]; then
+if [ ! -f $ROOT/build/src/mapper/midi-mapper ]; then
   $BIN/build
 
   if [[ $? != 0 ]]; then
@@ -27,7 +27,7 @@ if [ ! -f $ROOT/build/midi-mapper ]; then
   fi
 fi
 
-CMD="$ROOT/build/midi-mapper $@"
+CMD="$ROOT/build/src/mapper/midi-mapper $@"
 echo $CMD
 echo
 $CMD

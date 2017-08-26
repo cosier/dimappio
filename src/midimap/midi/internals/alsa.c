@@ -14,8 +14,7 @@ static volatile sig_atomic_t stop = 0;
 static void sighandler() { stop = 1; }
 
 Device* mma_create_virtual_device(char* name) {
-    /* printw("Creating virtual device: alsa\n"); */
-    Device* dev;
+    Device* dev = NULL;
     return dev;
 }
 
@@ -49,7 +48,7 @@ Devices* mma_get_devices() {
     return devices;
 }
 
-void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
+void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
     snd_seq_t* seq;
 
     int seq_id = init_sequencer(&seq, "midimap-monitor");
@@ -78,9 +77,9 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
     }
 
     char* buf = malloc(sizeof(char*) * 256);
-    mm_key_node* list = mm_key_node_create();
+    mm_key_node* list = mm_key_node_create(0);
+
     list->next = list;
-    list->key = -1;
 
     for (;;) {
 
@@ -104,20 +103,20 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
             }
 
             if (event) {
-                process_event(event, seq, seq_port, index, list);
+                process_event(event, seq, seq_port, list);
             }
 
             snd_seq_free_event(event);
         } while (err > 0);
 
         // print active keys
-        /* printf("active: %s\n", mm_key_node_list(buf, list)); */
+        printf("active: %s\n", mm_key_node_list(buf, list));
         printf("[%d -> %d]\n", list->key, list->next->key);
 
         for (int i = 0; i < 128; ++i) {
-          if (index[i] != NULL) {
-            printf("[%d -> %d]\n", index[i]->key, index[i]->next->key);
-          }
+            if (index[i] != NULL) {
+                printf("[%d -> %d]\n", index[i]->key, index[i]->next->key);
+            }
         }
         printf("\n");
 
@@ -130,30 +129,29 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings) {
 }
 
 static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
-                          mm_key_node** index, mm_key_node* tail) {
+                          mm_key_node* tail) {
     char buf[90];
     sprintf(buf, "[%3d:%2d ] ", ev->source.client, ev->source.port);
-    mm_key_node *node = NULL;
+    mm_key_node* node = NULL;
 
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
         sprintf(buf, "%s NOTE: %d", buf, ev->data.note.note);
 
         // Create the new node and set it up
-        node = mm_key_node_create();
-        node->key = ev->data.note.note;
+        node = mm_key_node_create(ev->data.note.note);
 
         // Insert the new into the list by adjoining with the tail.
-        mm_key_node_insert(index, &tail, node);
+        mm_key_node_insert(&tail, node);
 
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
         sprintf(buf, "%s NOTE: %d", buf, ev->data.note.note);
-        node = index[ev->data.note.note];
+        node = mm_key_node_search(&tail, ev->data.note.note);
 
         if (node != NULL) {
-            mm_key_node_remove(index, node);
+            mm_key_node_remove(&tail, node);
         }
 
         break;
