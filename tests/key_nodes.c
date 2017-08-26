@@ -28,10 +28,9 @@ void insertion_test() {
     char *list = mm_key_node_list(tail);
 
     printf("list(%lu): %s\n", strlen(list), list);
-    char *expected = "0, 1, 2, 3, ";
+    char *expected = "0, 1, 2, 3";
     // List should appear as expected, all nodes lined up.
     assert(strcmp(expected, list) == 0);
-
 }
 
 void removal_test() {
@@ -49,7 +48,7 @@ void removal_test() {
     char *list = mm_key_node_list(tail);
 
     printf("list(%lu): \n%s\n\n", strlen(list), list);
-    char *expected = "0, 1, 2, 3, 4, 6, 7, 8, 9, 10, ";
+    char *expected = "0, 1, 2, 3, 4, 6, 7, 8, 9, 10";
 
     // List should be missing the second node (#20)
     // not including the initial head (0).

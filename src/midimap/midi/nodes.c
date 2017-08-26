@@ -13,10 +13,8 @@ char* mm_key_node_list(mm_key_node* n) {
     mm_key_node* ptr = n->next;
     mm_key_node* last_ptr = NULL;
 
-    /* printf("\n%p(%d): mm_key_node_list(%d)", n, n->key, n->key); */
-
     if (ptr == n) {
-        printf("%d", ptr->key);
+        sprintf(buf, "%d", ptr->key);
         return buf;
     }
 
@@ -26,7 +24,6 @@ char* mm_key_node_list(mm_key_node* n) {
     }
 
     bool first = true;
-    int safety = 0;
     sprintf(buf, "[]");
 
     do {
@@ -36,22 +33,18 @@ char* mm_key_node_list(mm_key_node* n) {
             last_ptr = ptr;
         }
 
-        ++safety;
-        if (safety > 32) {
-            break;
-        }
-
         if (ptr != NULL) {
             if (first) {
                 first = false;
-                printf("%d", ptr->key);
+                sprintf(buf, "%d", ptr->key);
             } else {
-                printf(", %d", ptr->key);
+                sprintf(buf, "%s, %d", buf, ptr->key);
             }
             ptr = ptr->next;
         }
 
     } while (ptr != n->next);
+
     return buf;
 }
 
