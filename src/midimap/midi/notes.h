@@ -27,7 +27,7 @@ typedef struct mm_note {
 mm_note_participation* mm_note_participation_create();
 
 void mm_note_participation_insert(mm_note_participation* p,
-    mm_note_participation_list *list);
+                                  mm_note_participation_list* list);
 
 mm_note_participation_list*
 mm_note_participation_pending_list(mm_note_participation* p, int midi);

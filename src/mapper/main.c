@@ -185,10 +185,9 @@ int main(int argc, char** argv) {
             requires_target_specified("send");
         }
 
-        char* target_client = "30";
-        char* target_port = "0";
+        ClientPort* cp = parse_client_port(target);
+        mm_send_midi_note(cp->client, cp->port, send_note);
 
-        mm_send_midi_note(target_client, target_port, send_note);
         exit(EXIT_SUCCESS);
     }
 

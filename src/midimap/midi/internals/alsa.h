@@ -86,15 +86,24 @@ void mma_client_details(MIDIClient* client);
 bool mma_client_exists(char* client);
 void mma_monitor_device(char* client_with_port, mm_mapping* mappings);
 
+void mma_send_midi_note(int client, int port, char* note);
+
 static int init_sequencer(snd_seq_t** seq, char* name);
 static void process_event(snd_seq_event_t* event, snd_seq_t* seq, int seq_port,
                           mm_key_node** tail);
 
 static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* event);
+static void send_midi(snd_seq_t* seq, int port, int midi, bool on);
+static void send_event_to_client_port(snd_seq_t* seq, int client, int port,
+                                     snd_seq_event_t* ev);
 
 static int create_port(snd_seq_t* seq);
 static void connect_ports(snd_seq_t* seq, const ClientPort* cp);
 static void check_snd(char* desc, int err);
 
+static void trigger_mapping(snd_seq_t* seq, int seq_port,
+                            snd_seq_event_t* event, int dsts_count, int* dsts);
+static void release_mapping(snd_seq_t* seq, int seq_port,
+                            snd_seq_event_t* event, int dsts_count, int* dsts);
 #endif
 #endif

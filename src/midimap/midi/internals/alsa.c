@@ -13,209 +13,6 @@ static volatile sig_atomic_t stop = 0;
  */
 static void sighandler() { stop = 1; }
 
-Device* mma_create_virtual_device(char* name) {
-    Device* dev = NULL;
-    return dev;
-}
-
-Devices* mma_get_devices() {
-    Devices* devices = malloc(sizeof(Devices));
-    devices->count = 0;
-
-    int card = -1;
-    int status = 0;
-
-    if ((status = snd_card_next(&card)) < 0) {
-        error("Failed to retrieve midi data: %s", snd_strerror(status));
-    }
-
-    if (card < 0) {
-        error("No available sound cards found");
-        return devices;
-    }
-
-    snd_ctl_t* ctl;
-
-    while (card >= 0) {
-        mma_rawmidi_devices_on_card(ctl, card);
-
-        if ((status = snd_card_next(&card)) < 0) {
-            error("No other cards available: %s", snd_strerror(status));
-            break;
-        }
-    }
-
-    return devices;
-}
-
-static void release_mapping(snd_seq_t *seq, int seq_port, int dsts_count, int* dsts) {
-    char *release_info = malloc(sizeof(char *) * 32);
-    release_info[0] = 0;
-
-    for (int i = 0; i < dsts_count; i ++) {
-        mm_note *note = mm_midi_to_note(dsts[i], true);
-        sprintf(release_info, "%s%s%d(%d), ", release_info, note->letter, note->oct, dsts[i]);
-        free(note);
-    }
-
-    printf("\nRelease: %s", release_info);
-}
-
-void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
-    snd_seq_t* seq;
-
-    init_sequencer(&seq, "midimap-monitor");
-    snd_seq_nonblock(seq, 1);
-
-    signal(SIGINT, sighandler);
-    signal(SIGTERM, sighandler);
-
-    const MIDIPortInfo* pinfo = mma_get_port_info(client_with_port);
-    const MIDIAddr* addr = snd_seq_port_info_get_addr(pinfo);
-    const char* pname = snd_seq_port_info_get_name(pinfo);
-    const ClientPort* cp = parse_client_port(client_with_port);
-
-    int seq_port = create_port(seq);
-    connect_ports(seq, cp);
-
-    printf("Monitoring: %s [%d:%d]\n\n", pname, addr->client, addr->port);
-
-    int err;
-    int pfds_num = snd_seq_poll_descriptors_count(seq, POLLIN);
-    struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
-
-    mm_key_node* list = mm_key_node_head();
-
-    int line_count = 0;
-
-    for (;;) {
-
-        // gather poll descriptors for this sequencer
-        snd_seq_poll_descriptors(seq, pfds, pfds_num, POLLIN);
-        fflush(stdout);
-
-        // wait on sequencer events
-        if (poll(pfds, pfds_num, -1) < 0) {
-            /* error("poll exit"); */
-            break;
-        }
-
-        // iterate over available events
-        do {
-            MIDIEvent* event;
-            err = snd_seq_event_input(seq, &event);
-
-            if (err < 0) {
-                break;
-            }
-
-            if (event) {
-                int type = event->type;
-                int midi = event->data.note.note;
-                bool on = (type == SND_SEQ_EVENT_NOTEON);
-
-                process_event(event, seq, seq_port, &list);
-                /* printf("\33[2A \33[2K\r"); */
-                mm_clear(line_count);
-                line_count = 0;
-
-                printf("♬  NOTE: %s", mm_key_node_list(list));
-                line_count++;
-
-                if (mapping->index[midi] != NULL) {
-                    int* dsts;
-                    mm_key_group* grp = mapping->index[midi];
-                    int dsts_count = mm_mapping_group_get_dsts(&dsts, grp);
-
-                    char* dst_str = malloc(sizeof(char*) * (dsts_count * 32));
-                    dst_str[0] = 0;
-
-                    for (int i = 0; i < dsts_count; ++i) {
-                        int dst_midi = dsts[i];
-                        mm_note* note = mm_midi_to_note(dst_midi, true);
-                        sprintf(dst_str, "%s%s%d(%d), ", dst_str, note->letter,
-                                note->oct, dst_midi);
-                    }
-
-                    if (on) {
-                        printf("\nMapping: %s", dst_str);
-                        line_count++;
-                    } else {
-                        release_mapping(seq, seq_port, dsts_count, dsts);
-                        line_count++;
-                    }
-
-                    free(dst_str);
-                    free(dsts);
-                }
-
-                printf("\n");
-            }
-
-            snd_seq_free_event(event);
-        } while (err > 0);
-
-        if (stop) {
-            break;
-        }
-    }
-
-    snd_seq_close(seq);
-}
-
-static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
-                          mm_key_node** tail) {
-    mm_key_node* node = NULL;
-    int midi = ev->data.note.note;
-
-    switch (ev->type) {
-    case SND_SEQ_EVENT_NOTEON:
-
-        node = NULL;
-        node = mm_key_node_search(tail, ev->data.note.note);
-
-        if (node == NULL) {
-            // Create the new node and set it up
-            node = mm_key_node_create(midi);
-
-            // Insert the new into the list by adjoining with the tail.
-            mm_key_node_insert(tail, node);
-        }
-
-        break;
-
-    case SND_SEQ_EVENT_NOTEOFF:
-        node = mm_key_node_search(tail, midi);
-
-        if (node != NULL) {
-            mm_key_node_remove(tail, node);
-        }
-
-        break;
-
-    case SND_SEQ_EVENT_CONTROLLER:
-        /* puts(mma_event_decoder(ev)); */
-        break;
-    }
-
-    send_event(seq, seq_port, ev);
-}
-
-static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* ev) {
-
-    // set event broadcast to subscribers
-    snd_seq_ev_set_subs(ev);
-
-    // set output to direct
-    snd_seq_ev_set_direct(ev);
-
-    // set event source
-    snd_seq_ev_set_source(ev, port);
-
-    // output event immediately
-    snd_seq_event_output_direct(seq, ev);
-}
-
 bool mma_client_exists(char* client_with_port) {
     return (mma_get_port_info(client_with_port) != NULL);
 }
@@ -352,6 +149,269 @@ MIDIClients* mma_get_clients(snd_seq_t* seq) {
 
     return clients;
 }
+
+Device* mma_create_virtual_device(char* name) {
+    Device* dev = NULL;
+    return dev;
+}
+
+Devices* mma_get_devices() {
+    Devices* devices = malloc(sizeof(Devices));
+    devices->count = 0;
+
+    int card = -1;
+    int status = 0;
+
+    if ((status = snd_card_next(&card)) < 0) {
+        error("Failed to retrieve midi data: %s", snd_strerror(status));
+    }
+
+    if (card < 0) {
+        error("No available sound cards found");
+        return devices;
+    }
+
+    snd_ctl_t* ctl;
+
+    while (card >= 0) {
+        mma_rawmidi_devices_on_card(ctl, card);
+
+        if ((status = snd_card_next(&card)) < 0) {
+            error("No other cards available: %s", snd_strerror(status));
+            break;
+        }
+    }
+
+    return devices;
+}
+
+void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {    snd_seq_t* seq;
+
+    init_sequencer(&seq, "midimap-monitor");
+    snd_seq_nonblock(seq, 1);
+
+    signal(SIGINT, sighandler);
+    signal(SIGTERM, sighandler);
+
+    const MIDIPortInfo* pinfo = mma_get_port_info(client_with_port);
+    const MIDIAddr* addr = snd_seq_port_info_get_addr(pinfo);
+    const char* pname = snd_seq_port_info_get_name(pinfo);
+    const ClientPort* cp = parse_client_port(client_with_port);
+
+    int seq_port = create_port(seq);
+    connect_ports(seq, cp);
+
+    printf("Monitoring: %s [%d:%d]\n\n", pname, addr->client, addr->port);
+
+    int err;
+    int pfds_num = snd_seq_poll_descriptors_count(seq, POLLIN);
+    struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
+
+    mm_key_node* list = mm_key_node_head();
+
+    int line_count = 0;
+
+    for (;;) {
+
+        // gather poll descriptors for this sequencer
+        snd_seq_poll_descriptors(seq, pfds, pfds_num, POLLIN);
+        fflush(stdout);
+
+        // wait on sequencer events
+        if (poll(pfds, pfds_num, -1) < 0) {
+            /* error("poll exit"); */
+            break;
+        }
+
+        // iterate over available events
+        do {
+            MIDIEvent* event;
+            err = snd_seq_event_input(seq, &event);
+
+            if (err < 0) {
+                break;
+            }
+
+            if (event) {
+                int type = event->type;
+                int midi = event->data.note.note;
+                bool on = (type == SND_SEQ_EVENT_NOTEON);
+
+                process_event(event, seq, seq_port, &list);
+                /* printf("\33[2A \33[2K\r"); */
+                mm_clear(line_count);
+                line_count = 0;
+
+                printf("♬  NOTE: %s", mm_key_node_list(list));
+                line_count++;
+
+                if (mapping->index[midi] != NULL) {
+                    int* dsts;
+                    mm_key_group* grp = mapping->index[midi];
+                    int dsts_count = mm_mapping_group_get_dsts(&dsts, grp);
+
+                    char* dst_str = malloc(sizeof(char*) * (dsts_count * 32));
+                    dst_str[0] = 0;
+
+                    for (int i = 0; i < dsts_count; ++i) {
+                        int dst_midi = dsts[i];
+                        mm_note* note = mm_midi_to_note(dst_midi, true);
+                        sprintf(dst_str, "%s%s%d(%d), ", dst_str, note->letter,
+                                note->oct, dst_midi);
+                    }
+
+                    if (on) {
+                        printf("\nMapping: %s", dst_str);
+                        line_count++;
+
+                        trigger_mapping(seq, seq_port, event, dsts_count, dsts);
+                    } else {
+                        release_mapping(seq, seq_port, event, dsts_count, dsts);
+                        line_count++;
+                    }
+                    line_count++;
+
+                    free(dst_str);
+                    free(dsts);
+                }
+
+                printf("\n");
+            }
+
+            send_event(seq, seq_port, event);
+
+        } while (err > 0);
+
+        if (stop) {
+            break;
+        }
+    }
+
+    snd_seq_close(seq);
+}
+
+void mma_send_midi_note(int client, int port, char* note) {
+    snd_seq_t* seq = NULL;
+    init_sequencer(&seq, "direct-send");
+
+    int midi = atoi(note);
+    snd_seq_event_t* event = malloc(sizeof(snd_seq_event_t));
+
+    snd_seq_ev_set_noteon(event, 1, midi, 127);
+
+    send_event_to_client_port(seq, client, port, event);
+}
+
+
+static void send_midi(snd_seq_t* seq, int port, int midi, bool on) {
+    snd_seq_event_t* event = malloc(sizeof(snd_seq_event_t*));
+
+    if (on) {
+        snd_seq_ev_set_noteoff(event, 1, midi, 127);
+    } else {
+        snd_seq_ev_set_noteon(event, 1, midi, 127);
+    }
+
+    send_event(seq, port, event);
+}
+
+static void send_event_to_client_port(snd_seq_t* seq, int client, int port,
+                                     snd_seq_event_t* ev) {
+    printf("\nsend_event_to_client_port: %d:%d (midi:%d)\n", client, port, ev->data.note.note);
+
+    // set event broadcast to subscribers
+    snd_seq_ev_set_dest(ev, client, port);
+
+    // set output to direct
+    snd_seq_ev_set_direct(ev);
+
+    // output event immediately
+    snd_seq_event_output(seq, ev);
+    snd_seq_drain_output(seq);
+
+    snd_seq_free_event(ev);
+}
+
+static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* ev) {
+    printf("\nsend_event: %d", ev->data.note.note);
+
+    snd_seq_ev_set_subs(ev);
+
+    // set output to direct
+    snd_seq_ev_set_direct(ev);
+
+    // set event source
+    snd_seq_ev_set_source(ev, port);
+
+    // output event immediately
+    snd_seq_event_output_direct(seq, ev);
+    snd_seq_drain_output(seq);
+
+    snd_seq_free_event(ev);
+}
+
+static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
+                          mm_key_node** tail) {
+    mm_key_node* node = NULL;
+    int midi = ev->data.note.note;
+
+    switch (ev->type) {
+    case SND_SEQ_EVENT_NOTEON:
+
+        node = NULL;
+        node = mm_key_node_search(tail, ev->data.note.note);
+
+        if (node == NULL) {
+            // Create the new node and set it up
+            node = mm_key_node_create(midi);
+
+            // Insert the new into the list by adjoining with the tail.
+            mm_key_node_insert(tail, node);
+        }
+
+        break;
+
+    case SND_SEQ_EVENT_NOTEOFF:
+        node = mm_key_node_search(tail, midi);
+
+        if (node != NULL) {
+            mm_key_node_remove(tail, node);
+        }
+
+        break;
+
+    case SND_SEQ_EVENT_CONTROLLER:
+        /* puts(mma_event_decoder(ev)); */
+        break;
+    }
+
+    send_event(seq, seq_port, ev);
+}
+
+static void trigger_mapping(snd_seq_t* seq, int seq_port, snd_seq_event_t* ev,
+                            int dsts_count, int* dsts) {
+    for (int i = 0; i < dsts_count; i++) {
+        send_midi(seq, seq_port, dsts[i], true);
+    }
+}
+
+static void release_mapping(snd_seq_t* seq, int seq_port, snd_seq_event_t* ev,
+                            int dsts_count, int* dsts) {
+    char* release_info = malloc(sizeof(char*) * 32);
+    release_info[0] = 0;
+
+    for (int i = 0; i < dsts_count; i++) {
+        mm_note* note = mm_midi_to_note(dsts[i], true);
+        send_midi(seq, seq_port, dsts[i], false);
+
+        sprintf(release_info, "%s%s%d(%d), ", release_info, note->letter,
+                note->oct, dsts[i]);
+        free(note);
+    }
+
+    printf("\nRelease: %s", release_info);
+}
+
 
 static int init_sequencer(snd_seq_t** seq, char* name) {
     /* snd_seq_t* seq; */
