@@ -22,8 +22,10 @@ mm_note* mm_midi_to_note(int midi, bool sharp) {
     return n;
 }
 
+int mm_tone_to_note(char* tone) {}
+
 char* mm_note_print(mm_note* n) {
-    char *buf = malloc(sizeof(char *) * 16);
+    char* buf = malloc(sizeof(char*) * 16);
     sprintf(buf, "%s%d", n->letter, n->oct);
     return buf;
 }

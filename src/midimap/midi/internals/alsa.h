@@ -88,10 +88,13 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mappings);
 
 static int init_sequencer(snd_seq_t** seq, char* name);
 static void process_event(snd_seq_event_t* event, snd_seq_t* seq, int seq_port,
-                          mm_key_node** tail, char* buf);
+                          mm_key_node** tail);
+
+static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* event);
 
 static int create_port(snd_seq_t* seq);
 static void connect_ports(snd_seq_t* seq, const ClientPort* cp);
 static void check_snd(char* desc, int err);
+
 #endif
 #endif

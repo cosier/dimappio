@@ -11,7 +11,9 @@ extern bool mm_driver_debug_mode;
 
 void pdebug(const char* format, ...);
 void error(const char* format, ...);
+void mm_clear(int lines);
 
+int mm_count_lines(char* input);
 bool contains_bit(unsigned val, unsigned bitindex);
 
 int mm_tokenize(char* src, char* delim, char** result);

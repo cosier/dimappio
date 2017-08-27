@@ -38,8 +38,8 @@ char* mm_key_node_list(mm_key_node* n) {
         }
 
         if (ptr != NULL) {
-            if (ptr->key >= 0){
-                char *note = mm_note_print(mm_midi_to_note(ptr->key, true));
+            if (ptr->key >= 0) {
+                char* note = mm_note_print(mm_midi_to_note(ptr->key, true));
 
                 if (first) {
                     first = false;

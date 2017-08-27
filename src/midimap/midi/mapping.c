@@ -61,6 +61,21 @@ mm_mapping* mm_build_mapping() {
     return mapping;
 }
 
+int mm_mapping_group_get_dsts(int** res, mm_key_group* grp) {
+    int entries = 0;
+    for (int i = 0; i < grp->count; ++i) {
+        mm_key_map* map = grp->maps[i];
+        *res = malloc(sizeof(int) * map->dst_count);
+        for (int k = 0; k < map->dst_count; ++k) {
+            int val = map->dst_group[k];
+            (*res)[k] = val;
+            ++entries;
+        }
+    }
+
+    return entries;
+}
+
 /**
  * Builds a complete mapping from a string of characters.
  * Char* list is delimited to form a list of key mappings for parsing.

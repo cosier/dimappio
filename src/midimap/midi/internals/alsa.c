@@ -48,6 +48,19 @@ Devices* mma_get_devices() {
     return devices;
 }
 
+static void release_mapping(snd_seq_t *seq, int seq_port, int dsts_count, int* dsts) {
+    char *release_info = malloc(sizeof(char *) * 32);
+    release_info[0] = 0;
+
+    for (int i = 0; i < dsts_count; i ++) {
+        mm_note *note = mm_midi_to_note(dsts[i], true);
+        sprintf(release_info, "%s%s%d(%d), ", release_info, note->letter, note->oct, dsts[i]);
+        free(note);
+    }
+
+    printf("\nRelease: %s", release_info);
+}
+
 void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
     snd_seq_t* seq;
 
@@ -72,8 +85,8 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
     struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
 
     mm_key_node* list = mm_key_node_head();
-    char* buf = malloc(sizeof(char*) * 512);
-    buf[0] = 0;
+
+    int line_count = 0;
 
     for (;;) {
 
@@ -97,16 +110,50 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
             }
 
             if (event) {
-                process_event(event, seq, seq_port, &list, buf);
+                int type = event->type;
+                int midi = event->data.note.note;
+                bool on = (type == SND_SEQ_EVENT_NOTEON);
+
+                process_event(event, seq, seq_port, &list);
+                /* printf("\33[2A \33[2K\r"); */
+                mm_clear(line_count);
+                line_count = 0;
+
+                printf("♬  NOTE: %s", mm_key_node_list(list));
+                line_count++;
+
+                if (mapping->index[midi] != NULL) {
+                    int* dsts;
+                    mm_key_group* grp = mapping->index[midi];
+                    int dsts_count = mm_mapping_group_get_dsts(&dsts, grp);
+
+                    char* dst_str = malloc(sizeof(char*) * (dsts_count * 32));
+                    dst_str[0] = 0;
+
+                    for (int i = 0; i < dsts_count; ++i) {
+                        int dst_midi = dsts[i];
+                        mm_note* note = mm_midi_to_note(dst_midi, true);
+                        sprintf(dst_str, "%s%s%d(%d), ", dst_str, note->letter,
+                                note->oct, dst_midi);
+                    }
+
+                    if (on) {
+                        printf("\nMapping: %s", dst_str);
+                        line_count++;
+                    } else {
+                        release_mapping(seq, seq_port, dsts_count, dsts);
+                        line_count++;
+                    }
+
+                    free(dst_str);
+                    free(dsts);
+                }
+
+                printf("\n");
             }
 
             snd_seq_free_event(event);
         } while (err > 0);
-
-        printf("\33[2K\r♬ %s: %s", buf, mm_key_node_list(list));
-
-        // clear string buffer view;
-        buf[0] = 0;
 
         if (stop) {
             break;
@@ -117,19 +164,19 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
 }
 
 static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
-                          mm_key_node** tail, char* buf) {
+                          mm_key_node** tail) {
     mm_key_node* node = NULL;
+    int midi = ev->data.note.note;
 
     switch (ev->type) {
     case SND_SEQ_EVENT_NOTEON:
-        sprintf(buf, "%s NOTE:", buf);
 
         node = NULL;
         node = mm_key_node_search(tail, ev->data.note.note);
 
         if (node == NULL) {
             // Create the new node and set it up
-            node = mm_key_node_create(ev->data.note.note);
+            node = mm_key_node_create(midi);
 
             // Insert the new into the list by adjoining with the tail.
             mm_key_node_insert(tail, node);
@@ -138,8 +185,7 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
         break;
 
     case SND_SEQ_EVENT_NOTEOFF:
-        sprintf(buf, "%s NOTE:", buf);
-        node = mm_key_node_search(tail, ev->data.note.note);
+        node = mm_key_node_search(tail, midi);
 
         if (node != NULL) {
             mm_key_node_remove(tail, node);
@@ -148,9 +194,14 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
         break;
 
     case SND_SEQ_EVENT_CONTROLLER:
-        puts(mma_event_decoder(ev));
+        /* puts(mma_event_decoder(ev)); */
         break;
     }
+
+    send_event(seq, seq_port, ev);
+}
+
+static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* ev) {
 
     // set event broadcast to subscribers
     snd_seq_ev_set_subs(ev);
@@ -159,7 +210,7 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
     snd_seq_ev_set_direct(ev);
 
     // set event source
-    snd_seq_ev_set_source(ev, seq_port);
+    snd_seq_ev_set_source(ev, port);
 
     // output event immediately
     snd_seq_event_output_direct(seq, ev);

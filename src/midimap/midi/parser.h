@@ -4,10 +4,11 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #endif
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
+#include "midi/notes.h"
 #include "utils.h"
 
 typedef struct ClientPort {
@@ -15,17 +16,9 @@ typedef struct ClientPort {
     int port;
 } ClientPort;
 
-typedef enum Accent { SHARP, FLAT } Accent;
-
-typedef struct mm_note {
-    const char* letter;
-    Accent acc;
-    int midi;
-    int oct;
-} mm_note;
-
 ClientPort* parse_client_port(char* client_with_port);
 mm_note* mm_midi_to_note(int midi, bool sharp);
 char* mm_note_print(mm_note* n);
+int mm_tone_to_note(char* tone);
 
 #endif

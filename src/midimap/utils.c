@@ -30,7 +30,25 @@ CFStringRef char_to_cf_string_ref(char* c) {
 
 #endif
 
-void clearl() { printf("\33[2K\r"); }
+int mm_count_lines(char* input) {
+    int i = 0;
+    int lines = 1;
+    while (input[i] != '\0') {
+        ++i;
+        if (input[i] == '\n') {
+            lines++;
+        }
+    }
+    return lines;
+}
+
+void mm_clear(int lines) {
+    for (int i = 0; i < lines; ++i) {
+        printf("\33[2K\r");
+        printf("\33[1A\r");
+        printf("\33[2K\r");
+    }
+}
 
 void pdebug(const char* format, ...) {
     if (mm_driver_debug_mode) {
