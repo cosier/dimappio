@@ -28,7 +28,7 @@ void insertion_test() {
     char *list = mm_key_node_list(tail);
 
     printf("list(%lu): %s\n", strlen(list), list);
-    char *expected = "0, 1, 2, 3";
+    char *expected = "C#0, D0, D#0";
     // List should appear as expected, all nodes lined up.
     assert(strcmp(expected, list) == 0);
 }
@@ -41,14 +41,15 @@ void removal_test() {
 
     printf("attempting to search!\n");
     mm_key_node *node = mm_key_node_search(&tail, 5);
-
+    printf("found node: %s\n", mm_midi_to_note(node->key, true)->letter);
     // Test for node removal
     mm_key_node_remove(&tail, node);
 
     char *list = mm_key_node_list(tail);
 
-    printf("list(%lu): \n%s\n\n", strlen(list), list);
-    char *expected = "0, 1, 2, 3, 4, 6, 7, 8, 9, 10";
+    printf("list(%lu): \n[%s]\n\n", strlen(list), list);
+    /* char *expected = "C#0, D0, D#0, E0, F#0, G0, G#0, A0, A#0"; */
+    char *expected = "C#0, D0, D#0, E0, F#0, G0, G#0, A0, A#0";
 
     // List should be missing the second node (#20)
     // not including the initial head (0).
@@ -59,10 +60,8 @@ void search_test() {
     test_header("search");
     mm_key_node *tail = create_list(25);
 
-    mm_key_node *get_0 = mm_key_node_search(&tail, 0);
-    assert(get_0 != NULL);
-    printf("tail->next->key(%d) = get_0->key(%d)\n", tail->next->key, get_0->key);
-    assert(tail->next->key == get_0->key);
+    mm_key_node *get_10 = mm_key_node_search(&tail, 10);
+    assert(get_10 != NULL);
 
     mm_key_node *get_5 = mm_key_node_search(&tail, 5);
     assert(get_5 != NULL);
