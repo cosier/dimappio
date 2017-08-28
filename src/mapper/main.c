@@ -203,11 +203,16 @@ int main(int argc, char** argv) {
         exit(EXIT_SUCCESS);
     }
 
+    mm_device* midi_through = mm_get_midi_through();
+
     // If target client:port is specified, verify that it exists.
     if (target != NULL) {
         if (!verify_valid_midi_client(target)) {
             exit(EXIT_FAILURE);
         }
+    } else if (midi_through != NULL) {
+        target = malloc(sizeof(char*) * 6);
+        sprintf(target, "%d:%d", midi_through->client, midi_through->port);
     }
 
     // If source client:port is specified, verify that it exists.
@@ -215,6 +220,10 @@ int main(int argc, char** argv) {
         if (!verify_valid_midi_client(source)) {
             exit(EXIT_FAILURE);
         }
+    } else if (midi_through != NULL) {
+        /* source = malloc(sizeof(char*) * 6); */
+        /* sprintf(source, "%d:%d", midi_through->client, midi_through->port);
+         */
     }
 
     // Send a midi note to a specific client.
@@ -257,7 +266,6 @@ int main(int argc, char** argv) {
 
     char* buf = malloc(sizeof(char) * 128 * mapping->count);
     mm_mapping_dump(mapping, buf);
-
     pdebug("%s", buf);
 
     // Engage in monitor loop.
@@ -265,7 +273,7 @@ int main(int argc, char** argv) {
     //
     // Sourced events are passed through the remap filter
     // before being broadcast to any subscribers.
-    if (monitor) {
+    if (monitor || mapsrc != NULL) {
         if (source == NULL) {
             requires_source_specified("monitor");
         }

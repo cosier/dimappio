@@ -35,6 +35,7 @@ void mm_list_clients() {
     } else {
         printf("No MIDI Device Ports found to be available.\n\n");
     }
+
     for (int i = 0; i < devices->count; ++i) {
         mm_device* device = devices->store[i];
         char id[12];
@@ -48,6 +49,24 @@ void mm_list_clients() {
     }
 
     printf("\n");
+}
+
+mm_device* mm_get_midi_through() {
+    mm_devices* devices = mm_get_devices();
+
+    for (int i = 0; i < devices->count; ++i) {
+        char* n = devices->store[i]->name;
+        if (n != NULL) {
+            for (int is = 0; n[is]; ++is) {
+                n[is] = tolower(n[is]);
+            }
+        }
+        if (n != NULL && strstr(n, "midi through") != NULL) {
+            return devices->store[i];
+        }
+    }
+
+    return NULL;
 }
 
 void mm_send_midi_note(int client, int port, char* note, bool on, int channel,

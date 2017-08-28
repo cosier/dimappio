@@ -97,6 +97,8 @@ void mma_monitor_device(char* source, char* target, mm_mapping* mapping) {
     mm_midi_output* output = mma_midi_output_create(src->client, src->port);
 
     if (target != NULL) {
+        mm_device* receiver = mm_parse_device(target);
+        mma_send_events_to(output, receiver->client, receiver->port);
     }
 
     mma_event_loop(mapping, output);
@@ -112,7 +114,7 @@ void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
     mm_clear(1);
 
     if (list->size > 0) {
-        printf("\n♬  NOTE: %s", mm_key_node_print_list(list));
+        printf("\n♬  NOTE: (%d) %s", list->size, mm_key_node_print_list(list));
     } else {
         printf("\n♬  NOTE: []");
     }
@@ -177,7 +179,6 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
                 note_on = (type == SND_SEQ_EVENT_NOTEON);
 
                 update_node_list(event, &list);
-                monitor_callback(mapping, list, dsts_set);
 
                 if (dsts_set != NULL) {
                     free(dsts_set);
@@ -202,6 +203,8 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
         } while (err > 0);
 
+        monitor_callback(mapping, list, dsts_set);
+
         // Caught a sig signal, time to exit!
         if (stop) {
             break;
@@ -213,8 +216,6 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
                         int vel) {
-    int out_port;
-
     mm_midi_output* output = mma_midi_output_create(client, port);
 
     int midi = atoi(note);

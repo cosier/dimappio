@@ -1,6 +1,8 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+#include <ctype.h>
+
 #include "midi/device.h"
 #include "midi/internals/alsa.h"
 #include "midi/internals/coremidi.h"
@@ -13,6 +15,7 @@
 extern bool mm_driver_debug_mode;
 
 mm_devices* mm_get_devices();
+mm_device* mm_get_midi_through();
 
 void mm_monitor_client(char* source, char* target, mm_mapping* mappings);
 
