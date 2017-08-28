@@ -15,7 +15,45 @@ static void sighandler() { stop = 1; }
 
 mm_devices* mma_get_devices() {
     mm_devices* devices = malloc(sizeof(mm_devices));
+    devices->store = malloc(sizeof(mm_device) * 64);
     devices->count = 0;
+
+    snd_seq_t* seq = NULL;
+    mma_init_sequencer(&seq, "device-query");
+
+    snd_seq_client_info_t* cinfo;
+    snd_seq_port_info_t* pinfo;
+
+    snd_seq_client_info_alloca(&cinfo);
+    snd_seq_port_info_alloca(&pinfo);
+    snd_seq_client_info_set_client(cinfo, -1);
+
+    while (snd_seq_query_next_client(seq, cinfo) >= 0) {
+
+        int client_id = snd_seq_client_info_get_client(cinfo);
+        /* printf("found client: %d\n", client_id); */
+
+        snd_seq_port_info_set_client(pinfo, client_id);
+        snd_seq_port_info_set_port(pinfo, -1);
+
+        while (snd_seq_query_next_port(seq, pinfo) >= 0) {
+            int port_id = snd_seq_port_info_get_port(pinfo);
+
+            mm_device* dev = malloc(sizeof(mm_device));
+
+            dev->name = strdup(snd_seq_port_info_get_name(pinfo));
+            dev->client = client_id;
+            dev->port = port_id;
+
+            devices->store[devices->count] = dev;
+            devices->count++;
+        }
+    }
+
+    // downsize to accurate storage size.
+    devices->store =
+        realloc(devices->store, sizeof(mm_device) * devices->count);
+
     return devices;
 }
 

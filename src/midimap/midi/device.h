@@ -5,6 +5,7 @@
 
 typedef snd_seq_t mm_midi_device;
 typedef struct mm_device {
+    char* name;
     int client;
     int port;
 } mm_device;

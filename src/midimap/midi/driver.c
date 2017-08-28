@@ -18,13 +18,37 @@ bool mm_client_exists(char* client) {
 
 void mm_monitor_client(char* source, char* target, mm_mapping* mappings) {
 #ifdef __APPLE__
-#TODO : implement.
+// TODO : implement.
 #elif __linux__
     mma_monitor_device(source, target, mappings);
 #endif
 }
 
-void mm_list_clients() {}
+void mm_list_clients() {
+#ifdef __linux__
+    mm_devices* devices = mma_get_devices();
+#elif __APPLE__
+// TODO: implement
+#endif
+    if (devices->count > 0) {
+        printf("Device Ports found (%d):\n", devices->count);
+    } else {
+        printf("No MIDI Device Ports found to be available.\n\n");
+    }
+    for (int i = 0; i < devices->count; ++i) {
+        mm_device* device = devices->store[i];
+        char id[12];
+        sprintf(id, "[%d:%d]", device->client, device->port);
+
+        if (device->name != NULL) {
+            printf("%-8s %s\n", id, device->name);
+        } else {
+            printf("%-8s\n", id);
+        }
+    }
+
+    printf("\n");
+}
 
 void mm_send_midi_note(int client, int port, char* note, bool on, int channel,
                        int vel) {
