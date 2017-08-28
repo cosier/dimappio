@@ -28,7 +28,8 @@ void mm_attach_listener(Device* dev,
 void mm_list_clients();
 void mm_client_details(MIDIClient* client);
 bool mm_client_exists(char* client);
-void mm_send_midi_note(int client, int port, char* note);
+void mm_send_midi_note(int client, int port, char* note, bool on, int ch,
+                       int vel);
 
 void mm_driver_debug();
 

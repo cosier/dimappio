@@ -185,7 +185,8 @@ Devices* mma_get_devices() {
     return devices;
 }
 
-void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {    snd_seq_t* seq;
+void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
+    snd_seq_t* seq;
 
     init_sequencer(&seq, "midimap-monitor");
     snd_seq_nonblock(seq, 1);
@@ -290,51 +291,45 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {    snd_se
     snd_seq_close(seq);
 }
 
-void mma_send_midi_note(int client, int port, char* note) {
+void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
+                        int vel) {
+    int out_port;
+
     snd_seq_t* seq = NULL;
     init_sequencer(&seq, "direct-send");
 
-    int midi = atoi(note);
-    snd_seq_event_t* event = malloc(sizeof(snd_seq_event_t));
-
-    snd_seq_ev_set_noteon(event, 1, midi, 127);
-
-    send_event_to_client_port(seq, client, port, event);
-}
-
-
-static void send_midi(snd_seq_t* seq, int port, int midi, bool on) {
-    snd_seq_event_t* event = malloc(sizeof(snd_seq_event_t*));
-
-    if (on) {
-        snd_seq_ev_set_noteoff(event, 1, midi, 127);
+    if ((out_port = snd_seq_create_simple_port(
+             seq, "midi-mapper-dx",
+             SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ,
+             SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
+        fprintf(stderr, "Error creating sequencer port.\n");
+        exit(1);
     } else {
-        snd_seq_ev_set_noteon(event, 1, midi, 127);
+        snd_seq_connect_to(seq, out_port, client, port);
     }
 
-    send_event(seq, port, event);
+    int midi = atoi(note);
+    send_midi(seq, out_port, midi, on, vel);
+
+    // TODO: close out_port since this is one-shot api
 }
 
-static void send_event_to_client_port(snd_seq_t* seq, int client, int port,
-                                     snd_seq_event_t* ev) {
-    printf("\nsend_event_to_client_port: %d:%d (midi:%d)\n", client, port, ev->data.note.note);
+static void send_midi(snd_seq_t* seq, int port, int midi, bool on, int vel) {
+    snd_seq_event_t ev;
+    snd_seq_ev_clear(&ev);
 
-    // set event broadcast to subscribers
-    snd_seq_ev_set_dest(ev, client, port);
+    ev.data.control.channel = 0;
+    ev.type = on == true ? SND_SEQ_EVENT_NOTEON : SND_SEQ_EVENT_NOTEOFF;
+    ev.data.note.note = midi;
+    ev.data.note.velocity = vel;
 
-    // set output to direct
-    snd_seq_ev_set_direct(ev);
-
-    // output event immediately
-    snd_seq_event_output(seq, ev);
-    snd_seq_drain_output(seq);
-
-    snd_seq_free_event(ev);
+    send_event(seq, port, &ev);
 }
 
 static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* ev) {
     printf("\nsend_event: %d", ev->data.note.note);
 
+    // publish to any subscribers to the sequencer
     snd_seq_ev_set_subs(ev);
 
     // set output to direct
@@ -345,8 +340,6 @@ static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* ev) {
 
     // output event immediately
     snd_seq_event_output_direct(seq, ev);
-    snd_seq_drain_output(seq);
-
     snd_seq_free_event(ev);
 }
 
@@ -391,7 +384,7 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
 static void trigger_mapping(snd_seq_t* seq, int seq_port, snd_seq_event_t* ev,
                             int dsts_count, int* dsts) {
     for (int i = 0; i < dsts_count; i++) {
-        send_midi(seq, seq_port, dsts[i], true);
+        send_midi(seq, seq_port, dsts[i], true, 50);
     }
 }
 
@@ -402,7 +395,7 @@ static void release_mapping(snd_seq_t* seq, int seq_port, snd_seq_event_t* ev,
 
     for (int i = 0; i < dsts_count; i++) {
         mm_note* note = mm_midi_to_note(dsts[i], true);
-        send_midi(seq, seq_port, dsts[i], false);
+        send_midi(seq, seq_port, dsts[i], false, 0);
 
         sprintf(release_info, "%s%s%d(%d), ", release_info, note->letter,
                 note->oct, dsts[i]);
@@ -411,7 +404,6 @@ static void release_mapping(snd_seq_t* seq, int seq_port, snd_seq_event_t* ev,
 
     printf("\nRelease: %s", release_info);
 }
-
 
 static int init_sequencer(snd_seq_t** seq, char* name) {
     /* snd_seq_t* seq; */

@@ -62,9 +62,10 @@ void mm_attach_listener(Device* dev,
     // TODO: implement
 }
 
-void mm_send_midi_note(int client, int port, char* note) {
+void mm_send_midi_note(int client, int port, char* note, bool on, int channel,
+                       int vel) {
     printf("mm_send_midi_note -> %d:%d [%s]", client, port, note);
-    mma_send_midi_note(client, port, note);
+    mma_send_midi_note(client, port, note, on, channel, vel);
 }
 
 void mm_driver_debug() { mm_driver_debug_mode = true; }

@@ -81,6 +81,12 @@ int main(int argc, char** argv) {
 
     mm_mapping* mapping = NULL;
 
+    int note_ch = 0;
+    int note_vel = 0;
+
+    char* note_on_str;
+    bool note_on = false;
+
     // Specifying the expected options
     // The two options l and b expect numbers as argument
     static struct option long_options[] = {
@@ -96,7 +102,7 @@ int main(int argc, char** argv) {
         {0, 0, 0, 0}};
 
     int long_index = 0;
-    while ((opt = getopt_long(argc, argv, "lhvzmr:s:t:x:", long_options,
+    while ((opt = getopt_long(argc, argv, "lhvzmr:t:x:s:", long_options,
                               &long_index)) != -1) {
 
         switch (opt) {
@@ -124,9 +130,44 @@ int main(int argc, char** argv) {
             target = optarg;
             break;
 
-        case 's':
+        case 's': {
+            int provided = argc - optind;
+            bool invalid_send_args = false;
+
+            if (provided < 3) {
+                invalid_send_args = true;
+            }
+
+            note_ch = atoi(argv[optind]);
+            note_vel = atoi(argv[optind + 1]);
+            note_on_str = argv[optind + 2];
+
+            if (strcmp(note_on_str, "on") == 0) {
+                note_on = true;
+            } else if (strcmp(note_on_str, "off") == 0) {
+                note_on = false;
+            } else {
+                fprintf(stderr, "Invalid note on/off paramater.\nAccepted "
+                                "options are: 'on' or 'off'. Found %s (%d)\n\n",
+                        note_on_str, optind);
+                invalid_send_args = true;
+            }
+
+            if (invalid_send_args) {
+                fprintf(stderr, "--send requires 4 parameters: (note) (ch) "
+                        "(velocity) (on/off)\nargc/optind [%d/%d] \n\n", argc, optind);
+                print_usage();
+                exit(EXIT_FAILURE);
+            }
+
             send_note = optarg;
+
+            /* printf("sending to: note(%s) on(%s) ch(%d) vel(%d)", send_note,
+             * note_on_str, note_ch, note_vel); */
+            /* exit(EXIT_FAILURE); */
+
             break;
+        }
 
         case 'x':
             source = optarg;
@@ -186,7 +227,9 @@ int main(int argc, char** argv) {
         }
 
         ClientPort* cp = parse_client_port(target);
-        mm_send_midi_note(cp->client, cp->port, send_note);
+
+        mm_send_midi_note(cp->client, cp->port, send_note, note_on, note_ch,
+                          note_vel);
 
         exit(EXIT_SUCCESS);
     }
