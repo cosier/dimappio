@@ -21,9 +21,17 @@ typedef struct mm_key_node {
     int key;
 } mm_key_node;
 
+typedef struct mm_key_node_list {
+    mm_key_node **nodes;
+    int size;
+} mm_key_node_list;
+
 mm_key_node* mm_key_node_head();
 mm_key_node* mm_key_node_create(int key);
-char* mm_key_node_list(mm_key_node* n);
+
+mm_key_node_list* mm_key_node_get_list(mm_key_node* n);
+char* mm_key_node_print_list(mm_key_node_list* list);
+char* mm_key_node_print_tail(mm_key_node *tail);
 
 void mm_key_node_insert(mm_key_node** tail, mm_key_node* node);
 void mm_key_node_remove(mm_key_node** tail, mm_key_node* node);

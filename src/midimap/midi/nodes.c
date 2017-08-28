@@ -8,50 +8,56 @@ mm_key_node* mm_key_node_create(int key) {
     return n;
 }
 
-char* mm_key_node_list(mm_key_node* n) {
-    char* buf = malloc(sizeof(char*) * 128);
-    mm_key_node* ptr = n->next;
-    mm_key_node* last_ptr = NULL;
+mm_key_node_list *mm_key_node_get_list(mm_key_node *node) {
+    mm_key_node_list *list = malloc(sizeof(mm_key_node_list));
 
-    if (ptr == n) {
-        if (ptr->key >= 0) {
-            sprintf(buf, "%d", ptr->key);
-        } else {
-            buf[0] = 0;
-        }
-        return buf;
-    }
+    // Reasonable maximum - 32 nodes at any given time.
+    // How many fingers do you have to press them keys simultaneously?
+    list->nodes = malloc(sizeof(mm_key_node*) * 32);
+    list->size = 0;
 
-    if (ptr == NULL) {
-        error("\nmm_key_node_list: ptr null\n");
-        exit(EXIT_FAILURE);
-    }
-
-    bool first = true;
-    sprintf(buf, "[]");
+    mm_key_node *p = node;
 
     do {
-        if (ptr == last_ptr) {
-            break;
-        } else {
-            last_ptr = ptr;
+        if (p->key >= 0) {
+            list->nodes[list->size] = p;
+            list->size++;
         }
 
-        if (ptr != NULL) {
-            if (ptr->key >= 0) {
-                char* note = mm_note_print(mm_midi_to_note(ptr->key, true));
+        p = p->next;
+    } while(p->next != node);
 
-                if (first) {
-                    first = false;
-                    sprintf(buf, "%s", note);
-                } else {
-                    sprintf(buf, "%s, %s", buf, note);
-                }
+    return list;
+}
+
+char *mm_key_node_print_tail(mm_key_node *tail) {
+    return mm_key_node_print_list(mm_key_node_get_list(tail));
+}
+
+char* mm_key_node_print_list(mm_key_node_list* list) {
+    if (list->size == 0) {
+        return "";
+    }
+
+    mm_key_node *ptr = NULL;
+
+    char* buf = malloc(sizeof(char*) * (8 * list->size));
+    buf[0] = 0;
+
+
+    for (int i = 0; i < list->size; ++i) {
+        ptr = list->nodes[i];
+
+        char* note = mm_note_print(mm_midi_to_note(ptr->key, true));
+
+        if (note != NULL && strlen(note) > 1) {
+            if (i == (list->size - 1)) {
+                sprintf(buf, "%s%s", buf, note);
+            } else {
+                sprintf(buf, "%s%s, ", buf, note);
             }
-            ptr = ptr->next;
         }
-
-    } while (ptr != n->next);
+    }
 
     return buf;
 }

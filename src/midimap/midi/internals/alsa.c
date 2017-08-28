@@ -57,13 +57,15 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
     mma_event_loop(mapping, output);
 }
 
-void monitor_callback(mm_mapping* mapping, mm_key_node* list,
+void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
                       mm_key_set* key_set) {
-    char *entries = mm_key_node_list(list);
 
-    if (strlen(entries) > 0) {
-        mm_clear(1);
-        printf("\n♬  NOTE: %s", entries);
+    mm_key_node_list *list = mm_key_node_get_list(tail);
+    mm_clear(1);
+    if (list->size > 0) {
+        printf("\n♬  NOTE: %s", mm_key_node_print_list(list));
+    } else {
+        printf("\n♬  NOTE: []");
     }
 
     if (key_set != NULL) {
@@ -78,6 +80,7 @@ void monitor_callback(mm_mapping* mapping, mm_key_node* list,
                     dst_midi);
         }
     }
+
     fflush(stdout);
 }
 
