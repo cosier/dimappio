@@ -270,7 +270,6 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
                         release_mapping(seq, seq_port, event, dsts_count, dsts);
                         line_count++;
                     }
-                    line_count++;
 
                     free(dst_str);
                     free(dsts);
@@ -315,6 +314,7 @@ void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
 }
 
 static void send_midi(snd_seq_t* seq, int port, int midi, bool on, int vel) {
+    /* printf("send_midi: %d\n", midi); */
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);
 
@@ -327,7 +327,7 @@ static void send_midi(snd_seq_t* seq, int port, int midi, bool on, int vel) {
 }
 
 static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* ev) {
-    printf("\nsend_event: %d", ev->data.note.note);
+    /* printf("\nsend_event: %d", ev->data.note.note); */
 
     // publish to any subscribers to the sequencer
     snd_seq_ev_set_subs(ev);
@@ -377,14 +377,13 @@ static void process_event(MIDIEvent* ev, snd_seq_t* seq, int seq_port,
         /* puts(mma_event_decoder(ev)); */
         break;
     }
-
-    send_event(seq, seq_port, ev);
 }
 
 static void trigger_mapping(snd_seq_t* seq, int seq_port, snd_seq_event_t* ev,
                             int dsts_count, int* dsts) {
+    int vel = ev->data.note.velocity;
     for (int i = 0; i < dsts_count; i++) {
-        send_midi(seq, seq_port, dsts[i], true, 50);
+        send_midi(seq, seq_port, dsts[i], true, vel);
     }
 }
 
