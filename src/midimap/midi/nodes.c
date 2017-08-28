@@ -25,7 +25,7 @@ mm_key_node_list* mm_key_node_get_list(mm_key_node* node) {
         }
 
         p = p->next;
-    } while (p->next != node);
+    } while (p != node);
 
     return list;
 }
