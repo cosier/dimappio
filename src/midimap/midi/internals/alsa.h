@@ -8,101 +8,49 @@
 #include <stdlib.h>
 #include <sys/poll.h>
 
+#include "midi/device.h"
 #include "midi/internals/alsa_decoder.h"
 #include "midi/internals/alsa_raw_midi.h"
 #include "midi/mapping.h"
 #include "midi/nodes.h"
+#include "midi/output.h"
 #include "midi/parser.h"
 #include "utils.h"
 
-typedef int32_t MIDIObjectRef;
-typedef MIDIObjectRef MIDIEndpointRef;
+typedef snd_seq_t mm_midi_device;
 
-typedef snd_seq_port_info_t MIDIPortInfo;
-typedef snd_seq_client_info_t MIDIClientInfo;
-typedef snd_seq_addr_t MIDIAddr;
-typedef snd_seq_event_t MIDIEvent;
-
-typedef struct MIDIClientPort {
-    const char* name;
-    int capability;
-    int channels;
-    int port_id;
-    uint type;
-    const snd_seq_addr_t* addr;
-
-} MIDIClientPort;
-
-typedef struct MIDIClient {
-    const char* name;
-    snd_seq_client_type_t type;
-    int client_id;
-    int card;
-    int pid;
-    int num_ports;
-    MIDIClientPort** ports;
-} MIDIClient;
-
-typedef struct MIDIClients {
-    int8_t count;
-    MIDIClient** store;
-} MIDIClients;
-
-typedef struct Device {
-    char* name;
-    MIDIEndpointRef endpoint;
-} Device;
-
-typedef struct Devices {
-    Device** store;
-    int count;
-} Devices;
-
-typedef int64_t MIDITimestamp;
-
-typedef struct MidiPacket {
-    MIDITimestamp timestamp;
-    int16_t length;
-    int32_t* data[];
-} MidiPacket;
-
-typedef struct MIDINotification {
-    int32_t messageID;
-    int32_t messageSize;
-} MIDINotification;
-
-typedef struct MIDIPacketList {
-    int32_t numPackets;
-    MidiPacket packet;
-} MIDIPacketList;
-
-Devices* mma_get_devices();
-Device* mma_create_virtual_device(char* name);
-
-MIDIClients* mma_get_clients(snd_seq_t* seq);
-MIDIPortInfo* mma_get_port_info(char* client_with_port);
-
-void mma_client_details(MIDIClient* client);
+mm_devices* mma_get_devices();
+snd_seq_port_info_t* mma_get_port_info(char* client_with_port);
 bool mma_client_exists(char* client);
+
 void mma_monitor_device(char* client_with_port, mm_mapping* mappings);
 
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
                         int vel);
 
-static int init_sequencer(snd_seq_t** seq, char* name);
-static void process_event(snd_seq_event_t* event, snd_seq_t* seq, int seq_port,
-                          mm_key_node** tail);
+void mma_event_loop(mm_mapping* mapping, mm_midi_output* output);
 
-static void send_event(snd_seq_t* seq, int port, snd_seq_event_t* event);
-static void send_midi(snd_seq_t* seq, int port, int midi, bool on, int vel);
+int mma_init_sequencer(snd_seq_t** seq, char* name);
+mm_midi_output* mma_midi_output_create(int client, int port);
 
-static int create_port(snd_seq_t* seq);
-static void connect_ports(snd_seq_t* seq, const ClientPort* cp);
+void mma_receive_events_from(mm_midi_output* output, int client, int port);
+void mma_send_events_to(mm_midi_output* output, int client, int port);
+
+
+int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type);
+
+static void update_node_list(snd_seq_event_t* event, mm_key_node** tail);
+
+static void send_event(mm_midi_output* output, snd_seq_event_t* event);
+static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
+                      int vel);
+
 static void check_snd(char* desc, int err);
 
-static void trigger_mapping(snd_seq_t* seq, int seq_port,
-                            snd_seq_event_t* event, int dsts_count, int* dsts);
-static void release_mapping(snd_seq_t* seq, int seq_port,
-                            snd_seq_event_t* event, int dsts_count, int* dsts);
+static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* event,
+                            mm_key_set* dsts_set);
+
+static void release_mapping(mm_midi_output* output, snd_seq_event_t* event,
+                            mm_key_set* dsts_set);
 #endif
 #endif

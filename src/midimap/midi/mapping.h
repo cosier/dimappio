@@ -13,23 +13,22 @@ struct mm_key_map;
 struct mm_key_group;
 struct mm_mapping;
 
+typedef struct mm_key_set {
+    int* keys;
+    int count;
+} mm_key_set;
+
 /**
  * Container definition for each Key
  * that is mapped inside a mm_mapping struct.
  */
 typedef struct mm_key_map {
+    // Set of target keys to activate
+    mm_key_set* dst_set;
 
-    // Array of target keys to activate
-    int* dst_group;
-    // Target keys array size
-    int dst_count;
-
-    // Array of related party members. All of which
+    // Set of related party members. All of which
     // must be present to initiate the key map.
-    int* src_group;
-
-    // Party array member size
-    int src_count;
+    mm_key_set* src_set;
 
     // Source key for this definition
     int key;
@@ -83,7 +82,9 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf);
 void mm_key_group_dump(mm_key_group* g, char* buf);
 void mm_key_map_dump(mm_key_map* k, char* buf);
 
-int mm_mapping_group_get_dsts(int** res, mm_key_group* group);
+mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* group);
+mm_key_set* mm_mapping_group_srcs(mm_key_group* group);
+
 mm_key_group* mm_get_key_group(mm_mapping* m, int src);
 
 void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
@@ -94,6 +95,8 @@ mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
 
 mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
                            int src_count, int dst_count);
+
+mm_key_set* create_key_set(int count);
 
 void update_key_group(mm_key_group* group, int src, char** src_tokens,
                       char** dst_tokens, int src_count, int dst_count);

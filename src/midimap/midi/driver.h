@@ -1,35 +1,30 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+#include "midi/device.h"
 #include "midi/internals/alsa.h"
 #include "midi/internals/coremidi.h"
 #include "midi/internals/winmm.h"
 #include "midi/mapping.h"
+#include "midi/output.h"
 
 #include "utils.h"
+
 extern bool mm_driver_debug_mode;
 
-typedef struct Devices Devices;
-typedef struct Device Device;
-
-typedef struct MIDIClient MIDIClient;
-typedef struct MIDIClients MIDIClients;
-
-Device* mm_create_virtual_device(char* name);
-Devices* mm_get_devices();
-MIDIClients* mm_get_clients();
+mm_devices* mm_get_devices();
 
 void mm_monitor_client(char* client_with_port, mm_mapping* mappings);
 
-void mm_attach_listener(Device* dev,
-                        void (*func)(const MIDIPacketList* message,
-                                     void* refCon, void* connRefCon));
-
 void mm_list_clients();
-void mm_client_details(MIDIClient* client);
 bool mm_client_exists(char* client);
 void mm_send_midi_note(int client, int port, char* note, bool on, int ch,
                        int vel);
+
+void mm_driver_init(mm_midi_device**, char* name);
+
+void mm_receive_events_from(mm_midi_output *output, int client, int port);
+void mm_send_events_to(mm_midi_output *output, int client, int port);
 
 void mm_driver_debug();
 

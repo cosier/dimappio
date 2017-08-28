@@ -155,7 +155,8 @@ int main(int argc, char** argv) {
 
             if (invalid_send_args) {
                 fprintf(stderr, "--send requires 4 parameters: (note) (ch) "
-                        "(velocity) (on/off)\nargc/optind [%d/%d] \n\n", argc, optind);
+                                "(velocity) (on/off)\nargc/optind [%d/%d] \n\n",
+                        argc, optind);
                 print_usage();
                 exit(EXIT_FAILURE);
             }

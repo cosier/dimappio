@@ -24,17 +24,17 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
     sprintf(buf, "%s\n - key(%d) ", buf, k->key);
-    if (k->src_count > 1) {
-        sprintf(buf, "%s [%d: -> ", buf, k->src_count);
-        for (int isrc = 0; isrc < k->src_count; ++isrc) {
-            sprintf(buf, "%s %d ", buf, k->src_group[isrc]);
+    if (k->src_set->count > 1) {
+        sprintf(buf, "%s [%d: -> ", buf, k->src_set->count);
+        for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
+            sprintf(buf, "%s %d ", buf, k->src_set->keys[isrc]);
         }
         sprintf(buf, "%s]\n", buf);
     } else {
         sprintf(buf, "%s\n", buf);
     }
-    for (int di = 0; di < k->dst_count; ++di) {
-        sprintf(buf, "%s   • dst: %d\n", buf, k->dst_group[di]);
+    for (int di = 0; di < k->dst_set->count; ++di) {
+        sprintf(buf, "%s   • dst: %d\n", buf, k->dst_set->keys[di]);
     }
 }
 
@@ -61,19 +61,24 @@ mm_mapping* mm_build_mapping() {
     return mapping;
 }
 
-int mm_mapping_group_get_dsts(int** res, mm_key_group* grp) {
-    int entries = 0;
+mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
+    mm_key_set* combined_set = malloc(sizeof(mm_key_set*));
+    // hold up to 128 keys in this set
+    combined_set->keys = malloc(sizeof(int*) * 128);
+    combined_set->count = 0;
+
     for (int i = 0; i < grp->count; ++i) {
         mm_key_map* map = grp->maps[i];
-        *res = malloc(sizeof(int) * map->dst_count);
-        for (int k = 0; k < map->dst_count; ++k) {
-            int val = map->dst_group[k];
-            (*res)[k] = val;
-            ++entries;
+        if (map->src_set->count == 1) {
+            for (int isrc = 0; isrc < map->dst_set->count; isrc++) {
+                combined_set->keys[combined_set->count] =
+                    map->dst_set->keys[isrc];
+                combined_set->count++;
+            }
         }
     }
 
-    return entries;
+    return combined_set;
 }
 
 /**
@@ -179,18 +184,23 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
     mm_key_map* km = malloc(sizeof(mm_key_map));
     km->key = src;
 
-    km->dst_group = malloc(sizeof(int*) * dst_count);
-    km->src_group = malloc(sizeof(int*) * src_count);
+    km->src_set = create_key_set(src_count);
+    km->dst_set = create_key_set(dst_count);
 
     for (int idst = 0; idst < dst_count; ++idst) {
-        km->dst_group[idst] = atoi(dst_tokens[idst]);
+        km->dst_set->keys[idst] = atoi(dst_tokens[idst]);
     }
 
     for (int isrc = 0; isrc < src_count; ++isrc) {
-        km->src_group[isrc] = atoi(src_tokens[isrc]);
+        km->src_set->keys[isrc] = atoi(src_tokens[isrc]);
     }
 
-    km->dst_count = dst_count;
-    km->src_count = src_count;
     return km;
+}
+
+mm_key_set* create_key_set(int count) {
+    mm_key_set* set = malloc(sizeof(mm_key_set));
+    set->keys = malloc(sizeof(int*) * count);
+    set->count = count;
+    return set;
 }
