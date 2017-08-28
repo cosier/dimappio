@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "midi/parser.h"
 #include "utils.h"
 
 #define MAX_MIDI_NOTES 128

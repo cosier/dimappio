@@ -23,7 +23,9 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 }
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
-    sprintf(buf, "%s\n - key(%d) ", buf, k->key);
+    sprintf(buf, "%s\n - key(%s:%d) ", buf, mm_midi_to_note_display(k->key),
+            k->key);
+
     if (k->src_set->count > 1) {
         sprintf(buf, "%s [%d: -> ", buf, k->src_set->count);
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
@@ -34,7 +36,9 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
         sprintf(buf, "%s\n", buf);
     }
     for (int di = 0; di < k->dst_set->count; ++di) {
-        sprintf(buf, "%s   • dst: %d\n", buf, k->dst_set->keys[di]);
+        sprintf(buf, "%s   • dst: %-4s:%d\n", buf,
+                mm_midi_to_note_display(k->dst_set->keys[di]),
+                k->dst_set->keys[di]);
     }
 }
 
@@ -129,7 +133,7 @@ mm_mapping* mm_mapping_from_list(char* list) {
         }
 
         for (int isrc = 0; isrc < src_count; ++isrc) {
-            src = atoi(src_tokens[isrc]);
+            src = mm_parse_anything_to_midi(src_tokens[isrc]);
             if (mapping->index[src] == NULL) {
                 // Stash our new group into the index
                 mapping->index[src] = create_key_group(
@@ -188,11 +192,11 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
     km->dst_set = create_key_set(dst_count);
 
     for (int idst = 0; idst < dst_count; ++idst) {
-        km->dst_set->keys[idst] = atoi(dst_tokens[idst]);
+        km->dst_set->keys[idst] = mm_parse_anything_to_midi(dst_tokens[idst]);
     }
 
     for (int isrc = 0; isrc < src_count; ++isrc) {
-        km->src_set->keys[isrc] = atoi(src_tokens[isrc]);
+        km->src_set->keys[isrc] = mm_parse_anything_to_midi(src_tokens[isrc]);
     }
 
     return km;

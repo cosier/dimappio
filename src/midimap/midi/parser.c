@@ -28,6 +28,16 @@ int mm_tone_to_note(char* tone) {
     }
 }
 
+int mm_parse_anything_to_midi(char* input) {
+    int midi = atoi(input);
+    return midi;
+}
+
+char* mm_midi_to_note_display(int midi) {
+    mm_note* n = mm_midi_to_note(midi, true);
+    return mm_note_print(n);
+}
+
 char* mm_note_print(mm_note* n) {
     char* buf = malloc(sizeof(char*) * 16);
     sprintf(buf, "%s%d", n->letter, n->oct);
