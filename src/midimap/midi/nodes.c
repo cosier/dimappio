@@ -62,6 +62,11 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
     return buf;
 }
 
+void mm_key_node_list_free(mm_key_node_list *list) {
+    free(list->nodes);
+    free(list);
+}
+
 /**
  * Search a list (singly linked list) for a given key
  */

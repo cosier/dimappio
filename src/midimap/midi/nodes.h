@@ -30,6 +30,8 @@ mm_key_node* mm_key_node_head();
 mm_key_node* mm_key_node_create(int key);
 
 mm_key_node_list* mm_key_node_get_list(mm_key_node* n);
+void mm_key_node_list_free(mm_key_node_list *list);
+
 char* mm_key_node_print_list(mm_key_node_list* list);
 char* mm_key_node_print_tail(mm_key_node *tail);
 

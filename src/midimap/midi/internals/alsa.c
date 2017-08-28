@@ -62,11 +62,13 @@ void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
 
     mm_key_node_list *list = mm_key_node_get_list(tail);
     mm_clear(1);
+
     if (list->size > 0) {
         printf("\n♬  NOTE: %s", mm_key_node_print_list(list));
     } else {
         printf("\n♬  NOTE: []");
     }
+
 
     if (key_set != NULL) {
         char* dst_str = malloc(sizeof(char*) * (key_set->count * 32));
@@ -81,6 +83,7 @@ void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
         }
     }
 
+    mm_key_node_list_free(list);
     fflush(stdout);
 }
 
