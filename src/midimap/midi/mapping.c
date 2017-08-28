@@ -9,7 +9,7 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
         return;
     }
 
-    sprintf(buf, "Mapping -> \n");
+    sprintf(buf, "Key Mapping: ");
     for (int i = 0; i < mapping->group_count; ++i) {
         mm_key_group_dump(mapping->mapped[i], buf);
     }
@@ -23,20 +23,19 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 }
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
-    sprintf(buf, "%s\n - key(%s:%d) ", buf, mm_midi_to_note_display(k->key),
-            k->key);
+    sprintf(buf, "%s\n - %s:%d ", buf, mm_midi_to_note_display(k->key), k->key);
 
     if (k->src_set->count > 1) {
         sprintf(buf, "%s [%d: -> ", buf, k->src_set->count);
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
             sprintf(buf, "%s %d ", buf, k->src_set->keys[isrc]);
         }
-        sprintf(buf, "%s]\n", buf);
+        sprintf(buf, "%s]->", buf);
     } else {
-        sprintf(buf, "%s\n", buf);
+        sprintf(buf, "%s ->", buf);
     }
     for (int di = 0; di < k->dst_set->count; ++di) {
-        sprintf(buf, "%s   • dst: %-4s:%d\n", buf,
+        sprintf(buf, "%s %s:%d ", buf,
                 mm_midi_to_note_display(k->dst_set->keys[di]),
                 k->dst_set->keys[di]);
     }
