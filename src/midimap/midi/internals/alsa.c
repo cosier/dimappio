@@ -138,7 +138,8 @@ void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
 
 void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
-    int pfds_num = snd_seq_poll_descriptors_count(output->dev, POLLIN);
+    int pfds_num =
+        snd_seq_poll_descriptors_count(output->dev, POLLIN | POLLOUT);
     struct pollfd* pfds = malloc(pfds_num * sizeof(*pfds));
 
     mm_key_node* list = mm_key_node_head();
@@ -217,6 +218,7 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
                         int vel) {
     mm_midi_output* output = mma_midi_output_create(client, port);
+    mma_send_events_to(output, client, port);
 
     int midi = atoi(note);
     send_midi(output, midi, on, ch, vel);
@@ -348,6 +350,8 @@ static void send_event(mm_midi_output* output, snd_seq_event_t* ev) {
     }
 
     for (int i = 0; i < port_count; ++i) {
+        /* printf("\nsend_event[%d] -> %d\n", ports[i], ev->data.note.note); */
+
         // set event source
         snd_seq_ev_set_source(ev, ports[i]);
 
