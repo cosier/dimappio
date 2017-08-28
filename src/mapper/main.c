@@ -163,10 +163,6 @@ int main(int argc, char** argv) {
 
             send_note = optarg;
 
-            /* printf("sending to: note(%s) on(%s) ch(%d) vel(%d)", send_note,
-             * note_on_str, note_ch, note_vel); */
-            /* exit(EXIT_FAILURE); */
-
             break;
         }
 
@@ -227,7 +223,7 @@ int main(int argc, char** argv) {
             requires_target_specified("send");
         }
 
-        ClientPort* cp = parse_client_port(target);
+        mm_device* cp = mm_parse_device(target);
 
         mm_send_midi_note(cp->client, cp->port, send_note, note_on, note_ch,
                           note_vel);
@@ -274,7 +270,7 @@ int main(int argc, char** argv) {
             requires_source_specified("monitor");
         }
 
-        mm_monitor_client(source, mapping);
+        mm_monitor_client(source, target, mapping);
         exit(EXIT_SUCCESS);
     }
 

@@ -20,10 +20,10 @@
 typedef snd_seq_t mm_midi_device;
 
 mm_devices* mma_get_devices();
-snd_seq_port_info_t* mma_get_port_info(char* client_with_port);
+snd_seq_port_info_t* mma_get_port_info(mm_device* dev);
 bool mma_client_exists(char* client);
 
-void mma_monitor_device(char* client_with_port, mm_mapping* mappings);
+void mma_monitor_device(char* source, char* target, mm_mapping* mappings);
 
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
                         int vel);
@@ -35,7 +35,6 @@ mm_midi_output* mma_midi_output_create(int client, int port);
 
 void mma_receive_events_from(mm_midi_output* output, int client, int port);
 void mma_send_events_to(mm_midi_output* output, int client, int port);
-
 
 int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type);
 

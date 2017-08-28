@@ -23,5 +23,4 @@ typedef struct mm_midi_port {
 
 } mm_midi_port;
 
-
 #endif

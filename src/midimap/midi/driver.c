@@ -16,11 +16,11 @@ bool mm_client_exists(char* client) {
 #endif
 }
 
-void mm_monitor_client(char* client_with_port, mm_mapping* mappings) {
+void mm_monitor_client(char* source, char* target, mm_mapping* mappings) {
 #ifdef __APPLE__
 #TODO : implement.
 #elif __linux__
-    mma_monitor_device(client_with_port, mappings);
+    mma_monitor_device(source, target, mappings);
 #endif
 }
 

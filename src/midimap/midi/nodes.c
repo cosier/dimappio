@@ -8,15 +8,15 @@ mm_key_node* mm_key_node_create(int key) {
     return n;
 }
 
-mm_key_node_list *mm_key_node_get_list(mm_key_node *node) {
-    mm_key_node_list *list = malloc(sizeof(mm_key_node_list));
+mm_key_node_list* mm_key_node_get_list(mm_key_node* node) {
+    mm_key_node_list* list = malloc(sizeof(mm_key_node_list));
 
     // Reasonable maximum - 32 nodes at any given time.
     // How many fingers do you have to press them keys simultaneously?
     list->nodes = malloc(sizeof(mm_key_node*) * 32);
     list->size = 0;
 
-    mm_key_node *p = node;
+    mm_key_node* p = node;
 
     do {
         if (p->key >= 0) {
@@ -25,12 +25,12 @@ mm_key_node_list *mm_key_node_get_list(mm_key_node *node) {
         }
 
         p = p->next;
-    } while(p->next != node);
+    } while (p->next != node);
 
     return list;
 }
 
-char *mm_key_node_print_tail(mm_key_node *tail) {
+char* mm_key_node_print_tail(mm_key_node* tail) {
     return mm_key_node_print_list(mm_key_node_get_list(tail));
 }
 
@@ -39,11 +39,10 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
         return "";
     }
 
-    mm_key_node *ptr = NULL;
+    mm_key_node* ptr = NULL;
 
     char* buf = malloc(sizeof(char*) * (8 * list->size));
     buf[0] = 0;
-
 
     for (int i = 0; i < list->size; ++i) {
         ptr = list->nodes[i];
@@ -62,7 +61,7 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
     return buf;
 }
 
-void mm_key_node_list_free(mm_key_node_list *list) {
+void mm_key_node_list_free(mm_key_node_list* list) {
     free(list->nodes);
     free(list);
 }

@@ -14,7 +14,7 @@ extern bool mm_driver_debug_mode;
 
 mm_devices* mm_get_devices();
 
-void mm_monitor_client(char* client_with_port, mm_mapping* mappings);
+void mm_monitor_client(char* source, char* target, mm_mapping* mappings);
 
 void mm_list_clients();
 bool mm_client_exists(char* client);
@@ -23,8 +23,8 @@ void mm_send_midi_note(int client, int port, char* note, bool on, int ch,
 
 void mm_driver_init(mm_midi_device**, char* name);
 
-void mm_receive_events_from(mm_midi_output *output, int client, int port);
-void mm_send_events_to(mm_midi_output *output, int client, int port);
+void mm_receive_events_from(mm_midi_output* output, int client, int port);
+void mm_send_events_to(mm_midi_output* output, int client, int port);
 
 void mm_driver_debug();
 

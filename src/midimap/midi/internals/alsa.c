@@ -20,11 +20,14 @@ mm_devices* mma_get_devices() {
 }
 
 bool mma_client_exists(char* client_with_port) {
-    return (mma_get_port_info(client_with_port) != NULL);
+    mm_device* dev = mm_parse_device(client_with_port);
+    snd_seq_port_info_t* port = mma_get_port_info(dev);
+    free(dev);
+
+    return (port != NULL);
 }
 
-snd_seq_port_info_t* mma_get_port_info(char* client_with_port) {
-    ClientPort* cp = parse_client_port(client_with_port);
+snd_seq_port_info_t* mma_get_port_info(mm_device* dev) {
 
     snd_seq_t* seq;
     mma_init_sequencer(&seq, NULL);
@@ -32,27 +35,31 @@ snd_seq_port_info_t* mma_get_port_info(char* client_with_port) {
     snd_seq_port_info_t* pinfo;
     snd_seq_port_info_malloc(&pinfo);
 
-    int found = snd_seq_get_any_port_info(seq, cp->client, cp->port, pinfo);
+    int found = snd_seq_get_any_port_info(seq, dev->client, dev->port, pinfo);
 
     if (found == 0) {
         return pinfo;
 
     } else {
-        pdebug("Client(%d) port not found(%d)", cp->client, cp->port);
+        pdebug("Client(%d) port not found(%d)", dev->client, dev->port);
         return NULL;
     }
 }
 
-void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
+void mma_monitor_device(char* source, char* target, mm_mapping* mapping) {
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
-    const ClientPort* cp = parse_client_port(client_with_port);
-    const snd_seq_port_info_t* pinfo = mma_get_port_info(client_with_port);
+    mm_device* src = mm_parse_device(source);
+
+    const snd_seq_port_info_t* pinfo = mma_get_port_info(src);
     const char* pname = snd_seq_port_info_get_name(pinfo);
 
-    printf("Monitoring: %s [%d:%d]\n\n", pname, cp->client, cp->port);
-    mm_midi_output* output = mma_midi_output_create(cp->client, cp->port);
+    printf("Monitoring: %s [%d:%d]\n\n", pname, src->client, src->port);
+    mm_midi_output* output = mma_midi_output_create(src->client, src->port);
+
+    if (target != NULL) {
+    }
 
     mma_event_loop(mapping, output);
 }
@@ -60,7 +67,10 @@ void mma_monitor_device(char* client_with_port, mm_mapping* mapping) {
 void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
                       mm_key_set* key_set) {
 
-    mm_key_node_list *list = mm_key_node_get_list(tail);
+    if (mapping != NULL) {
+    }
+
+    mm_key_node_list* list = mm_key_node_get_list(tail);
     mm_clear(1);
 
     if (list->size > 0) {
@@ -68,7 +78,6 @@ void monitor_callback(mm_mapping* mapping, mm_key_node* tail,
     } else {
         printf("\n♬  NOTE: []");
     }
-
 
     if (key_set != NULL) {
         char* dst_str = malloc(sizeof(char*) * (key_set->count * 32));
@@ -148,13 +157,10 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
                         release_mapping(output, event, dsts_set);
                     }
 
-
                 } else {
                     send_event(output, event);
                 }
-
             }
-
 
         } while (err > 0);
 
@@ -179,16 +185,17 @@ void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
     // TODO: close out_port since this is one-shot api
 }
 
-void mma_receive_events_from(mm_midi_output *output, int client, int port) {
+void mma_receive_events_from(mm_midi_output* output, int client, int port) {
     unsigned int port_caps = SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE |
-        SND_SEQ_PORT_CAP_SUBS_READ |
-        SND_SEQ_PORT_CAP_SUBS_WRITE;
+                             SND_SEQ_PORT_CAP_SUBS_READ |
+                             SND_SEQ_PORT_CAP_SUBS_WRITE;
 
     unsigned int port_type =
         SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION |
         SND_SEQ_PORT_TYPE_MIDI_GM | SND_SEQ_PORT_TYPE_HARDWARE;
 
-    int in_port = mma_create_port(output->dev, "mm-input", port_caps, port_type);
+    int in_port =
+        mma_create_port(output->dev, "mm-input", port_caps, port_type);
 
     output->in_ports[output->out_count] = in_port;
     output->in_count++;
@@ -204,7 +211,7 @@ void mma_receive_events_from(mm_midi_output *output, int client, int port) {
         }
     }
 }
-void mma_send_events_to(mm_midi_output *output, int client, int port) {
+void mma_send_events_to(mm_midi_output* output, int client, int port) {
     unsigned int port_caps = SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_WRITE |
                              SND_SEQ_PORT_CAP_SUBS_READ |
                              SND_SEQ_PORT_CAP_SUBS_WRITE;
@@ -229,7 +236,6 @@ void mma_send_events_to(mm_midi_output *output, int client, int port) {
             check_snd("snd_seq_connect_from", err);
         }
     }
-
 }
 
 mm_midi_output* mma_midi_output_create(int input_client, int input_port) {
@@ -265,12 +271,10 @@ int mma_init_sequencer(snd_seq_t** seq, char* name) {
 }
 
 int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type) {
-    int port_result =
-        snd_seq_create_simple_port(seq, name, caps, type);
+    int port_result = snd_seq_create_simple_port(seq, name, caps, type);
 
     return port_result;
 }
-
 
 static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
                       int vel) {
@@ -294,7 +298,7 @@ static void send_event(mm_midi_output* output, snd_seq_event_t* ev) {
     snd_seq_ev_set_direct(ev);
 
     int port_count = 0;
-    int *ports = NULL;
+    int* ports = NULL;
 
     if (output->out_count == 0) {
         port_count = output->in_count;

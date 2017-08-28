@@ -22,7 +22,11 @@ mm_note* mm_midi_to_note(int midi, bool sharp) {
     return n;
 }
 
-int mm_tone_to_note(char* tone) {}
+int mm_tone_to_note(char* tone) {
+    if (tone != NULL) {
+        // TODO:
+    }
+}
 
 char* mm_note_print(mm_note* n) {
     char* buf = malloc(sizeof(char*) * 16);
@@ -30,34 +34,33 @@ char* mm_note_print(mm_note* n) {
     return buf;
 }
 
-ClientPort* parse_client_port(char* client_with_port) {
-    ClientPort* cp = malloc(sizeof(ClientPort));
-    cp->client = 0;
-    cp->port = 0;
+mm_device* mm_parse_device(char* str) {
+    mm_device* dev = malloc(sizeof(mm_device));
+    dev->client = 0;
+    dev->port = 0;
 
-    if (strstr(client_with_port, ":") == NULL) {
-        error("client_with_port(%s) does not contain \":\" delimiter",
-              client_with_port);
+    if (strstr(str, ":") == NULL) {
+        error("client_with_port(%s) does not contain \":\" delimiter", str);
         return NULL;
     }
 
     char* container;
-    client_with_port = strdup(client_with_port);
-    char* token = strtok_r(client_with_port, ":", &container);
+    str = strdup(str);
+    char* token = strtok_r(str, ":", &container);
 
     if (token != NULL) {
-        cp->client = atoi(token);
+        dev->client = atoi(token);
     } else {
-        error("parsing of (%s) failed due to client token", client_with_port);
+        error("parsing of (%s) failed due to client token", str);
     }
 
     token = strtok_r(NULL, "", &container);
 
     if (token != NULL) {
-        cp->port = atoi(token);
+        dev->port = atoi(token);
     } else {
-        error("parsing of (%s) failed due to port token", client_with_port);
+        error("parsing of (%s) failed due to port token", str);
     }
 
-    return cp;
+    return dev;
 }
