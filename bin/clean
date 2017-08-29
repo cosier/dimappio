@@ -3,4 +3,6 @@
 BIN="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$( cd $BIN/../ && pwd )
 
-rm -rf $ROOT/build
+if [ -d $ROOT/build ]; then
+  rm -rf $ROOT/build
+fi

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$( cd $DIR/../ && pwd )
+
+$ROOT/bin/clean
+mkdir -p $ROOT/build && cd $ROOT/build;
+
+CMAKE_BUILD_TYPE=Release $ROOT/bin/build
+cd $ROOT/build
+make install
+echo
+
