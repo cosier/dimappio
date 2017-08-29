@@ -9,14 +9,13 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
         return;
     }
 
-    sprintf(buf, "Key Mapping: ");
+    sprintf(buf, "Key Mapping:");
     for (int i = 0; i < mapping->group_count; ++i) {
         mm_key_group_dump(mapping->mapped[i], buf);
     }
 }
 
 void mm_key_group_dump(mm_key_group* g, char* buf) {
-    /* sprintf(buf, "%s\n  %d. group(%d)", buf, i, g->src); */
     for (int i = 0; i < g->count; ++i) {
         mm_key_map_dump(g->maps[i], buf);
     }

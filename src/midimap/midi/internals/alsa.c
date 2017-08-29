@@ -176,6 +176,7 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
                         trigger_mapping(output, event, dsts_set);
                     } else {
                         release_mapping(output, dsts_set);
+                        dsts_set = NULL;
                     }
 
                 } else {

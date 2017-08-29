@@ -7,16 +7,6 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
     if (mapping != NULL) {
     }
 
-    mm_key_node_list* list = mm_key_node_get_list(tail);
-    mm_clear(5);
-
-    if (list->size > 0) {
-        printf("\n♬  NOTEs: (%d) %s\n\n", list->size,
-               mm_key_node_print_list(list));
-    } else {
-        printf("\n♬  NOTEs: \n\n");
-    }
-
     int i = 0;
     int sharp = 0;
     int oct = 0;
@@ -24,6 +14,31 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
 
     int keys = 89;
     int lookup[89] = {0};
+    for (int lc = 0; lc < 89; ++lc) {
+        lookup[lc] = 0;
+    }
+
+    char* mkeys = malloc(sizeof(char*) * 32);
+    mkeys[0] = 0;
+
+    if (key_set != NULL) {
+        sprintf(mkeys, "%s", PURPLE);
+        for (int i = 0; i < key_set->count; ++i) {
+            lookup[key_set->keys[i]] = 1;
+            sprintf(mkeys, "%s%d ", mkeys, key_set->keys[i]);
+        }
+        sprintf(mkeys, "%s%s", mkeys, RESET);
+    }
+
+    mm_key_node_list* list = mm_key_node_get_list(tail);
+    mm_clear(4);
+
+    if (list->size > 0) {
+        printf("\n♬  NOTEs: %s(%d)%s %s [%s]\n\n", BLUE, list->size, RESET,
+               mm_key_node_print_list(list), mkeys);
+    } else {
+        printf("\n♬  NOTEs: [%s]\n\n", mkeys);
+    }
 
     for (int l = 0; l < list->size; ++l) {
         lookup[list->nodes[l]->key] = 1;
@@ -74,21 +89,7 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
         ++i;
     }
 
-    printf("%s\n", piano);
-
-    /* if (key_set != NULL) { */
-    /*     char* dst_str = malloc(sizeof(char*) * (key_set->count * 32)); */
-    /*     dst_str[0] = 0; */
-
-    /*     for (int i = 0; i < key_set->count; ++i) { */
-    /*         int dst_midi = key_set->keys[i]; */
-
-    /*         mm_note* note = mm_midi_to_note(dst_midi, true); */
-    /*         sprintf(dst_str, "%s%s%d(%d), ", dst_str, note->letter,
-     * note->oct, */
-    /*                 dst_midi); */
-    /*     } */
-    /* } */
+    printf("%s", piano);
 
     mm_key_node_list_free(list);
     fflush(stdout);
