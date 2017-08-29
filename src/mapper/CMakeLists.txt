@@ -15,6 +15,8 @@ SET ( SRC_MAIN main.c )
 # 2. A Executable that utilises the library.
 add_executable(midi-mapper ${SRC_MAIN})
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/../../ )
+
 # Break into conditionals for audio driver support
 
 # Link Library support: libmidimap

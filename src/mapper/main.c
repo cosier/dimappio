@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "core.h"
+#include "version.h"
 
 void print_usage() {
     printf("Usage: midi-mapper\n");
@@ -25,7 +26,10 @@ void print_usage() {
 }
 
 void print_version() {
-    printf("midi-mapper v0.01\n");
+    printf("midi-mapper v%s.%s.%s\nrevision: %s\nbuild date: %s\n\n",
+           MM_VERSION_MAJOR, MM_VERSION_MINOR, MM_VERSION_PATCH,
+           MM_VERSION_BUILD, MM_VERSION_DATE);
+
     printf("Authors: Bailey Cosier <bailey@cosier.ca>\n");
     printf("Homepage: https://github.com/cosier/midi-mapper\n\n");
 }
