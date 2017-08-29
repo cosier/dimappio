@@ -114,6 +114,11 @@ mm_mapping* mm_mapping_from_list(char* list) {
         key = key_tokens[i];
         res = NULL;
 
+        if (!strstr(key, ":")) {
+            error("Could not parse mapping: %s", key);
+            return NULL;
+        }
+
         src_grp = strtok_r(key, ":", &res);
         dst_grp = strtok_r(NULL, ":", &res);
 
@@ -145,6 +150,8 @@ mm_mapping* mm_mapping_from_list(char* list) {
             }
         }
     }
+
+    pdebug("mapping built\n");
 
     return mapping;
 }
