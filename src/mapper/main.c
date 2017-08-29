@@ -296,7 +296,9 @@ int main(int argc, char** argv) {
     }
 
     if (mapping == NULL) {
-        error("Invalid Mapping provided");
+        error("Invalid Mapping provided\n");
+        printf("-----------------------------------\n");
+        print_usage();
         exit(EXIT_FAILURE);
     }
 
