@@ -7,7 +7,7 @@
 Testing
 
 vendor
-vendor/lib
+vendor/build
 
 
 # Rtags

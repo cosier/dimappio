@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIR="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$( cd $DIR/../ && pwd )
+
+echo "-------------------------------"
+echo " Building static Alsa-lib"
+echo
+cd $ROOT/vendor/alsa-lib
+ ./configure \
+   --enable-static=yes \
+   --enable-shared=no \
+   --prefix=$ROOT/vendor/build \
+   --disable-python \
+   --disable-pcm \
+   --disable-mixer \
+   --disable-topology \
+   --disable-alisp \
+   --disable-old-symbols \
+   && make -j4 && make install
+
+if [ -eq $? 0 ]; then
+  echo "Alsa-lib built successfully"
+  ls $ROOT/vendor/build
+fi
