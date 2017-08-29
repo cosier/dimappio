@@ -64,7 +64,7 @@ void error(char* format, ...) {
     va_list ap;
     va_start(ap, format);
     char* fmt = malloc(sizeof(char*) * 64);
-    sprintf(fmt, "\033[32;1m %s \033[0m", format);
+    sprintf(fmt, "%s%s%s", RED, format, RESET);
     vfprintf(stderr, fmt, ap);
     va_end(ap);
     putc('\n', stderr);
