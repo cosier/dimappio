@@ -7,10 +7,17 @@
 #include "version.h"
 
 void print_usage() {
-    printf("Usage: midi-mapper\n");
+    printf("Usage: midi-mapper [options] [Mapping]\n\n");
+    printf("[Mapping] consists of a comma delimited list of notes.\n");
+    printf("Within that list, you may nest sub lists to specify \na group of notes to be executed per src trigger\n");
 
-    printf("  -r, --remap=<note:note> Remap a list (comma delimited) of "
-           "note<>note\n");
+    printf("\nExample:\n");
+    printf("midi-mapper -x 32:0  C3:C3|C4|C5,F#3:F#4\n");
+
+    printf("\nThis will create a virtual interface attached to the device port 32:0.\n");
+    printf("Then it will map two keys (C3 and F#3) to trigger multiple other keys\n");
+
+    printf("\nOptions:\n");
     printf("  -s, --send=<note>       Send midi note to a specifc client\n");
     printf("  -t, --target=<id:port>  Specify a target Midi Client\n");
     printf("  -x, --source=<id:port>  Specify a Midi Client source\n");
