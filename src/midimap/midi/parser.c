@@ -43,22 +43,22 @@ int mm_parse_to_midi(char* input) {
     int raise = 0;
     int midi = -1;
     int oct = -1;
-    int i = 0;
+    int i = 1;
+
+    c[0] = toupper(input[0]);
 
     while (input[i] != '\0') {
         c[i] = toupper(input[i]);
-        if (i > 0) {
-            if (c[i] == '#') {
-                raise++;
-            } else if (c[i] == 'B') {
-                raise--;
-            } else {
-                if (is_char_number(c[i])) {
-                    if (input[i + 1] != '\0') {
-                        oct = 10;
-                    } else if (oct < 0) {
-                        oct = atoi(&input[i]);
-                    }
+        if (c[i] == '#') {
+            raise++;
+        } else if (c[i] == 'B') {
+            raise--;
+        } else {
+            if (is_char_number(c[i])) {
+                if (input[i + 1] != '\0') {
+                    oct = 10;
+                } else if (oct < 0) {
+                    oct = atoi(&input[i]);
                 }
             }
         }
