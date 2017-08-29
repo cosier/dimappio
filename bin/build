@@ -9,13 +9,25 @@ fi
 
 mkdir -p $ROOT/build && cd $ROOT/build;
 
+if [[ "$RELEASE" == true ]]; then
+  CMAKE_BUILD_TYPE=Release
+fi
+
+if [ -z "$CMAKE_BUILD_TYPE" ]; then
+  CMAKE_BUILD_TYPE=Debug
+fi
+
+echo
+echo -e " Building: $CMAKE_BUILD_TYPE"
+echo -e "-------------------------------------\n"
+
 if [[ ! -f $ROOT/build/Makefile ]]; then
-  cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug ..
+  cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
   if [ ! $? -eq 0 ]; then
     exit 1
   fi
 fi
 
-clear
 make -j4
+echo
 

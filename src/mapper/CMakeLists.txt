@@ -20,4 +20,6 @@ add_executable(midi-mapper ${SRC_MAIN})
 # Link Library support: libmidimap
 target_link_libraries( midi-mapper midimap )
 
+install(TARGETS midi-mapper
+  RUNTIME DESTINATION bin)
 

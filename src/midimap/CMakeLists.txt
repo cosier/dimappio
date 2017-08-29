@@ -25,7 +25,7 @@ endforeach( PATH )
 # Setup 2 targets for build output.
 # 1. A library for ... library reuse.
 # 2. A Executable that utilises the library.
-add_library(midimap ${SRC_LIB})
+add_library(midimap STATIC ${SRC_LIB})
 
 # Break into conditionals for audio driver support
 if (APPLE)
