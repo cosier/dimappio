@@ -51,6 +51,8 @@ int mm_parse_to_midi(char* input) {
         c[i] = toupper(input[i]);
         if (c[i] == '#') {
             raise++;
+        } else if (c[i] == 's') {
+            raise++;
         } else if (c[i] == 'B') {
             raise--;
         } else {
