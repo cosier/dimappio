@@ -151,8 +151,6 @@ mm_mapping* mm_mapping_from_list(char* list) {
         }
     }
 
-    pdebug("mapping built\n");
-
     return mapping;
 }
 

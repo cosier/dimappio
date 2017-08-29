@@ -11,6 +11,7 @@
 #include "midi/device.h"
 #include "midi/internals/alsa_decoder.h"
 #include "midi/mapping.h"
+#include "midi/monitor.h"
 #include "midi/nodes.h"
 #include "midi/output.h"
 #include "midi/parser.h"
