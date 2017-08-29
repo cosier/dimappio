@@ -49,3 +49,28 @@ Options:
 
 
 ```
+
+
+
+## Installation:
+
+Midi Mapper depends only on audio API(s) provided by your OS.
+ALSA for Linux, and CoreAudio on OSX.
+
+
+CMake is used to build the application.
+
+Linux (Ubuntu):
+```sudo apt-get install cmake```
+
+
+OSX:
+```brew install cmake```
+
+Get the code and build it with the automated **bin/install** script.
+
+```
+git clone https://github.com/cosier/midi-mapper
+cd midi-mapper
+bin/install
+```
