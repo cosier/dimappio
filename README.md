@@ -1,6 +1,6 @@
 # Midi Mapper
 
-### Tool for remapping Virtual Midi Devices
+### Tool for creating Smart Virtual Midi Devices
 midi-mapper allows you to re-route and remap individual notes from your Midi Devices.
 
 **Implemented in pure C**, midi-mapper accesses the low level audio API(s) for OS.
