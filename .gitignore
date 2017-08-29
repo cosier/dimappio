@@ -6,6 +6,9 @@
 *.#*
 Testing
 
+vendor
+vendor/lib
+
 
 # Rtags
 compile_commands.json
