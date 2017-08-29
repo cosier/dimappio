@@ -4,6 +4,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #endif
 
+#include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +17,6 @@ mm_device* mm_parse_device(char* client_with_port);
 mm_note* mm_midi_to_note(int midi, bool sharp);
 char* mm_midi_to_note_display(int midi);
 char* mm_note_print(mm_note* n);
-int mm_parse_anything_to_midi(char* input);
+int mm_parse_to_midi(char* input);
 
 #endif

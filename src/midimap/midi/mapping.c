@@ -132,7 +132,7 @@ mm_mapping* mm_mapping_from_list(char* list) {
         }
 
         for (int isrc = 0; isrc < src_count; ++isrc) {
-            src = mm_parse_anything_to_midi(src_tokens[isrc]);
+            src = mm_parse_to_midi(src_tokens[isrc]);
             if (mapping->index[src] == NULL) {
                 // Stash our new group into the index
                 mapping->index[src] = create_key_group(
@@ -191,11 +191,11 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
     km->dst_set = create_key_set(dst_count);
 
     for (int idst = 0; idst < dst_count; ++idst) {
-        km->dst_set->keys[idst] = mm_parse_anything_to_midi(dst_tokens[idst]);
+        km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens[idst]);
     }
 
     for (int isrc = 0; isrc < src_count; ++isrc) {
-        km->src_set->keys[isrc] = mm_parse_anything_to_midi(src_tokens[isrc]);
+        km->src_set->keys[isrc] = mm_parse_to_midi(src_tokens[isrc]);
     }
 
     return km;
