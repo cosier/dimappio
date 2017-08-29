@@ -74,3 +74,11 @@ git clone https://github.com/cosier/midi-mapper
 cd midi-mapper
 bin/install
 ```
+
+
+## Authors:
+In no particular order,
+
+- Bailey Cosier <github.com/cosier>
+
+Contributions / Pull requests / Issues are all welcome!
