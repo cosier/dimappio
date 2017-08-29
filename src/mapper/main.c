@@ -9,13 +9,16 @@
 void print_usage() {
     printf("Usage: midi-mapper [options] [Mapping]\n\n");
     printf("[Mapping] consists of a comma delimited list of notes.\n");
-    printf("Within that list, you may nest sub lists to specify \na group of notes to be executed per src trigger\n");
+    printf("Within that list, you may nest sub lists to specify \na group of "
+           "notes to be executed per src trigger\n");
 
     printf("\nExample:\n");
     printf("midi-mapper -x 32:0  C3:C3|C4|C5,F#3:F#4\n");
 
-    printf("\nThis will create a virtual interface attached to the device port 32:0.\n");
-    printf("Then it will map two keys (C3 and F#3) to trigger multiple other keys\n");
+    printf("\nThis will create a virtual interface attached to the device port "
+           "32:0.\n");
+    printf("Then it will map two keys (C3 and F#3) to trigger multiple other "
+           "keys\n");
 
     printf("\nOptions:\n");
     printf("  -s, --send=<note>       Send midi note to a specifc client\n");
@@ -189,6 +192,28 @@ int main(int argc, char** argv) {
             print_usage();
             exit(EXIT_FAILURE);
         }
+    }
+
+    if (optind == argc) {
+        printf("[Mapping] command string not provided!\n");
+        printf("-------------------------------------\n\n");
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+
+    // Capture n amount of mappings provided to the CLI
+    if (optind < argc) {
+        char* mapbuf = malloc(sizeof(char*) * 1024);
+        mapbuf[0] = '\0';
+        int opts = argc - optind;
+        for (int i = 0; i < opts; ++i) {
+            if (i > 0) {
+                sprintf(mapbuf, "%s,%s", mapbuf, argv[optind + i]);
+            } else {
+                sprintf(mapbuf, "%s", argv[optind + i]);
+            }
+        }
+        mapsrc = mapbuf;
     }
 
     // Flip global debug flag.
