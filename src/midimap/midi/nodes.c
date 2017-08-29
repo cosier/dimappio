@@ -51,9 +51,9 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
 
         if (note != NULL && strlen(note) > 1) {
             if (i == (list->size - 1)) {
-                sprintf(buf, "%s%s", buf, note);
+                sprintf(buf, "%s%s(%d)", buf, note, ptr->key);
             } else {
-                sprintf(buf, "%s%s, ", buf, note);
+                sprintf(buf, "%s%s(%d), ", buf, note, ptr->key);
             }
         }
     }

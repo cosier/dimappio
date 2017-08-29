@@ -10,7 +10,6 @@
 
 #include "midi/device.h"
 #include "midi/internals/alsa_decoder.h"
-#include "midi/internals/alsa_raw_midi.h"
 #include "midi/mapping.h"
 #include "midi/nodes.h"
 #include "midi/output.h"
@@ -37,19 +36,5 @@ void mma_receive_events_from(mm_midi_output* output, int client, int port);
 void mma_send_events_to(mm_midi_output* output, int client, int port);
 
 int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type);
-
-static void update_node_list(snd_seq_event_t* event, mm_key_node** tail);
-
-static void send_event(mm_midi_output* output, snd_seq_event_t* event);
-static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
-                      int vel);
-
-static void check_snd(char* desc, int err);
-
-static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* event,
-                            mm_key_set* dsts_set);
-
-static void release_mapping(mm_midi_output* output, snd_seq_event_t* event,
-                            mm_key_set* dsts_set);
 #endif
 #endif

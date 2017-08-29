@@ -13,6 +13,19 @@ static volatile sig_atomic_t stop = 0;
  */
 static void sighandler() { stop = 1; }
 
+static void update_node_list(snd_seq_event_t* event, mm_key_node** tail);
+
+static void send_event(mm_midi_output* output, snd_seq_event_t* event);
+static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
+                      int vel);
+
+static void check_snd(char* desc, int err);
+
+static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* event,
+                            mm_key_set* dsts_set);
+
+static void release_mapping(mm_midi_output* output, mm_key_set* dsts_set);
+
 mm_devices* mma_get_devices() {
     mm_devices* devices = malloc(sizeof(mm_devices));
     devices->store = malloc(sizeof(mm_device) * 64);
@@ -194,7 +207,7 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
                     if (note_on) {
                         trigger_mapping(output, event, dsts_set);
                     } else {
-                        release_mapping(output, event, dsts_set);
+                        release_mapping(output, dsts_set);
                     }
 
                 } else {
@@ -297,7 +310,7 @@ mm_midi_output* mma_midi_output_create(int input_client, int input_port) {
 
 int mma_init_sequencer(snd_seq_t** seq, char* name) {
     int status;
-    if (status = snd_seq_open(seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) {
+    if ((status = snd_seq_open(seq, "default", SND_SEQ_OPEN_DUPLEX, 0)) < 0) {
         error("Could not open sequencer: %s", snd_strerror(status));
         exit(EXIT_FAILURE);
     }
@@ -399,15 +412,13 @@ static void update_node_list(snd_seq_event_t* ev, mm_key_node** tail) {
 
 static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* ev,
                             mm_key_set* dst_set) {
-    int vel = ev->data.note.velocity;
     for (int i = 0; i < dst_set->count; i++) {
         send_midi(output, dst_set->keys[i], true, ev->data.note.channel,
                   ev->data.note.velocity);
     }
 }
 
-static void release_mapping(mm_midi_output* output, snd_seq_event_t* ev,
-                            mm_key_set* dst_set) {
+static void release_mapping(mm_midi_output* output, mm_key_set* dst_set) {
     for (int i = 0; i < dst_set->count; i++) {
         send_midi(output, dst_set->keys[i], false, 0, 0);
     }

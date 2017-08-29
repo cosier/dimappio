@@ -22,12 +22,6 @@ mm_note* mm_midi_to_note(int midi, bool sharp) {
     return n;
 }
 
-int mm_tone_to_note(char* tone) {
-    if (tone != NULL) {
-        // TODO:
-    }
-}
-
 int mm_parse_anything_to_midi(char* input) {
     int midi = atoi(input);
     return midi;
