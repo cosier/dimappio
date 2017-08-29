@@ -60,10 +60,12 @@ void pdebug(const char* format, ...) {
     }
 }
 
-void error(const char* format, ...) {
+void error(char* format, ...) {
     va_list ap;
     va_start(ap, format);
-    vfprintf(stderr, format, ap);
+    char* fmt = malloc(sizeof(char*) * 64);
+    sprintf(fmt, "\033[32;1m %s \033[0m", format);
+    vfprintf(stderr, fmt, ap);
     va_end(ap);
     putc('\n', stderr);
 }

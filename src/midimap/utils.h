@@ -10,7 +10,7 @@
 extern bool mm_driver_debug_mode;
 
 void pdebug(const char* format, ...);
-void error(const char* format, ...);
+void error(char* format, ...);
 void mm_clear(int lines);
 
 int mm_count_lines(char* input);
