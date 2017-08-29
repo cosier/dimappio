@@ -13,6 +13,13 @@ if ("$ENV{BUILD_TIMESTAMP}" STREQUAL "")
   message (FATAL_ERROR "BUILD_TIMESTAMP not specified in ENV")
 endif()
 
+
+if ("$ENV{BUILD_STATIC}" STREQUAL "true")
+  set (BUILD_SHARED_LIBS OFF)
+  set (CMAKE_EXE_LINKER_FLAGS "-static")
+endif()
+
+
 set (MM_VERSION_BUILD $ENV{BUILD_REVISION})
 set (MM_VERSION_DATE $ENV{BUILD_TIMESTAMP})
 
