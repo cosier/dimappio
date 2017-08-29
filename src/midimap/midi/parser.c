@@ -21,80 +21,81 @@ mm_note* mm_midi_to_note(int midi, bool sharp) {
 
     return n;
 }
-static bool is_number(char* input) {
-    unsigned char ch = toupper((unsigned char)input[0]);
-    int i = 0;
 
-    while (ch != '\0') {
-        /* printf("is_number(%c)\n", ch); */
-        if (!isdigit(ch)) {
-            return false;
-        }
-        i++;
-        ch = toupper((unsigned char)input[i]);
+static bool is_char_number(unsigned ch) {
+    if (!isdigit(ch)) {
+        return false;
     }
 
     return true;
 }
 
 int mm_parse_to_midi(char* input) {
-    if (is_number(input)) {
+    // cast first char to unsigned uppercase, for digit check.
+    if (is_char_number(toupper((unsigned char)input[0]))) {
         return atoi(input);
     }
 
-    // raise or lower note for sharp/flat
+    // Container for input letters.
+    // Using unsigned to ensure correct isdigit checks in the upmost bits.
+    unsigned char c[4] = {0};
+
     int raise = 0;
     int midi = -1;
-    char note = tolower(input[0]);
+    int oct = -1;
+    int i = 0;
 
-    // Default fourth octave if not specified
-    int oct = 4;
-
-    int len = strlen(input);
-
-    if (len == 3) {
-        oct = atoi(&input[2]);
-    } else {
-        oct = atoi(&input[1]);
-    }
-
-    if (len == 2 || len == 3) {
-        if (input[1] == '#') {
-            raise++;
-        } else if (input[1] == 'b') {
-            raise--;
+    while (input[i] != '\0') {
+        c[i] = toupper(input[i]);
+        if (i > 0) {
+            if (c[i] == '#') {
+                raise++;
+            } else if (c[i] == 'B') {
+                raise--;
+            } else {
+                if (is_char_number(c[i])) {
+                    if (input[i + 1] != '\0') {
+                        oct = 10;
+                    } else if (oct < 0) {
+                        oct = atoi(&input[i]);
+                    }
+                }
+            }
         }
+        i++;
     }
 
-    switch (note) {
-    case 'c':
+    if (oct < 0) {
+        oct = 4;
+    }
+
+    switch (c[0]) {
+    case 'C':
         midi = 0;
         break;
-    case 'd':
+    case 'D':
         midi = 2;
         break;
-    case 'e':
+    case 'E':
         midi = 4;
         break;
-    case 'f':
+    case 'F':
         midi = 5;
         break;
-    case 'g':
+    case 'G':
         midi = 7;
         break;
-    case 'a':
+    case 'A':
         midi = 9;
         break;
-    case 'b':
+    case 'B':
         midi = 11;
         break;
     default: {
-        printf("unknown note: %c\n", note);
+        printf("unknown note: %c\n", c[0]);
         midi = -2;
     }
     }
-
-    /* printf("determined base midi: %d\n", midi); */
 
     if (midi < 0) {
         error("parser: midi(%d) less than zero.\n\n", midi);
