@@ -22,9 +22,8 @@ add_executable(test-key-nodes  key_nodes.c)
 add_executable(test-map-parser map_parser.c)
 add_executable(test-note-parser note_parser.c)
 
-
 # Link up main executable with our Library: libmidimap
 target_link_libraries( test-key-nodes midimap test_helper)
-target_link_libraries( test-map-parser midimap )
-target_link_libraries( test-note-parser midimap )
+target_link_libraries( test-map-parser midimap test_helper)
+target_link_libraries( test-note-parser midimap test_helper)
 
