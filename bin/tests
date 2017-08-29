@@ -26,8 +26,12 @@ if [ ! $? -eq 0 ]; then
 fi
 
 make test
+test_failed=$?
 
 if [[ "$1" != "" ]]; then
+  if [[ $test_error != 0 ]]; then
+    clear
+  fi
   echo "Running test: $1"
   echo
   $ROOT/build/tests/$1

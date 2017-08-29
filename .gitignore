@@ -9,6 +9,9 @@ Testing
 
 # Rtags
 compile_commands.json
+GTAGS
+GPATH
+GRTAGS
 
 # Prerequisites
 *.d

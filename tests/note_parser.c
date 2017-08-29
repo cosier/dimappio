@@ -5,17 +5,25 @@
 #include <midimap/core.h>
 
 void midi_to_note_transform() {
-    mm_note *note = mm_midi_to_note(20, true);
-    char * note_print = mm_note_print(note);
+    mm_note* note = mm_midi_to_note(20, true);
+    char* note_print = mm_note_print(note);
     printf("note: %s\n\n", note_print);
 
     assert(strcmp(note_print, "G#1") == 0);
 }
 
-int main(int argc, char **argv) {
-  printf("Running note_parser tests\n");
+void note_to_midi_transform() {
+    char* n = "C#3";
+    int midi = 36;
 
-  midi_to_note_transform();
+    assert(mm_parse_anything_to_midi(n) == midi);
+}
 
-  return 0;
+int main() {
+    printf("Running note_parser tests\n");
+
+    midi_to_note_transform();
+    note_to_midi_transform();
+
+    return 0;
 }
