@@ -126,7 +126,10 @@ char* mm_note_print(mm_note* n) {
 }
 
 mm_device* mm_parse_device(char* str) {
-    mm_device* dev = malloc(sizeof(mm_device));
+    mm_debug("parser: mm_parse_device(%s)\n", str);
+    mm_device* dev = malloc(sizeof(mm_device) * 1);
+
+    mm_debug("parser: mm_parse_device malloc success\n");
     dev->client = 0;
     dev->port = 0;
 
@@ -137,6 +140,7 @@ mm_device* mm_parse_device(char* str) {
 
     char* container;
     str = strdup(str);
+    mm_debug("parser: mm_parse_device: attempting to strtok_r\n");
     char* token = strtok_r(str, ":", &container);
 
     if (token != NULL) {
@@ -153,5 +157,6 @@ mm_device* mm_parse_device(char* str) {
         error("parsing of (%s) failed due to port token", str);
     }
 
+    mm_debug("parser: mma_parse_device: success\n");
     return dev;
 }

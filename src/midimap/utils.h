@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <pwd.h>
 #include <sys/types.h>
@@ -17,6 +18,7 @@ extern bool mm_driver_debug_mode;
 void mm_debug(const char* format, ...);
 void error(char* format, ...);
 void mm_clear(int lines);
+int64_t mm_micros();
 
 int mm_count_lines(char* input);
 bool contains_bit(unsigned val, unsigned bitindex);

@@ -101,8 +101,10 @@ void mma_monitor_device(mm_options* options) {
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
+    mm_debug("alsa: mma_monitor_device: setting up src\n");
     mm_device* src = mm_parse_device(options->source);
 
+    mm_debug("alsa: mma_monitor_device: attempting to query port_info\n");
     const snd_seq_port_info_t* pinfo = mma_get_port_info(src);
     const char* pname = snd_seq_port_info_get_name(pinfo);
 
@@ -110,10 +112,12 @@ void mma_monitor_device(mm_options* options) {
     mm_midi_output* output = mma_midi_output_create(src->client, src->port);
 
     if (options->target != NULL) {
+        mm_debug("alsa: mma_monitor_device: setting up receiver\n");
         mm_device* receiver = mm_parse_device(options->target);
         mma_send_events_to(output, receiver->client, receiver->port);
     }
 
+    mm_debug("alsa: mma_monitor_device: attempting to enter event loop\n");
     mma_event_loop(options, output);
 }
 

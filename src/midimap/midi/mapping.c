@@ -35,16 +35,17 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
             sprintf(buf, "%s %s ", buf,
                     mm_midi_to_note_display(k->src_set->keys[isrc]));
         }
-        sprintf(buf, "%s]->", buf);
+        strcat(buf, " ]->");
     } else {
-        sprintf(buf, "%s ->", buf);
+        strcat(buf, " ->");
     }
     for (int di = 0; di < k->dst_set->count; ++di) {
-        sprintf(buf, "%s %s ", buf,
-                mm_midi_to_note_display(k->dst_set->keys[di]));
+        strcat(buf, " ");
+        strcat(buf, mm_midi_to_note_display(k->dst_set->keys[di]));
+        strcat(buf, " ");
     }
 
-    sprintf(buf, "%s%s", buf, RESET);
+    strcat(buf, RESET);
 }
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }
@@ -71,7 +72,7 @@ mm_mapping* mm_build_mapping() {
 }
 
 mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
-    mm_key_set* combined_set = malloc(sizeof(mm_key_set*));
+    mm_key_set* combined_set = malloc(sizeof(mm_key_set));
     // hold up to 128 keys in this set
     combined_set->keys = malloc(sizeof(int*) * 128);
     combined_set->count = 0;

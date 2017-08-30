@@ -79,6 +79,13 @@ void mm_clear(int lines) {
     }
 }
 
+int64_t mm_micros() {
+    struct timespec tms;
+    timespec_get(&tms, TIME_UTC);
+    int64_t micros = tms.tv_sec * 1000000;
+    return micros += tms.tv_nsec / 1000;
+}
+
 void error(char* format, ...) {
     va_list ap;
     va_start(ap, format);

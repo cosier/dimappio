@@ -18,9 +18,10 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         options->first = 0;
     }
 
+    mm_debug("mm_monitor_render()\n");
+
     int i = 0;
     int sharp = 0;
-    int oct = 0;
     int c = 0;
 
     int keys = options->keys;
@@ -41,15 +42,15 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         midi_start = 0;
     }
 
-    mm_debug("midi_start(%d)\n", midi_start);
+    // mm_debug("midi_start(%d)\n", midi_start);
 
+    ++clear_count;
     if (options->mapping->count) {
-        ++clear_count;
     }
 
     char* colour = NULL;
-    char* mkeys = malloc(sizeof(char*) * 32);
-    char* piano = malloc(sizeof(char*) * keys * 4);
+    char* mkeys = malloc(sizeof(char*) * 512);
+    char* piano = malloc(sizeof(char*) * keys * 8);
 
     mkeys[0] = '\0';
     piano[0] = ' ';
@@ -115,14 +116,16 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
                 }
             }
         }
-
-        sprintf(piano, "%s%s%s%s", piano, colour, " ", RESET);
+        strcat(piano, colour);
+        strcat(piano, " ");
+        strcat(piano, RESET);
         ++i;
     }
 
     i = 0;
-    sprintf(piano, "%s\n ", piano);
+    strcat(piano, "\n ");
     colour = NULL;
+
     while (i < keys) {
         int index = i + midi_start;
         if (lookup[index] && !sharp_lookup[index]) {
@@ -134,7 +137,10 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         } else {
             colour = COLOUR_KEY;
         }
-        sprintf(piano, "%s%s%s%s", piano, colour, " ", RESET);
+        strcat(piano, colour);
+        strcat(piano, " ");
+        strcat(piano, RESET);
+
         ++i;
     }
 

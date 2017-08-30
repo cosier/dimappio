@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
     // Flip global debug flag.
     if (debug) {
         mm_driver_debug();
-        mm_debug("\033c[midi-mapper started]\n");
+        mm_debug("\033c[midi-mapper started]: %lu\n", mm_micros());
     }
 
     // Version output and then exit.
@@ -283,8 +283,11 @@ int main(int argc, char** argv) {
         }
 
         // Build mappings from a comma delimited string.
+        mm_debug("main: attempting to build mappings from list using: %s\n",
+                 mapsrc);
         mapping = mm_mapping_from_list(mapsrc);
     } else {
+        mm_debug("main: building solo mappings\n");
         mapping = mm_build_mapping();
     }
 
@@ -293,6 +296,8 @@ int main(int argc, char** argv) {
         printf("-----------------------------------\n");
         print_usage();
         exit(EXIT_FAILURE);
+    } else {
+        mm_debug("main: mappings created successfully\n");
     }
 
     if (mapping->count) {
@@ -318,6 +323,7 @@ int main(int argc, char** argv) {
             requires_source_specified("monitor");
         }
 
+        mm_debug("main: attempting to monitor client\n");
         mm_monitor_client(options);
         exit(EXIT_SUCCESS);
     }
