@@ -6,6 +6,7 @@
 #include "midi/mapping.h"
 #include "midi/notes.h"
 #include "midi/parser.h"
+#include "options.h"
 
 #include "ui/interface.h"
 #endif

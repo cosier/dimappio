@@ -15,6 +15,7 @@
 #include "midi/nodes.h"
 #include "midi/output.h"
 #include "midi/parser.h"
+#include "options.h"
 #include "utils.h"
 
 typedef snd_seq_t mm_midi_device;
@@ -23,12 +24,12 @@ mm_devices* mma_get_devices();
 snd_seq_port_info_t* mma_get_port_info(mm_device* dev);
 bool mma_client_exists(char* client);
 
-void mma_monitor_device(char* source, char* target, mm_mapping* mappings);
+void mma_monitor_device(mm_options* options);
 
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
                         int vel);
 
-void mma_event_loop(mm_mapping* mapping, mm_midi_output* output);
+void mma_event_loop(mm_options* options, mm_midi_output* output);
 
 int mma_init_sequencer(snd_seq_t** seq, char* name);
 mm_midi_output* mma_midi_output_create(int client, int port);

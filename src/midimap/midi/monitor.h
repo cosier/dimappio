@@ -3,8 +3,9 @@
 
 #include "midi/mapping.h"
 #include "midi/nodes.h"
+#include "options.h"
 
-void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
+void mm_monitor_render(mm_options* options, mm_key_node* tail,
                        mm_key_set* key_set);
 
 #endif

@@ -9,9 +9,13 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
         return;
     }
 
-    sprintf(buf, "\n  User Mapping:\n");
-    for (int i = 0; i < mapping->group_count; ++i) {
-        mm_key_group_dump(mapping->mapped[i], buf);
+    buf[0] = '\0';
+
+    if (mapping->count) {
+        sprintf(buf, "User Mapping:");
+        for (int i = 0; i < mapping->group_count; ++i) {
+            mm_key_group_dump(mapping->mapped[i], buf);
+        }
     }
 }
 

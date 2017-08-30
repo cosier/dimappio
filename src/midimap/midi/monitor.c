@@ -8,10 +8,14 @@ static char* COLOUR_PRESSED_SHARP = BGRED2;
 static char* COLOUR_MAPPED = BGGREEN;
 static char* COLOUR_MAPPED_SHARP = BGGREEN2;
 
-void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
+void mm_monitor_render(mm_options* options, mm_key_node* tail,
                        mm_key_set* key_set) {
 
-    if (mapping != NULL) {
+    if (options->first) {
+        mm_debug("mm_monitor_render() : called for the first time\n");
+        // Buffer the terminal for the preceeding mm_clear()
+        printf("\n\n\n");
+        options->first = 0;
     }
 
     int i = 0;
@@ -19,12 +23,31 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
     int oct = 0;
     int c = 0;
 
-    int keys = 89;
+    int keys = options->keys;
+
+    // Enforce a hard limit on keys due to midi 128 limit.
+    if (keys > 89) {
+        keys = 89;
+    } else if (keys < 25) {
+        keys = 25;
+    }
+
     int sharp_lookup[89] = {0};
     int lookup[89] = {0};
+    int clear_count = 4;
+    int midi_start = 60 - (keys / 2);
+    mm_debug("midi_start(%d)\n", midi_start);
 
+    if (options->mapping->count) {
+        ++clear_count;
+    }
+
+    char* colour = NULL;
     char* mkeys = malloc(sizeof(char*) * 32);
-    mkeys[0] = 0;
+    char* piano = malloc(sizeof(char*) * keys * 4);
+
+    mkeys[0] = '\0';
+    piano[0] = '\0';
 
     if (key_set != NULL && key_set->count > 0) {
         /* mm_debug("\nRendering key_set(%d)\n", key_set->count); */
@@ -38,8 +61,8 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
         sprintf(mkeys, "%s%s", mkeys, RESET);
     }
 
+    mm_clear(clear_count);
     mm_key_node_list* list = mm_key_node_get_list(tail);
-    mm_clear(5);
 
     if (list->size > 0) {
         printf("\n%s♬  NOTES:%s %s%s%s %s\n\n", BLUE, RESET, RED,
@@ -48,17 +71,17 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
         printf("\n%s♬  NOTES:%s Waiting for MIDI input... \n\n", BLUE, RESET);
     }
 
+    // Iterated currently active mm_key_node(s) into a lookup hit table
     for (int l = 0; l < list->size; ++l) {
         lookup[list->nodes[l]->key] = 1;
     }
 
-    char* colour = NULL;
-    char* piano = malloc(sizeof(char*) * keys * 4);
-    piano[0] = 0;
-
+    // Build top row of piano keys, taking care with the sharps.
     while (i < keys) {
+        int index = i + midi_start;
+
         if (c == 1 || c == 3 || c == 6 || c == 8 || c == 10) {
-            sharp_lookup[i] = 1;
+            sharp_lookup[index] = 1;
             sharp = 1;
         } else {
             sharp = 0;
@@ -70,8 +93,8 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
             colour = COLOUR_KEY;
         }
 
-        if (lookup[i]) {
-            if (lookup[i] == -1) {
+        if (lookup[index]) {
+            if (lookup[index] == -1) {
                 if (sharp) {
                     colour = COLOUR_MAPPED_SHARP;
                 } else {
@@ -101,8 +124,9 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
     sprintf(piano, "%s\n", piano);
     colour = NULL;
     while (i < keys) {
-        if (lookup[i] && !sharp_lookup[i]) {
-            if (lookup[i] == -1) {
+        int index = i + midi_start;
+        if (lookup[index] && !sharp_lookup[index]) {
+            if (lookup[index] == -1) {
                 colour = COLOUR_MAPPED;
             } else {
                 colour = COLOUR_PRESSED;

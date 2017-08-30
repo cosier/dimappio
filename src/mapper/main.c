@@ -97,6 +97,7 @@ int main(int argc, char** argv) {
 
     int note_ch = 0;
     int note_vel = 0;
+    int keys = 89;
 
     char* note_on_str;
     bool note_on = false;
@@ -109,6 +110,7 @@ int main(int argc, char** argv) {
         {"version", no_argument, 0, 'v'},
         {"debug", no_argument, 0, 'z'},
         {"monitor", no_argument, 0, 'm'},
+        {"keys", required_argument, 0, 'k'},
         {"remap", required_argument, 0, 'r'},
         {"send", required_argument, 0, 's'},
         {"target", required_argument, 0, 't'},
@@ -116,7 +118,7 @@ int main(int argc, char** argv) {
         {0, 0, 0, 0}};
 
     int long_index = 0;
-    while ((opt = getopt_long(argc, argv, "lhvzmr:t:x:s:", long_options,
+    while ((opt = getopt_long(argc, argv, "lhvzmr:t:k:x:s:", long_options,
                               &long_index)) != -1) {
 
         switch (opt) {
@@ -138,6 +140,10 @@ int main(int argc, char** argv) {
 
         case 'z':
             debug = true;
+            break;
+
+        case 'k':
+            keys = atoi(optarg);
             break;
 
         case 't':
@@ -190,15 +196,8 @@ int main(int argc, char** argv) {
 
         default:
             print_usage();
-            exit(EXIT_FAILURE);
+            return 1;
         }
-    }
-
-    if (optind == argc) {
-        printf("[Mapping] command string not provided!\n");
-        printf("-------------------------------------\n\n");
-        print_usage();
-        exit(EXIT_FAILURE);
     }
 
     // Capture n amount of mappings provided to the CLI
@@ -225,19 +224,19 @@ int main(int argc, char** argv) {
     // Version output and then exit.
     if (version) {
         print_version();
-        exit(EXIT_SUCCESS);
+        return 0;
     }
 
     // Show cli help usage and exit.
     if (help) {
         print_usage();
-        exit(EXIT_SUCCESS);
+        return 0;
     }
 
     // List available midi client ports then exit.
     if (list) {
         mm_list_clients();
-        exit(EXIT_SUCCESS);
+        return 0;
     }
 
     mm_device* midi_through = mm_get_midi_through();
@@ -257,10 +256,6 @@ int main(int argc, char** argv) {
         if (!verify_valid_midi_client(source)) {
             exit(EXIT_FAILURE);
         }
-    } else if (midi_through != NULL) {
-        /* source = malloc(sizeof(char*) * 6); */
-        /* sprintf(source, "%d:%d", midi_through->client, midi_through->port);
-         */
     }
 
     // Send a midi note to a specific client.
@@ -273,8 +268,7 @@ int main(int argc, char** argv) {
 
         mm_send_midi_note(cp->client, cp->port, send_note, note_on, note_ch,
                           note_vel);
-
-        exit(EXIT_SUCCESS);
+        return 0;
     }
 
     // If mappings are provided, check for a valid target and source.
@@ -290,8 +284,6 @@ int main(int argc, char** argv) {
 
         // Build mappings from a comma delimited string.
         mapping = mm_mapping_from_list(mapsrc);
-
-        // TODO: optional, build mappings from a file (ie. yaml parser)
     } else {
         mapping = mm_build_mapping();
     }
@@ -303,26 +295,32 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    char* buf = malloc(sizeof(char) * 128 * mapping->count);
-    mm_mapping_dump(mapping, buf);
-    printf("%s\n\n\n\n\n", buf);
+    if (mapping->count) {
+        char* buf = malloc(sizeof(char) * 128 * mapping->count);
+        mm_mapping_dump(mapping, buf);
+        printf("%s\n", buf);
+    }
+
+    mm_options* options = mm_create_options();
+    options->mapping = mapping;
+    options->keys = keys;
+    options->source = source;
+    options->target = target;
 
     // Engage in monitor loop.
     // Uses a source to poll events from.
     //
     // Sourced events are passed through the remap filter
     // before being broadcast to any subscribers.
-    if (monitor || mapsrc != NULL) {
+    /* if (monitor || mapsrc != NULL) { */
+    if (monitor || true) {
         if (source == NULL) {
             requires_source_specified("monitor");
         }
 
-        mm_monitor_client(source, target, mapping);
+        mm_monitor_client(options);
         exit(EXIT_SUCCESS);
     }
-
-    // Kick off the application UI thread
-    /* mm_interface_start(); */
 
     print_usage();
     return 0;

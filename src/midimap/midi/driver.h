@@ -9,6 +9,7 @@
 #include "midi/internals/winmm.h"
 #include "midi/mapping.h"
 #include "midi/output.h"
+#include "options.h"
 
 #include "utils.h"
 
@@ -17,7 +18,7 @@ extern bool mm_driver_debug_mode;
 mm_devices* mm_get_devices();
 mm_device* mm_get_midi_through();
 
-void mm_monitor_client(char* source, char* target, mm_mapping* mappings);
+void mm_monitor_client(mm_options* options);
 
 void mm_list_clients();
 bool mm_client_exists(char* client);

@@ -97,11 +97,11 @@ snd_seq_port_info_t* mma_get_port_info(mm_device* dev) {
     }
 }
 
-void mma_monitor_device(char* source, char* target, mm_mapping* mapping) {
+void mma_monitor_device(mm_options* options) {
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
-    mm_device* src = mm_parse_device(source);
+    mm_device* src = mm_parse_device(options->source);
 
     const snd_seq_port_info_t* pinfo = mma_get_port_info(src);
     const char* pname = snd_seq_port_info_get_name(pinfo);
@@ -109,15 +109,15 @@ void mma_monitor_device(char* source, char* target, mm_mapping* mapping) {
     printf("Monitoring: %s [%d:%d]\n\n", pname, src->client, src->port);
     mm_midi_output* output = mma_midi_output_create(src->client, src->port);
 
-    if (target != NULL) {
-        mm_device* receiver = mm_parse_device(target);
+    if (options->target != NULL) {
+        mm_device* receiver = mm_parse_device(options->target);
         mma_send_events_to(output, receiver->client, receiver->port);
     }
 
-    mma_event_loop(mapping, output);
+    mma_event_loop(options, output);
 }
 
-void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
+void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
     int pfds_num =
         snd_seq_poll_descriptors_count(output->dev, POLLIN | POLLOUT);
@@ -129,11 +129,13 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
     MIDIEvent* event = NULL;
 
+    int err = 0;
     int midi = 0;
     int type = 0;
-    bool note_on = false;
+    int note_on = 0;
 
-    int err = 0;
+    int* first = malloc(sizeof(int*));
+    *first = 1;
 
     for (;;) {
         // gather poll descriptors for this sequencer
@@ -158,11 +160,11 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
             if (event) {
                 type = event->type;
                 midi = event->data.note.note;
-                note_on = (type == SND_SEQ_EVENT_NOTEON);
+                note_on = (type == SND_SEQ_EVENT_NOTEON) ? 1 : 0;
 
                 update_node_list(event, &list);
 
-                grp = mapping->index[midi];
+                grp = options->mapping->index[midi];
 
                 if (grp != NULL) {
                     mm_key_set* new_keys =
@@ -184,7 +186,7 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
         } while (err > 0);
 
-        mm_monitor_render(mapping, list, dsts_set);
+        mm_monitor_render(options, list, dsts_set);
 
         // Caught a sig signal, time to exit!
         if (stop) {
