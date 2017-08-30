@@ -55,7 +55,7 @@ mm_devices* mma_get_devices() {
             mm_device* dev = malloc(sizeof(mm_device));
 
             const char* pinfo_name = snd_seq_port_info_get_name(pinfo);
-            dev->name = pinfo_name;
+            dev->name = strdup(pinfo_name);
 
             dev->client = client_id;
             dev->port = port_id;

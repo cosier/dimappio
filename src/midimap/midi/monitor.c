@@ -18,8 +18,6 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         options->first = 0;
     }
 
-    mm_debug("mm_monitor_render()\n");
-
     int i = 0;
     int sharp = 0;
     int c = 0;
