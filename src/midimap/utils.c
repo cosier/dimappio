@@ -109,9 +109,11 @@ int mm_tokenize(char* src, char* delim, char** result) {
         src = NULL;
         if (token != NULL) {
             result[i] = strdup(token);
+            // free(token);
             i++;
         }
     } while (token != NULL);
+    free(token);
 
     return i;
 }

@@ -47,7 +47,9 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
     for (int i = 0; i < list->size; ++i) {
         ptr = list->nodes[i];
 
-        char* note = mm_note_print(mm_midi_to_note(ptr->key, true));
+        mm_note* n = mm_midi_to_note(ptr->key, true);
+        char* note = mm_note_print(n);
+        free(n);
 
         if (note != NULL && strlen(note) > 1) {
             if (i == (list->size - 1)) {
@@ -55,6 +57,8 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
             } else {
                 sprintf(buf, "%s%s, ", buf, note);
             }
+
+            free(note);
         }
     }
 

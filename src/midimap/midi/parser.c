@@ -116,12 +116,16 @@ int mm_parse_to_midi(char* input) {
 
 char* mm_midi_to_note_display(int midi) {
     mm_note* n = mm_midi_to_note(midi, true);
-    return mm_note_print(n);
+    char* printed = mm_note_print(n);
+
+    free(n);
+    return printed;
 }
 
 char* mm_note_print(mm_note* n) {
-    char* buf = malloc(sizeof(char*) * 16);
-    sprintf(buf, "%s%d", n->letter, n->oct);
+    int size = sizeof(char*) * 16;
+    char* buf = malloc(size);
+    snprintf(buf, size, "%s%d", n->letter, n->oct);
     return buf;
 }
 
@@ -157,6 +161,7 @@ mm_device* mm_parse_device(char* str) {
         error("parsing of (%s) failed due to port token", str);
     }
 
+    free(str);
     mm_debug("parser: mma_parse_device: success\n");
     return dev;
 }

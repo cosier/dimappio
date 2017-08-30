@@ -54,14 +54,19 @@ mm_devices* mma_get_devices() {
 
             mm_device* dev = malloc(sizeof(mm_device));
 
-            dev->name = strdup(snd_seq_port_info_get_name(pinfo));
+            const char* pinfo_name = snd_seq_port_info_get_name(pinfo);
+            dev->name = pinfo_name;
+
             dev->client = client_id;
             dev->port = port_id;
+            // dev->name = NULL;
 
             devices->store[devices->count] = dev;
             devices->count++;
         }
     }
+
+    snd_seq_close(seq);
 
     // downsize to accurate storage size.
     devices->store =
@@ -75,7 +80,10 @@ bool mma_client_exists(char* client_with_port) {
     snd_seq_port_info_t* port = mma_get_port_info(dev);
     free(dev);
 
-    return (port != NULL);
+    bool exists = (port != NULL);
+    snd_seq_port_info_free(port);
+
+    return exists;
 }
 
 snd_seq_port_info_t* mma_get_port_info(mm_device* dev) {
@@ -88,10 +96,13 @@ snd_seq_port_info_t* mma_get_port_info(mm_device* dev) {
 
     int found = snd_seq_get_any_port_info(seq, dev->client, dev->port, pinfo);
 
+    snd_seq_close(seq);
+
     if (found == 0) {
         return pinfo;
 
     } else {
+        snd_seq_port_info_free(pinfo);
         mm_debug("Client(%d) port not found(%d)", dev->client, dev->port);
         return NULL;
     }
@@ -105,7 +116,7 @@ void mma_monitor_device(mm_options* options) {
     mm_device* src = mm_parse_device(options->source);
 
     mm_debug("alsa: mma_monitor_device: attempting to query port_info\n");
-    const snd_seq_port_info_t* pinfo = mma_get_port_info(src);
+    snd_seq_port_info_t* pinfo = mma_get_port_info(src);
     const char* pname = snd_seq_port_info_get_name(pinfo);
 
     printf("Monitoring: %s [%d:%d]\n\n", pname, src->client, src->port);
@@ -115,10 +126,18 @@ void mma_monitor_device(mm_options* options) {
         mm_debug("alsa: mma_monitor_device: setting up receiver\n");
         mm_device* receiver = mm_parse_device(options->target);
         mma_send_events_to(output, receiver->client, receiver->port);
+        free(receiver);
     }
 
     mm_debug("alsa: mma_monitor_device: attempting to enter event loop\n");
+
+    snd_seq_port_info_free(pinfo);
+    free(src);
+
     mma_event_loop(options, output);
+    free(output->in_ports);
+    free(output->out_ports);
+    free(output);
 }
 
 void mma_event_loop(mm_options* options, mm_midi_output* output) {
@@ -137,9 +156,6 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     int midi = 0;
     int type = 0;
     int note_on = 0;
-
-    int* first = malloc(sizeof(int*));
-    *first = 1;
 
     for (;;) {
         // gather poll descriptors for this sequencer
@@ -198,6 +214,10 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
         }
     }
 
+    free(pfds);
+    free(dsts_set);
+    free(list);
+    free(grp);
     snd_seq_close(output->dev);
 }
 
@@ -287,6 +307,9 @@ int mma_init_sequencer(snd_seq_t** seq, char* name) {
         error("Could not open sequencer: %s", snd_strerror(status));
         exit(EXIT_FAILURE);
     }
+
+    // free cached memory (in regards to valgrind)
+    snd_config_update_free_global();
 
     if (name != NULL) {
         snd_seq_set_client_name(*seq, name);

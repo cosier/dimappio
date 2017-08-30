@@ -62,8 +62,9 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         for (int i = 0; i < key_set->count; ++i) {
             lookup[key_set->keys[i]] = -1;
             // Render Mapped keys
-            sprintf(mkeys, "%s%s ", mkeys,
-                    mm_midi_to_note_display(key_set->keys[i]));
+            char* display = mm_midi_to_note_display(key_set->keys[i]);
+            sprintf(mkeys, "%s%s ", mkeys, display);
+            free(display);
         }
         sprintf(mkeys, "%s%s", mkeys, RESET);
     }
@@ -72,8 +73,10 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     mm_key_node_list* list = mm_key_node_get_list(tail);
 
     if (list->size > 0) {
-        printf("\n%s♬  NOTES:%s %s%s%s %s\n\n", BLUE, RESET, RED,
-               mm_key_node_print_list(list), RESET, mkeys);
+        char* notes = mm_key_node_print_list(list);
+        printf("\n%s♬  NOTES:%s %s%s%s %s\n\n", BLUE, RESET, RED, notes, RESET,
+               mkeys);
+        free(notes);
     } else {
         printf("\n%s♬  NOTES:%s Waiting for MIDI input... \n\n", BLUE, RESET);
     }
@@ -145,7 +148,8 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     }
 
     printf("%s\n", piano);
-
+    free(piano);
+    free(mkeys);
     mm_key_node_list_free(list);
     fflush(stdout);
 }

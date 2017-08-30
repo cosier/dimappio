@@ -251,6 +251,11 @@ int main(int argc, char** argv) {
         sprintf(target, "%d:%d", midi_through->client, midi_through->port);
     }
 
+    // Done with midi_through fallback, time to free
+    if (midi_through != NULL) {
+        free(midi_through);
+    }
+
     // If source client:port is specified, verify that it exists.
     if (source != NULL) {
         if (!verify_valid_midi_client(source)) {
@@ -304,6 +309,7 @@ int main(int argc, char** argv) {
         char* buf = malloc(sizeof(char) * 128 * mapping->count);
         mm_mapping_dump(mapping, buf);
         printf("%s\n", buf);
+        free(buf);
     }
 
     mm_options* options = mm_create_options();

@@ -26,8 +26,9 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 }
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
-    sprintf(buf, "%s\n • %s%s%s %s", buf, RED, mm_midi_to_note_display(k->key),
-            RESET, CYAN);
+    char* display = mm_midi_to_note_display(k->key);
+    sprintf(buf, "%s\n • %s%s%s %s", buf, RED, display, RESET, CYAN);
+    free(display);
 
     if (k->src_set->count > 1) {
         sprintf(buf, "%s [%d: -> ", buf, k->src_set->count);
@@ -40,9 +41,11 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
         strcat(buf, " ->");
     }
     for (int di = 0; di < k->dst_set->count; ++di) {
+        char* display = mm_midi_to_note_display(k->dst_set->keys[di]);
         strcat(buf, " ");
-        strcat(buf, mm_midi_to_note_display(k->dst_set->keys[di]));
+        strcat(buf, display);
         strcat(buf, " ");
+        free(display);
     }
 
     strcat(buf, RESET);
@@ -155,9 +158,16 @@ mm_mapping* mm_mapping_from_list(char* list) {
                 update_key_group(mapping->index[src], src, src_tokens,
                                  dst_tokens, src_count, dst_count);
             }
+
+            free(src_tokens[isrc]);
         }
+
+        // free(key_tokens[kt_count]);
     }
 
+    free(key_tokens);
+    free(dst_tokens);
+    free(src_tokens);
     return mapping;
 }
 
@@ -269,7 +279,8 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
 }
 
 void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
-    int* new_keys = malloc(sizeof(int*) * set->count - substract->count);
+    int new_size = set->count - substract->count;
+    int* new_keys = malloc(sizeof(int) * new_size);
 
     int sub_lookup[128] = {0};
     for (int i = 0; i < substract->count; ++i) {
@@ -285,6 +296,8 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     }
 
     set->count = index;
+
+    assert(set->count == new_size);
 
     free(set->keys);
     free(substract->keys);

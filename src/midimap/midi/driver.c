@@ -53,19 +53,30 @@ void mm_list_clients() {
 
 mm_device* mm_get_midi_through() {
     mm_devices* devices = mm_get_devices();
+    int size = sizeof(char*) * 64;
 
     for (int i = 0; i < devices->count; ++i) {
-        char* n = devices->store[i]->name;
-        if (n != NULL) {
-            for (int is = 0; n[is]; ++is) {
-                n[is] = tolower(n[is]);
+        if (devices->store[i]->name != NULL) {
+            // char* n_dup = strdup(n);
+            // for (int is = 0; n_dup[is]; ++is) {
+            //     n_dup[is] = tolower(n_dup[is]);
+            // }
+            char* name = malloc(size);
+            snprintf(name, size, "%s", devices->store[i]->name);
+
+            char* match = strstr(name, "Midi Through");
+            free(name);
+
+            if (match != NULL) {
+                mm_device* dev = devices->store[i];
+                devices->store[i] = NULL;
+                mm_devices_free(devices);
+                return dev;
             }
-        }
-        if (n != NULL && strstr(n, "midi through") != NULL) {
-            return devices->store[i];
         }
     }
 
+    mm_devices_free(devices);
     return NULL;
 }
 
