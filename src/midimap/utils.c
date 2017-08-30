@@ -37,10 +37,12 @@ void mm_debug(const char* format, ...) {
         if (LOG_FILE == NULL) {
             struct passwd* pw = getpwuid(getuid());
             char* file = pw->pw_dir;
-            char* file_log = malloc(sizeof(char*) * 128);
+            int size = sizeof(char*) * 128;
+            char* file_log = malloc(size);
 
-            sprintf(file_log, "%s/.midi-mapper.log", file);
+            snprintf(file_log, size, "%s/.midi-mapper.log", file);
             LOG_FILE = fopen(file_log, "a");
+            free(file_log);
 
             if (LOG_FILE == NULL) {
                 error("Failed to write to log file");
