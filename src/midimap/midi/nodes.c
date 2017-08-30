@@ -52,10 +52,10 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
         free(n);
 
         if (note != NULL && strlen(note) > 1) {
-            if (i == (list->size - 1)) {
-                sprintf(buf, "%s%s", buf, note);
-            } else {
-                sprintf(buf, "%s%s, ", buf, note);
+            strcat(buf, note);
+            // if we have not reached the end, append a comma
+            if (i != (list->size - 1)) {
+                strcat(buf, ", ");
             }
 
             free(note);
