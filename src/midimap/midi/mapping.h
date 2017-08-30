@@ -88,6 +88,9 @@ mm_key_set* mm_mapping_group_srcs(mm_key_group* group);
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src);
 
+void mm_combine_key_set(mm_key_set* set, mm_key_set* addition);
+void mm_remove_key_set(mm_key_set* set, mm_key_set* addition);
+
 void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
                       int dst_count);
 
@@ -97,7 +100,7 @@ mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
 mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
                            int src_count, int dst_count);
 
-mm_key_set* create_key_set(int count);
+mm_key_set* mm_create_key_set(int count);
 
 void update_key_group(mm_key_group* group, int src, char** src_tokens,
                       char** dst_tokens, int src_count, int dst_count);

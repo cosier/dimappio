@@ -194,8 +194,8 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
     mm_key_map* km = malloc(sizeof(mm_key_map));
     km->key = src;
 
-    km->src_set = create_key_set(src_count);
-    km->dst_set = create_key_set(dst_count);
+    km->src_set = mm_create_key_set(src_count);
+    km->dst_set = mm_create_key_set(dst_count);
 
     for (int idst = 0; idst < dst_count; ++idst) {
         km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens[idst]);
@@ -208,9 +208,81 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
     return km;
 }
 
-mm_key_set* create_key_set(int count) {
+mm_key_set* mm_create_key_set(int count) {
     mm_key_set* set = malloc(sizeof(mm_key_set));
     set->keys = malloc(sizeof(int*) * count);
     set->count = count;
     return set;
+}
+
+char* mm_key_set_dump(mm_key_set* set) {
+    char* buf = malloc(sizeof(char*) * set->count * 10);
+    buf[0] = '\0';
+    for (int i = 0; i < set->count; ++i) {
+        sprintf(buf, "%s %d = %d\n", buf, i, set->keys[i]);
+    }
+
+    return buf;
+}
+
+void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
+    /* mm_debug("Attempting to combine key_set(%d) with addition(%d)\n", */
+    /*          set->count, addition->count); */
+
+    int* new_keys = malloc(sizeof(int*) * (set->count + addition->count));
+    int lookup[128] = {0};
+
+    for (int i = 0; i < set->count; ++i) {
+        // mark original key existence
+        lookup[set->keys[i]] = 1;
+
+        new_keys[i] = set->keys[i];
+    }
+
+    int added = 0;
+    for (int i2 = 0; i2 < addition->count; ++i2) {
+        int new_additional_key = addition->keys[i2];
+
+        if (!lookup[new_additional_key]) {
+            lookup[new_additional_key] = 1;
+            new_keys[i2 + set->count] = new_additional_key;
+            ++added;
+        }
+    }
+    // assign new keys over previous keys
+    set->count = set->count + added;
+
+    // Free the original keys before reassignment
+    free(set->keys);
+    set->keys = new_keys;
+
+    /* mm_debug("updated st: \n%s\n", mm_key_set_dump(set)); */
+
+    // cleanup old keys and entire new addition
+    free(addition->keys);
+    free(addition);
+}
+
+void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
+    int* new_keys = malloc(sizeof(int*) * set->count - substract->count);
+
+    int sub_lookup[128] = {0};
+    for (int i = 0; i < substract->count; ++i) {
+        sub_lookup[substract->keys[i]] = 1;
+    }
+
+    int index = 0;
+    for (int i2 = 0; i2 < set->count; ++i2) {
+        if (!sub_lookup[set->keys[i2]]) {
+            new_keys[index] = set->keys[i2];
+            ++index;
+        }
+    }
+
+    set->count = index;
+
+    free(set->keys);
+    free(substract->keys);
+    free(substract);
+    set->keys = new_keys;
 }

@@ -30,6 +30,35 @@ CFStringRef char_to_cf_string_ref(char* c) {
 
 #endif
 
+static FILE* LOG_FILE = NULL;
+
+void mm_debug(const char* format, ...) {
+    if (mm_driver_debug_mode) {
+        if (LOG_FILE == NULL) {
+            struct passwd* pw = getpwuid(getuid());
+            char* file = pw->pw_dir;
+            char* file_log = malloc(sizeof(char*) * 128);
+
+            sprintf(file_log, "%s/.midi-mapper.log", file);
+            LOG_FILE = fopen(file_log, "a");
+
+            if (LOG_FILE == NULL) {
+                error("Failed to write to log file");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        va_list ap;
+        va_start(ap, format);
+        vfprintf(LOG_FILE, format, ap);
+        va_end(ap);
+
+        fflush(LOG_FILE);
+        /* fclose(LOG_FILE); */
+        /* LOG_FILE = NULL; */
+    }
+}
+
 int mm_count_lines(char* input) {
     int i = 0;
     int lines = 1;
@@ -47,16 +76,6 @@ void mm_clear(int lines) {
         printf("\33[2K\r");
         printf("\33[1A\r");
         printf("\33[2K\r");
-    }
-}
-
-void pdebug(const char* format, ...) {
-    if (mm_driver_debug_mode) {
-        va_list ap;
-        va_start(ap, format);
-        vfprintf(stdout, format, ap);
-        va_end(ap);
-        putc('\n', stdout);
     }
 }
 

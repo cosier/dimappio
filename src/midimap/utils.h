@@ -9,9 +9,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern bool mm_driver_debug_mode;
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-void pdebug(const char* format, ...);
+extern bool mm_driver_debug_mode;
+void mm_debug(const char* format, ...);
 void error(char* format, ...);
 void mm_clear(int lines);
 

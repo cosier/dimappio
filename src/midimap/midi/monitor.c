@@ -26,7 +26,8 @@ void mm_monitor_render(mm_mapping* mapping, mm_key_node* tail,
     char* mkeys = malloc(sizeof(char*) * 32);
     mkeys[0] = 0;
 
-    if (key_set != NULL) {
+    if (key_set != NULL && key_set->count > 0) {
+        /* mm_debug("\nRendering key_set(%d)\n", key_set->count); */
         sprintf(mkeys, "%s -> ", CYAN);
         for (int i = 0; i < key_set->count; ++i) {
             lookup[key_set->keys[i]] = -1;

@@ -92,7 +92,7 @@ snd_seq_port_info_t* mma_get_port_info(mm_device* dev) {
         return pinfo;
 
     } else {
-        pdebug("Client(%d) port not found(%d)", dev->client, dev->port);
+        mm_debug("Client(%d) port not found(%d)", dev->client, dev->port);
         return NULL;
     }
 }
@@ -125,7 +125,7 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
     mm_key_node* list = mm_key_node_head();
     mm_key_group* grp = NULL;
-    mm_key_set* dsts_set = NULL;
+    mm_key_set* dsts_set = mm_create_key_set(0);
 
     MIDIEvent* event = NULL;
 
@@ -162,21 +162,18 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
 
                 update_node_list(event, &list);
 
-                if (dsts_set != NULL) {
-                    free(dsts_set);
-                    dsts_set = NULL;
-                }
-
                 grp = mapping->index[midi];
 
                 if (grp != NULL) {
-                    dsts_set = mm_mapping_group_single_src_dsts(grp);
+                    mm_key_set* new_keys =
+                        mm_mapping_group_single_src_dsts(grp);
 
                     if (note_on) {
-                        trigger_mapping(output, event, dsts_set);
+                        trigger_mapping(output, event, new_keys);
+                        mm_combine_key_set(dsts_set, new_keys);
                     } else {
-                        release_mapping(output, dsts_set);
-                        dsts_set = NULL;
+                        release_mapping(output, new_keys);
+                        mm_remove_key_set(dsts_set, new_keys);
                     }
 
                 } else {

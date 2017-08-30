@@ -219,6 +219,7 @@ int main(int argc, char** argv) {
     // Flip global debug flag.
     if (debug) {
         mm_driver_debug();
+        mm_debug("\033c[midi-mapper started]\n");
     }
 
     // Version output and then exit.
