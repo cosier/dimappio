@@ -8,6 +8,7 @@ Testing
 
 vendor
 vendor/build
+bin/midi-mapper
 
 
 # Rtags
@@ -24,6 +25,7 @@ GRTAGS
 *.ko
 *.obj
 *.elf
+core
 
 # Linker output
 *.ilk
