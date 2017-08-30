@@ -6,7 +6,13 @@ ROOT=$( cd $DIR/../ && pwd )
 $ROOT/bin/clean
 mkdir -p $ROOT/build && cd $ROOT/build;
 
-CMAKE_BUILD_TYPE=Release $ROOT/bin/build
+if [[ "$DEBUG" == true ]]; then
+  BUILD=Debug
+else
+  BUILD=Release
+fi
+
+CMAKE_BUILD_TYPE=$BUILD $ROOT/bin/build
 cd $ROOT/build
 make install
 echo

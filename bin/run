@@ -29,5 +29,5 @@ fi
 
 CMD="$ROOT/build/src/mapper/midi-mapper $@"
 echo $CMD
-echo
+echo "------------------------------------------------"
 $CMD

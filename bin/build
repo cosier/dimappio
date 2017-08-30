@@ -43,3 +43,7 @@ fi
 make -j4
 echo
 
+if [ ! -f $ROOT/bin/midi-mapper ]; then
+  ln -s $ROOT/build/src/mapper/midi-mapper $ROOT/bin/midi-mapper
+fi
+
