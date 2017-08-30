@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 
     int note_ch = 0;
     int note_vel = 0;
-    int keys = 89;
+    int keys = 49;
 
     char* note_on_str;
     bool note_on = false;

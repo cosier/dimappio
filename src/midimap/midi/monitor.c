@@ -26,16 +26,21 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     int keys = options->keys;
 
     // Enforce a hard limit on keys due to midi 128 limit.
-    if (keys > 89) {
-        keys = 89;
+    if (keys > 128) {
+        keys = 128;
     } else if (keys < 25) {
         keys = 25;
     }
 
-    int sharp_lookup[89] = {0};
-    int lookup[89] = {0};
+    int sharp_lookup[128] = {0};
+    int lookup[128] = {0};
     int clear_count = 4;
     int midi_start = 60 - (keys / 2);
+
+    if (midi_start < 0) {
+        midi_start = 0;
+    }
+
     mm_debug("midi_start(%d)\n", midi_start);
 
     if (options->mapping->count) {
@@ -47,7 +52,8 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     char* piano = malloc(sizeof(char*) * keys * 4);
 
     mkeys[0] = '\0';
-    piano[0] = '\0';
+    piano[0] = ' ';
+    piano[1] = '\0';
 
     if (key_set != NULL && key_set->count > 0) {
         /* mm_debug("\nRendering key_set(%d)\n", key_set->count); */
@@ -79,6 +85,7 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     // Build top row of piano keys, taking care with the sharps.
     while (i < keys) {
         int index = i + midi_start;
+        c = index % 12;
 
         if (c == 1 || c == 3 || c == 6 || c == 8 || c == 10) {
             sharp_lookup[index] = 1;
@@ -110,18 +117,11 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         }
 
         sprintf(piano, "%s%s%s%s", piano, colour, " ", RESET);
-
-        if (c == 11) {
-            c = -1;
-            ++oct;
-        }
-
-        ++c;
         ++i;
     }
 
     i = 0;
-    sprintf(piano, "%s\n", piano);
+    sprintf(piano, "%s\n ", piano);
     colour = NULL;
     while (i < keys) {
         int index = i + midi_start;
