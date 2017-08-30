@@ -16,3 +16,12 @@
 #define BOLDMAGENTA "\033[1m\033[35m" /* Bold Magenta */
 #define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
+
+#define BGWHITE "\033[48;5;15m"
+#define BGGREY1 "\033[48;5;250m"
+#define BGBLACK "\033[48;5;16m"
+#define BGGREEN "\033[48;5;40m"
+#define BGGREEN2 "\033[48;5;35m"
+#define BGPURPLE "\033[48;5;141m"
+#define BGRED "\033[48;5;197m"
+#define BGRED2 "\033[48;5;124m"

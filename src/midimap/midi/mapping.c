@@ -9,7 +9,7 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
         return;
     }
 
-    sprintf(buf, "Key Mapping:");
+    sprintf(buf, "\n  User Mapping:\n");
     for (int i = 0; i < mapping->group_count; ++i) {
         mm_key_group_dump(mapping->mapped[i], buf);
     }
@@ -22,22 +22,25 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 }
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
-    sprintf(buf, "%s\n - %s:%d ", buf, mm_midi_to_note_display(k->key), k->key);
+    sprintf(buf, "%s\n • %s%s%s %s", buf, RED, mm_midi_to_note_display(k->key),
+            RESET, CYAN);
 
     if (k->src_set->count > 1) {
         sprintf(buf, "%s [%d: -> ", buf, k->src_set->count);
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
-            sprintf(buf, "%s %d ", buf, k->src_set->keys[isrc]);
+            sprintf(buf, "%s %s ", buf,
+                    mm_midi_to_note_display(k->src_set->keys[isrc]));
         }
         sprintf(buf, "%s]->", buf);
     } else {
         sprintf(buf, "%s ->", buf);
     }
     for (int di = 0; di < k->dst_set->count; ++di) {
-        sprintf(buf, "%s %s:%d ", buf,
-                mm_midi_to_note_display(k->dst_set->keys[di]),
-                k->dst_set->keys[di]);
+        sprintf(buf, "%s %s ", buf,
+                mm_midi_to_note_display(k->dst_set->keys[di]));
     }
+
+    sprintf(buf, "%s%s", buf, RESET);
 }
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }

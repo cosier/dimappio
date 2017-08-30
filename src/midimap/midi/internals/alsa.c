@@ -180,6 +180,7 @@ void mma_event_loop(mm_mapping* mapping, mm_midi_output* output) {
                     }
 
                 } else {
+                    event->data.note.channel = 0;
                     send_event(output, event);
                 }
             }
@@ -382,8 +383,7 @@ static void update_node_list(snd_seq_event_t* ev, mm_key_node** tail) {
 static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* ev,
                             mm_key_set* dst_set) {
     for (int i = 0; i < dst_set->count; i++) {
-        send_midi(output, dst_set->keys[i], true, ev->data.note.channel,
-                  ev->data.note.velocity);
+        send_midi(output, dst_set->keys[i], true, 0, ev->data.note.velocity);
     }
 }
 

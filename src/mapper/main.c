@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
 
     char* buf = malloc(sizeof(char) * 128 * mapping->count);
     mm_mapping_dump(mapping, buf);
-    pdebug("%s\n\n", buf);
+    printf("%s\n\n\n\n\n", buf);
 
     // Engage in monitor loop.
     // Uses a source to poll events from.
