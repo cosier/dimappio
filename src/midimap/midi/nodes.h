@@ -39,4 +39,6 @@ void mm_key_node_insert(mm_key_node** tail, mm_key_node* node);
 void mm_key_node_remove(mm_key_node** tail, mm_key_node* node);
 mm_key_node* mm_key_node_search(mm_key_node** tail, int key);
 
+int mm_key_node_contains(mm_key_node* tail, int key);
+
 #endif

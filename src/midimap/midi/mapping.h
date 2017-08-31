@@ -111,4 +111,7 @@ mm_key_set* mm_create_key_set(int count);
 void update_key_group(mm_key_group* group, int src, char** src_tokens,
                       char** dst_tokens, int src_count, int dst_count);
 
+mm_key_set* mm_key_set_copy(mm_key_set* set);
+void mm_key_set_remove_single_key(mm_key_set* set, int key);
+
 #endif

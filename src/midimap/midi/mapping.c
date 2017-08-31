@@ -379,3 +379,35 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     free(substract);
     set->keys = new_keys;
 }
+
+mm_key_set* mm_key_set_copy(mm_key_set* set) {
+    mm_key_set* new_set = malloc(sizeof(mm_key_set));
+    new_set->count = set->count;
+    new_set->keys = malloc(sizeof(int) * set->count);
+
+    for (int i = 0; i < set->count; ++i) {
+        new_set->keys[i] = set->keys[i];
+    }
+
+    return new_set;
+}
+
+void mm_key_set_remove_single_key(mm_key_set* set, int key) {
+    int size = set->count - 1;
+    int* keys = malloc(sizeof(int) * size);
+
+    int index = 0;
+    for (int i = 0; i < set->count; ++i) {
+        int k = set->keys[i];
+        if (k != key) {
+            keys[index] = k;
+            ++index;
+        }
+    }
+
+    assert(size == index);
+
+    free(set->keys);
+    set->keys = keys;
+    set->count = index;
+}

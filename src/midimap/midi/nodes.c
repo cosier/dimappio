@@ -70,6 +70,15 @@ void mm_key_node_list_free(mm_key_node_list* list) {
     free(list);
 }
 
+int mm_key_node_contains(mm_key_node* tail, int key) {
+    mm_key_node* res = mm_key_node_search(&tail, key);
+    if (res != NULL) {
+        return key;
+    } else {
+        return 0;
+    }
+}
+
 /**
  * Search a list (singly linked list) for a given key
  */

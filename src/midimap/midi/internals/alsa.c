@@ -161,7 +161,10 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     int note_on = 0;
     int note_off = 0;
 
-    int note_owners[129] = {-1};
+    int note_owners[129] = {0};
+    for (int i = 0; i < 129; ++i) {
+        note_owners[i] = -1;
+    }
 
     for (;;) {
         // gather poll descriptors for this sequencer
@@ -193,6 +196,16 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
                 grp = options->mapping->index[midi];
 
+                // acquire ownership of self key
+                if (note_owners[midi] < 0) {
+                    mm_debug("initialising note_owners[midi] = %d\n", midi);
+                    note_owners[midi] = midi;
+                } else {
+                    mm_debug("could not initialise note_owners[midi] because: "
+                             "%d != %d\n",
+                             note_owners[midi], midi);
+                }
+
                 if (grp != NULL) {
                     // mm_debug("event_loop: mappings for event "
                     //          "(midi:%d, note_on: %d, note_off: %d)\n",
@@ -203,19 +216,63 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
                     if (note_on) {
                         for (int i = 0; i < new_keys->count; ++i) {
+                            // set the latest owner to `midi` if it's available
                             int k = new_keys->keys[i];
+                            // if (note_owners[k] < 0) {
                             note_owners[k] = midi;
                         }
 
                         trigger_mapping(output, event, new_keys);
                         mm_combine_key_set(dsts_set, new_keys);
+
                     } else if (note_off) {
+
+                        int keys_to_release_deeped = 0;
+                        mm_key_set* release_keys = new_keys;
+
                         for (int i = 0; i < new_keys->count; ++i) {
                             int k = new_keys->keys[i];
-                            note_owners[k] = -1;
+                            int owner = note_owners[k];
+                            int active = mm_key_node_contains(list, k);
+
+                            // relinquish ownership if `midi` still owns it
+                            if (owner == midi && !active) {
+                                note_owners[k] = -1;
+                            } else {
+
+                                if (active) {
+                                    // if active, set the owner to `k` itself,
+                                    // as `list` query will only indicate as
+                                    // such.
+                                    note_owners[k] = k;
+                                }
+
+                                // we don't own the key, don't release_mapping
+                                // yet. ergo we must remove from
+                                // `release_keys`
+
+                                // But first, we need to turn keys_to_release
+                                // into a deep copy.
+                                if (!keys_to_release_deeped) {
+                                    release_keys = mm_key_set_copy(new_keys);
+
+                                    // we're done, flip the bit.
+                                    keys_to_release_deeped = 1;
+                                }
+
+                                mm_key_set_remove_single_key(release_keys, k);
+                            }
+
+                            // Check if the owner is a virtual key, in which we
+                            // will not remove it from the dsts_set.
+                            if (owner >= 0 &&
+                                options->mapping->index[owner] == NULL) {
+                                // remove from virtual dsts_set
+                                mm_key_set_remove_single_key(dsts_set, k);
+                            }
                         }
 
-                        release_mapping(output, new_keys);
+                        release_mapping(output, release_keys);
                         mm_remove_key_set(dsts_set, new_keys);
                     }
 
@@ -225,8 +282,10 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                     if (note_off) {
                         // apply checks to determine if we can release or not,
                         // due to any other active mappings at this moment.
-
-                        if (note_owners[midi] >= 0) {
+                        if (note_owners[midi] != midi) {
+                            mm_debug(
+                                "cannot release note_off because: %d != %d\n",
+                                midi, note_owners[midi]);
                             process_event = 0;
                         }
                     }
