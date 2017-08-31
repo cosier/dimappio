@@ -57,6 +57,41 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }
 
+void mm_mapping_free(mm_mapping* mapping) {
+    if (mapping->dst_tokens != NULL) {
+        free(mapping->dst_tokens);
+    }
+
+    if (mapping->src_tokens != NULL) {
+        free(mapping->src_tokens);
+    }
+
+    if (mapping->key_tokens != NULL) {
+        free(mapping->key_tokens);
+    }
+
+    for (int i = 0; i < mapping->count; ++i) {
+        mm_key_group* grp = mapping->mapped[i];
+        for (int i2 = 0; i2 < grp->count; ++i2) {
+            mm_key_map* k = grp->maps[i2];
+
+            free(k->dst_set->keys);
+            free(k->src_set->keys);
+
+            free(k->dst_set);
+            free(k->src_set);
+            free(k);
+        }
+
+        free(grp->maps);
+        free(grp);
+    }
+
+    free(mapping->index);
+    free(mapping->mapped);
+    free(mapping);
+}
+
 /**
  * Build and Initialize a Mapping object on the heap.
  */
@@ -170,10 +205,11 @@ mm_mapping* mm_mapping_from_list(char* list) {
         // free(key_tokens[kt_count]);
     }
 
-    mm_debug("mapping: freeing tokens\n");
-    // free(key_tokens);
-    // free(dst_tokens);
-    // free(src_tokens);
+    // Store for later cleanup
+    mapping->key_tokens = key_tokens;
+    mapping->dst_tokens = dst_tokens;
+    mapping->src_tokens = src_tokens;
+
     mm_debug("mapping: mm_mapping_from_list successful");
     return mapping;
 }
@@ -225,6 +261,13 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
 
     for (int isrc = 0; isrc < src_count; ++isrc) {
         km->src_set->keys[isrc] = mm_parse_to_midi(src_tokens[isrc]);
+    }
+
+    for (int i = 0; i < dst_count; ++i) {
+        char* t = dst_tokens[i];
+        if (t != NULL) {
+            free(t);
+        }
     }
 
     return km;
@@ -292,21 +335,28 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
 
 void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     // mm_debug("mapping: mm_remove_key_set()");
-    mm_debug("mm_remove_key_dump: \noriginal:\%s\n", mm_key_set_dump(set));
-    mm_debug("mm_remove_key_dump: \nsubstract:\%s\n",
-             mm_key_set_dump(substract));
-
     if (substract->count <= 0) {
         mm_debug("mapping: bailing from mm_remove_set!\n");
         return;
     }
 
     int sub_lookup[128] = {0};
+    int substractable = 0;
+
     for (int i = 0; i < substract->count; ++i) {
         sub_lookup[substract->keys[i]] = 1;
     }
 
-    int* new_keys = malloc(sizeof(int) * set->count);
+    for (int i1 = 0; i1 < set->count; ++i1) {
+        int key = set->keys[i1];
+        if (sub_lookup[key]) {
+            ++substractable;
+        }
+    }
+
+    int new_size = set->count - substractable;
+    int* new_keys = malloc(sizeof(int) * new_size);
+
     int index = 0;
     for (int i2 = 0; i2 < set->count; ++i2) {
         int key = set->keys[i2];
@@ -322,6 +372,8 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     }
 
     set->count = index;
+    assert(set->count == new_size);
+
     free(set->keys);
     free(substract->keys);
     free(substract);

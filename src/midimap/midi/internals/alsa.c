@@ -55,7 +55,8 @@ mm_devices* mma_get_devices() {
             mm_device* dev = malloc(sizeof(mm_device));
 
             const char* pinfo_name = snd_seq_port_info_get_name(pinfo);
-            dev->name = strdup(pinfo_name);
+            // dev->name = strdup(pinfo_name);
+            dev->name = pinfo_name;
 
             dev->client = client_id;
             dev->port = port_id;
@@ -114,6 +115,7 @@ void mma_monitor_device(mm_options* options) {
 
     mm_debug("alsa: mma_monitor_device: setting up src\n");
     mm_device* src = mm_parse_device(options->source);
+    options->source = NULL;
 
     mm_debug("alsa: mma_monitor_device: attempting to query port_info\n");
     snd_seq_port_info_t* pinfo = mma_get_port_info(src);
@@ -125,6 +127,7 @@ void mma_monitor_device(mm_options* options) {
     if (options->target != NULL) {
         mm_debug("alsa: mma_monitor_device: setting up receiver\n");
         mm_device* receiver = mm_parse_device(options->target);
+        options->target = NULL;
         mma_send_events_to(output, receiver->client, receiver->port);
         free(receiver);
     }
@@ -219,6 +222,8 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
             break;
         }
     }
+
+    mm_options_free(options);
 
     free(pfds);
     free(dsts_set);

@@ -11,3 +11,20 @@ mm_options* mm_create_options() {
 
     return options;
 }
+
+void mm_options_free(mm_options* options) {
+    // delegate cleanup to mapping func
+    if (options->mapping != NULL) {
+        mm_mapping_free(options->mapping);
+    }
+
+    if (options->target != NULL) {
+        free(options->target);
+    }
+
+    if (options->source != NULL) {
+        free(options->source);
+    }
+
+    free(options);
+}

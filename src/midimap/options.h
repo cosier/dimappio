@@ -14,5 +14,5 @@ typedef struct mm_options {
 } mm_options;
 
 mm_options* mm_create_options();
-
+void mm_options_free(mm_options* options);
 #endif

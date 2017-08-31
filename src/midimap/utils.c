@@ -55,6 +55,7 @@ void mm_debug(const char* format, ...) {
         vfprintf(LOG_FILE, format, *ap);
         va_end(*ap);
 
+        free(ap);
         fflush(LOG_FILE);
         /* fclose(LOG_FILE); */
         /* LOG_FILE = NULL; */

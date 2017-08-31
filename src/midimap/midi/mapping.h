@@ -74,10 +74,16 @@ typedef struct mm_mapping {
     // Total key_map(s) in this mapping
     int count;
 
+    char** src_tokens;
+    char** dst_tokens;
+    char** key_tokens;
+
 } mm_mapping;
 
 mm_mapping* mm_build_mapping();
 mm_mapping* mm_mapping_from_list(char* list);
+
+void mm_mapping_free(mm_mapping* mapping);
 
 void mm_mapping_dump(mm_mapping* mapping, char* buf);
 void mm_key_group_dump(mm_key_group* g, char* buf);
