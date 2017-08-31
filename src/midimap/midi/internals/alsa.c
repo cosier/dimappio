@@ -161,6 +161,8 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     int note_on = 0;
     int note_off = 0;
 
+    int note_owners[129] = {-1};
+
     for (;;) {
         // gather poll descriptors for this sequencer
         snd_seq_poll_descriptors(output->dev, pfds, pfds_num, POLLIN);
@@ -200,9 +202,19 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                         mm_mapping_group_single_src_dsts(grp);
 
                     if (note_on) {
+                        for (int i = 0; i < new_keys->count; ++i) {
+                            int k = new_keys->keys[i];
+                            note_owners[k] = midi;
+                        }
+
                         trigger_mapping(output, event, new_keys);
                         mm_combine_key_set(dsts_set, new_keys);
                     } else if (note_off) {
+                        for (int i = 0; i < new_keys->count; ++i) {
+                            int k = new_keys->keys[i];
+                            note_owners[k] = -1;
+                        }
+
                         release_mapping(output, new_keys);
                         mm_remove_key_set(dsts_set, new_keys);
                     }
@@ -213,6 +225,10 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                     if (note_off) {
                         // apply checks to determine if we can release or not,
                         // due to any other active mappings at this moment.
+
+                        if (note_owners[midi] >= 0) {
+                            process_event = 0;
+                        }
                     }
 
                     if (process_event) {

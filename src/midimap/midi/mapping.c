@@ -266,7 +266,7 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
     for (int i = 0; i < dst_count; ++i) {
         char* t = dst_tokens[i];
         if (t != NULL) {
-            free(t);
+            // free(t);
         }
     }
 
@@ -275,7 +275,7 @@ mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
 
 mm_key_set* mm_create_key_set(int count) {
     mm_key_set* set = malloc(sizeof(mm_key_set));
-    set->keys = malloc(sizeof(int*) * count);
+    set->keys = malloc(sizeof(int) * count);
     set->count = count;
     return set;
 }
