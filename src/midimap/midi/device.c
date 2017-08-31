@@ -5,7 +5,7 @@ void mm_devices_free(mm_devices* devices) {
         if (devices->store[i] != NULL) {
             mm_device* dev = devices->store[i];
             if (dev->name != NULL) {
-                // free(dev->name);
+                free(dev->name);
             }
 
             free(devices->store[i]);

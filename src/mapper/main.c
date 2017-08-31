@@ -292,6 +292,7 @@ int main(int argc, char** argv) {
         mm_debug("main: attempting to build mappings from list using: %s\n",
                  mapsrc);
         mapping = mm_mapping_from_list(mapsrc);
+        free(mapsrc);
     } else {
         mm_debug("main: building solo mappings\n");
         mapping = mm_build_mapping();

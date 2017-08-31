@@ -70,14 +70,20 @@ mm_device* mm_get_midi_through() {
             if (match != NULL) {
                 // mm_debug("mm_get_midi_through: found it: %s\n",
                 //          devices->store[i]->name);
+                int client = devices->store[i]->client;
+                int port = devices->store[i]->port;
 
-                mm_device* dev = devices->store[i];
-                devices->store[i] = NULL;
                 mm_devices_free(devices);
+                mm_device* dev = malloc(sizeof(mm_device));
+
+                dev->client = client;
+                dev->port = port;
                 return dev;
             } else {
-                // mm_debug("mm_get_midi_through: not a match: %s\n",
-                //          devices->store[i]->name);
+                // printf("mm_get_midi_through(): device not matched: %s\n",
+                //        devices->store[i]->name);
+                mm_debug("mm_get_midi_through: not a match: %s\n",
+                         devices->store[i]->name);
             }
         }
     }
