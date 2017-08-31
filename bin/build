@@ -11,6 +11,8 @@ mkdir -p $ROOT/build && cd $ROOT/build;
 
 if [[ "$RELEASE" == true ]]; then
   CMAKE_BUILD_TYPE=Release
+elif [[ "$DEBUG" == true ]]; then
+  CMAKE_BUILD_TYPE=Debug
 fi
 
 if [ -z "$CMAKE_BUILD_TYPE" ]; then
@@ -41,9 +43,14 @@ if [[ ! -f $ROOT/build/Makefile ]]; then
 fi
 
 make -j4
+if [ ! $? -eq 0 ]; then
+  echo "Make failed"
+  exit 1
+fi
+
 echo
 
 if [ ! -f $ROOT/bin/midi-mapper ]; then
-  ln -s $ROOT/build/src/mapper/midi-mapper $ROOT/bin/midi-mapper
+  ln -sf $ROOT/build/src/mapper/midi-mapper $ROOT/bin/midi-mapper
 fi
 
