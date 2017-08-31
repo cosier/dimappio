@@ -125,6 +125,9 @@ char* mm_midi_to_note_display(int midi) {
 char* mm_note_print(mm_note* n) {
     int size = sizeof(char*) * 16;
     char* buf = malloc(size);
+    assert(n->letter != NULL);
+    assert(n->oct >= 0 && n->oct <= 10);
+
     snprintf(buf, size, "%s%d", n->letter, n->oct);
     return buf;
 }

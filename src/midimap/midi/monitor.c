@@ -56,15 +56,19 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
 
     if (key_set != NULL && key_set->count > 0) {
         /* mm_debug("\nRendering key_set(%d)\n", key_set->count); */
-        sprintf(mkeys, "%s -> ", CYAN);
+        strcat(mkeys, " -> ");
+        strcat(mkeys, CYAN);
         for (int i = 0; i < key_set->count; ++i) {
-            lookup[key_set->keys[i]] = -1;
+            int key = key_set->keys[i];
+            assert(key >= 0 && key <= 128);
+            lookup[key] = -1;
             // Render Mapped keys
             char* display = mm_midi_to_note_display(key_set->keys[i]);
-            sprintf(mkeys, "%s%s ", mkeys, display);
+            strcat(mkeys, display);
+            strcat(mkeys, " ");
             free(display);
         }
-        sprintf(mkeys, "%s%s", mkeys, RESET);
+        strcat(mkeys, RESET);
     }
 
     mm_clear(clear_count);

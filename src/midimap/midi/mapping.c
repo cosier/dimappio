@@ -12,7 +12,7 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
     buf[0] = '\0';
 
     if (mapping->count) {
-        sprintf(buf, "User Mapping:");
+        sprintf(buf, "%sUser Mapping:%s", BLUE, RESET);
         for (int i = 0; i < mapping->group_count; ++i) {
             mm_key_group_dump(mapping->mapped[i], buf);
         }
@@ -27,7 +27,11 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
     char* display = mm_midi_to_note_display(k->key);
-    sprintf(buf, "%s\n • %s%s%s %s", buf, RED, display, RESET, CYAN);
+    strcat(buf, "\n • ");
+    strcat(buf, RED);
+    strcat(buf, display);
+    strcat(buf, RESET);
+    strcat(buf, CYAN);
     free(display);
 
     if (k->src_set->count > 1) {
@@ -99,6 +103,7 @@ mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
  * Char* list is delimited to form a list of key mappings for parsing.
  */
 mm_mapping* mm_mapping_from_list(char* list) {
+    mm_debug("mapping: mm_mapping_from_list(%s)\n", list);
     mm_mapping* mapping = mm_build_mapping();
 
     if (list == NULL) {
@@ -112,9 +117,9 @@ mm_mapping* mm_mapping_from_list(char* list) {
         return NULL;
     }
 
-    char **key_tokens = malloc(sizeof(char*)),
-         **dst_tokens = malloc(sizeof(char*)),
-         **src_tokens = malloc(sizeof(char*));
+    char **key_tokens = malloc(sizeof(char*) * 256),
+         **dst_tokens = malloc(sizeof(char*) * 256),
+         **src_tokens = malloc(sizeof(char*) * 256);
 
     int kt_count = mm_tokenize(list, ",", key_tokens);
     char *key, *res, *src_grp, *dst_grp;
@@ -165,9 +170,11 @@ mm_mapping* mm_mapping_from_list(char* list) {
         // free(key_tokens[kt_count]);
     }
 
-    free(key_tokens);
-    free(dst_tokens);
-    free(src_tokens);
+    mm_debug("mapping: freeing tokens\n");
+    // free(key_tokens);
+    // free(dst_tokens);
+    // free(src_tokens);
+    mm_debug("mapping: mm_mapping_from_list successful");
     return mapping;
 }
 
@@ -234,7 +241,12 @@ char* mm_key_set_dump(mm_key_set* set) {
     char* buf = malloc(sizeof(char*) * set->count * 10);
     buf[0] = '\0';
     for (int i = 0; i < set->count; ++i) {
-        sprintf(buf, "%s %d = %d\n", buf, i, set->keys[i]);
+        int size = sizeof(char*) * 12;
+        char* append = malloc(size);
+        snprintf(append, size, " %d = %d\n", i, set->keys[i]);
+        // sns sprintf(buf, "%s %d = %d\n", buf, i, set->keys[i]);
+        strcat(buf, append);
+        free(append);
     }
 
     return buf;
@@ -244,7 +256,7 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
     /* mm_debug("Attempting to combine key_set(%d) with addition(%d)\n", */
     /*          set->count, addition->count); */
 
-    int* new_keys = malloc(sizeof(int*) * (set->count + addition->count));
+    int* new_keys = malloc(sizeof(int) * (set->count + addition->count));
     int lookup[128] = {0};
 
     for (int i = 0; i < set->count; ++i) {
@@ -260,7 +272,7 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
 
         if (!lookup[new_additional_key]) {
             lookup[new_additional_key] = 1;
-            new_keys[i2 + set->count] = new_additional_key;
+            new_keys[added + set->count] = new_additional_key;
             ++added;
         }
     }
@@ -279,26 +291,37 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
 }
 
 void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
-    int new_size = set->count - substract->count;
-    int* new_keys = malloc(sizeof(int) * new_size);
+    // mm_debug("mapping: mm_remove_key_set()");
+    mm_debug("mm_remove_key_dump: \noriginal:\%s\n", mm_key_set_dump(set));
+    mm_debug("mm_remove_key_dump: \nsubstract:\%s\n",
+             mm_key_set_dump(substract));
+
+    if (substract->count <= 0) {
+        mm_debug("mapping: bailing from mm_remove_set!\n");
+        return;
+    }
 
     int sub_lookup[128] = {0};
     for (int i = 0; i < substract->count; ++i) {
         sub_lookup[substract->keys[i]] = 1;
     }
 
+    int* new_keys = malloc(sizeof(int) * set->count);
     int index = 0;
     for (int i2 = 0; i2 < set->count; ++i2) {
-        if (!sub_lookup[set->keys[i2]]) {
-            new_keys[index] = set->keys[i2];
+        int key = set->keys[i2];
+        assert(key >= 0 && key <= 128);
+
+        if (key >= 0 && !sub_lookup[key]) {
+            mm_debug("mm_remove_key_set: assigning %d = (%d) from set(%d) "
+                     "sub(%d)\n",
+                     key, index, set->count, substract->count);
+            new_keys[index] = key;
             ++index;
         }
     }
 
     set->count = index;
-
-    assert(set->count == new_size);
-
     free(set->keys);
     free(substract->keys);
     free(substract);

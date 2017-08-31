@@ -50,10 +50,10 @@ void mm_debug(const char* format, ...) {
             }
         }
 
-        va_list ap;
-        va_start(ap, format);
-        vfprintf(LOG_FILE, format, ap);
-        va_end(ap);
+        va_list* ap = malloc(sizeof(va_list));
+        va_start(*ap, format);
+        vfprintf(LOG_FILE, format, *ap);
+        va_end(*ap);
 
         fflush(LOG_FILE);
         /* fclose(LOG_FILE); */

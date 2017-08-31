@@ -82,6 +82,14 @@ bool verify_valid_midi_client(char* client) {
     return true;
 }
 
+void handle_invalid_send_args(int argc, int optind) {
+    fprintf(stderr, "Send requires 4 parameters: (note) (ch) "
+                    "(velocity) (on/off)\nargc/optind [%d/%d] \n\n",
+            argc, optind);
+    print_usage();
+    exit(EXIT_FAILURE);
+}
+
 int main(int argc, char** argv) {
     int opt = 0;
 
@@ -155,7 +163,7 @@ int main(int argc, char** argv) {
             bool invalid_send_args = false;
 
             if (provided < 3) {
-                invalid_send_args = true;
+                handle_invalid_send_args(argc, optind);
             }
 
             note_ch = atoi(argv[optind]);
@@ -170,15 +178,7 @@ int main(int argc, char** argv) {
                 fprintf(stderr, "Invalid note on/off paramater.\nAccepted "
                                 "options are: 'on' or 'off'. Found %s (%d)\n\n",
                         note_on_str, optind);
-                invalid_send_args = true;
-            }
-
-            if (invalid_send_args) {
-                fprintf(stderr, "--send requires 4 parameters: (note) (ch) "
-                                "(velocity) (on/off)\nargc/optind [%d/%d] \n\n",
-                        argc, optind);
-                print_usage();
-                exit(EXIT_FAILURE);
+                handle_invalid_send_args(argc, optind);
             }
 
             send_note = optarg;
@@ -265,12 +265,13 @@ int main(int argc, char** argv) {
 
     // Send a midi note to a specific client.
     if (send_note != NULL) {
+        mm_debug("main: attempting to send midi note");
         if (target == NULL) {
             requires_target_specified("send");
         }
 
         mm_device* cp = mm_parse_device(target);
-
+        mm_debug("main: sending midi note to: %s", target);
         mm_send_midi_note(cp->client, cp->port, send_note, note_on, note_ch,
                           note_vel);
         return 0;

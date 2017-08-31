@@ -156,6 +156,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     int midi = 0;
     int type = 0;
     int note_on = 0;
+    int note_off = 0;
 
     for (;;) {
         // gather poll descriptors for this sequencer
@@ -181,19 +182,24 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                 type = event->type;
                 midi = event->data.note.note;
                 note_on = (type == SND_SEQ_EVENT_NOTEON) ? 1 : 0;
+                note_off = (type == SND_SEQ_EVENT_NOTEOFF) ? 1 : 0;
 
                 update_node_list(event, &list);
 
                 grp = options->mapping->index[midi];
 
                 if (grp != NULL) {
+                    // mm_debug("event_loop: mappings for event "
+                    //          "(midi:%d, note_on: %d, note_off: %d)\n",
+                    //          midi, note_on, note_off);
+
                     mm_key_set* new_keys =
                         mm_mapping_group_single_src_dsts(grp);
 
                     if (note_on) {
                         trigger_mapping(output, event, new_keys);
                         mm_combine_key_set(dsts_set, new_keys);
-                    } else {
+                    } else if (note_off) {
                         release_mapping(output, new_keys);
                         mm_remove_key_set(dsts_set, new_keys);
                     }

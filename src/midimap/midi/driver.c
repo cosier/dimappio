@@ -68,11 +68,12 @@ mm_device* mm_get_midi_through() {
             free(name);
 
             if (match != NULL) {
+                mm_debug("mm_get_midi_through: found it: %s\n",
+                         devices->store[i]->name);
+
                 mm_device* dev = devices->store[i];
                 devices->store[i] = NULL;
                 mm_devices_free(devices);
-                mm_debug("mm_get_midi_through: found it: %s\n",
-                         devices->store[i]->name);
                 return dev;
             } else {
                 mm_debug("mm_get_midi_through: not a match: %s\n",
