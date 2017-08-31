@@ -94,13 +94,7 @@ $ # automated cmake wrappers
 $ bin/build
 $ bin/install
 ```
-  
-  
-  
-   
-          
-   
- ~~~~
+
 ----
 
 ## Authors & Contributors:
