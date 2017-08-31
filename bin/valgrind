@@ -11,4 +11,4 @@ if [ ! $? -eq 0 ]; then
   exit 1
 fi
 
-valgrind -v --leak-check=full $ROOT/bin/midi-mapper $@
+valgrind -v --show-reachable=yes --leak-check=full $ROOT/bin/midi-mapper $@
