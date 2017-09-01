@@ -112,11 +112,27 @@ int mm_tokenize(char* src, char* delim, char** result) {
         src = NULL;
         if (token != NULL) {
             result[i] = strdup(token);
-            // free(token);
             i++;
         }
     } while (token != NULL);
     free(token);
 
     return i;
+}
+
+/**
+ * There be fast cats here, use at your own risk!
+ */
+void mm_cat(char** buf, char* src) {
+    char* dest = *buf;
+    while (*dest) {
+        dest++;
+    }
+
+    while ((*dest = *src++)) {
+        // Loop until we reach a null terminator in src
+    };
+
+    char* fin = --dest;
+    buf = &fin;
 }

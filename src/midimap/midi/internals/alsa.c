@@ -200,7 +200,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                 if (note_owners[midi] < 0) {
                     mm_debug("initialising note_owners[midi] = %d\n", midi);
                     note_owners[midi] = midi;
-                } else {
+                } else if (note_owners[midi] != midi) {
                     mm_debug("could not initialise note_owners[midi] because: "
                              "%d != %d\n",
                              note_owners[midi], midi);
@@ -287,6 +287,9 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                                 "cannot release note_off because: %d != %d\n",
                                 midi, note_owners[midi]);
                             process_event = 0;
+                        } else {
+                            note_owners[midi] = -1;
+                            mm_debug("released note_owners[midi] = -1\n");
                         }
                     }
 

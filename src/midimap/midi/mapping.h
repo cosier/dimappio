@@ -1,5 +1,6 @@
 #ifndef MIDI_MAPPINGS_H
 #define MIDI_MAPPINGS_H
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,6 +14,11 @@
 struct mm_key_map;
 struct mm_key_group;
 struct mm_mapping;
+
+typedef struct mm_tokens {
+    char** tokens;
+    int count;
+} mm_tokens;
 
 typedef struct mm_key_set {
     int* keys;
@@ -97,21 +103,27 @@ mm_key_group* mm_get_key_group(mm_mapping* m, int src);
 void mm_combine_key_set(mm_key_set* set, mm_key_set* addition);
 void mm_remove_key_set(mm_key_set* set, mm_key_set* addition);
 
-void create_src_group(char** src_tokens, char* dst_tokens, int src_count,
-                      int dst_count);
+void create_src_group(mm_tokens* src_tokens, mm_tokens* dst_tokens);
 
-mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
-                               char** dst_tokens, int src_count, int dst_count);
+mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
+                               mm_tokens* dst_tokens);
 
-mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
-                           int src_count, int dst_count);
+mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
+                           mm_tokens* dst_tokens);
 
 mm_key_set* mm_create_key_set(int count);
 
-void update_key_group(mm_key_group* group, int src, char** src_tokens,
-                      char** dst_tokens, int src_count, int dst_count);
+void update_key_group(mm_key_group* group, int src, mm_tokens* src_tokens,
+                      mm_tokens* dst_tokens);
 
 mm_key_set* mm_key_set_copy(mm_key_set* set);
 void mm_key_set_remove_single_key(mm_key_set* set, int key);
+
+int mm_token_count(const char* src, char delim);
+mm_tokens* mm_token_split(const char* src, char delim);
+// mm_mapping_token_set* mm_mapping_tokens(char* src, char* set_delim,
+//                                         char* token_delim);
+
+char* mm_tokens_dump(mm_tokens* tokens);
 
 #endif

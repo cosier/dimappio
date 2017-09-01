@@ -27,32 +27,40 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
     char* display = mm_midi_to_note_display(k->key);
-    strcat(buf, "\n • ");
-    strcat(buf, RED);
-    strcat(buf, display);
-    strcat(buf, RESET);
-    strcat(buf, CYAN);
-    free(display);
+    mm_cat(&buf, "\n • ");
+    mm_cat(&buf, RED);
+    mm_cat(&buf, display);
+    mm_cat(&buf, RESET);
+    mm_cat(&buf, CYAN);
 
     if (k->src_set->count > 1) {
-        sprintf(buf, "%s [%d: -> ", buf, k->src_set->count);
+        int istr_size = 16;
+        char* istr = malloc(sizeof(char*) * istr_size);
+        snprintf(istr, istr_size, " [%d: ->", k->src_set->count);
+        mm_cat(&buf, istr);
+
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
-            sprintf(buf, "%s %s ", buf,
-                    mm_midi_to_note_display(k->src_set->keys[isrc]));
+            char* note_display_buf = malloc(sizeof(char*) * 6);
+            snprintf(note_display_buf, 6, " %s ",
+                     mm_midi_to_note_display(k->src_set->keys[isrc]));
+
+            snprintf(buf, 6, "%s", note_display_buf);
         }
-        strcat(buf, " ]->");
+
+        mm_cat(&buf, " ]->");
     } else {
-        strcat(buf, " ->");
+        mm_cat(&buf, " ->");
     }
+
     for (int di = 0; di < k->dst_set->count; ++di) {
         char* display = mm_midi_to_note_display(k->dst_set->keys[di]);
-        strcat(buf, " ");
-        strcat(buf, display);
-        strcat(buf, " ");
+        mm_cat(&buf, " ");
+        strncpy(buf, display, 4);
+        mm_cat(&buf, " ");
         free(display);
     }
 
-    strcat(buf, RESET);
+    mm_cat(&buf, RESET);
 }
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }
@@ -133,6 +141,98 @@ mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
     return combined_set;
 }
 
+int mm_token_count(const char* src, char delim) {
+    int count = 0;
+    char* cursor = strdup(src);
+
+    while (*cursor) {
+        if (*cursor == delim) {
+            ++count;
+        }
+
+        ++cursor;
+    }
+
+    // Actual number of tokens is delim count + 1
+    return count + 1;
+}
+
+mm_tokens* mm_token_split(const char* src, char delim) {
+    char** buf = malloc(sizeof(char**) * 64);
+    int tokens = 0;
+    char* cursor = strdup(src);
+
+    // printf("mm_token_split(%s) on %c\n", cursor, delim);
+
+    for (int i = 0; i < 64; ++i) {
+        int token_tracker = 0;
+        char* token = malloc(sizeof(char) * 1);
+        token[0] = 0;
+
+        if (!*cursor) {
+            break;
+        }
+
+        while (*cursor) {
+            if (*cursor == ' ') {
+                // skip whitespace in the parser
+                ++cursor;
+            } else if (*cursor == delim) {
+                // printf("cursor(%c) == delim(%c)\n", *cursor, delim);
+                // printf("token finished: %s\n", token);
+                ++cursor;
+                break;
+            } else {
+                char* appendage = malloc(sizeof(char*) * 3);
+                sprintf(appendage, "%s%c", token, *cursor);
+                token = appendage;
+                ++token_tracker;
+                ++cursor;
+            }
+        }
+
+        if (token_tracker > 0) {
+            // printf("processed buf[%d] = token: %s\n", tokens, token);
+            buf[tokens] = token;
+            ++tokens;
+        }
+    }
+
+    // printf("token_split done, found(%d) tokens\n\n", tokens);
+    // return buf;
+    mm_tokens* result = malloc(sizeof(mm_tokens));
+    result->count = tokens;
+    result->tokens = buf;
+    return result;
+}
+
+char* mm_tokens_dump(mm_tokens* tokens) {
+    char* buf = NULL;
+    int last_size = 1;
+
+    for (int i = 0; i < tokens->count; ++i) {
+        char* token = tokens->tokens[i];
+        int size = strlen(token) + 32;
+
+        if (buf == NULL) {
+            char* new = malloc(sizeof(char*) * size);
+            snprintf(new, size, "token[%d]: %s\n", i, token);
+            last_size = size;
+            buf = new;
+        } else {
+            int new_size = size + last_size;
+            last_size = new_size;
+
+            char* new = malloc(sizeof(char*) * new_size);
+            snprintf(new, new_size, "%stoken[%d]: %s\n", buf, i, token);
+            free(buf);
+            buf = new;
+        }
+    }
+
+    return buf;
+}
+
 /**
  * Builds a complete mapping from a string of characters.
  * Char* list is delimited to form a list of key mappings for parsing.
@@ -152,80 +252,75 @@ mm_mapping* mm_mapping_from_list(char* list) {
         return NULL;
     }
 
-    char **key_tokens = malloc(sizeof(char*) * 256),
-         **dst_tokens = malloc(sizeof(char*) * 256),
-         **src_tokens = malloc(sizeof(char*) * 256);
+    mm_tokens* mappings = mm_token_split(list, ',');
+    // printf("token split complete!\n");
 
-    int kt_count = mm_tokenize(list, ",", key_tokens);
-    char *key, *res, *src_grp, *dst_grp;
-    int src, src_count, dst_count;
+    for (int i = 0; i < mappings->count; ++i) {
+        // process individual mappings from the list.
+        // break into src and dst groups.
+        char* input = mappings->tokens[i];
+        printf("\ninput = %s\n", input);
 
-    for (int i = 0; i < kt_count; ++i) {
-        key = key_tokens[i];
-        res = NULL;
+        mm_tokens* tokens = mm_token_split(input, ':');
+        // printf("tokens->count(%d)\n", tokens->count);
+        assert(tokens->count == 2 && tokens->count > 0);
 
-        if (!strstr(key, ":")) {
-            error("Could not parse mapping: %s", key);
-            return NULL;
-        }
+        mm_tokens* src_tokens = mm_token_split(tokens->tokens[0], '|');
+        mm_tokens* dst_tokens = mm_token_split(tokens->tokens[1], '|');
 
-        src_grp = strtok_r(key, ":", &res);
-        dst_grp = strtok_r(NULL, ":", &res);
+        for (int isrc = 0; isrc < src_tokens->count; ++isrc) {
+            int src = mm_parse_to_midi(src_tokens->tokens[0]);
 
-        if (strstr(src_grp, "|")) {
-            src_count = mm_tokenize(src_grp, "|", src_tokens);
-        } else {
-            src_count = 1;
-            src_tokens[0] = src_grp;
-        }
-
-        if (strstr(dst_grp, "|")) {
-            dst_count = mm_tokenize(dst_grp, "|", dst_tokens);
-        } else {
-            dst_count = 1;
-            dst_tokens[0] = dst_grp;
-        }
-
-        for (int isrc = 0; isrc < src_count; ++isrc) {
-            src = mm_parse_to_midi(src_tokens[isrc]);
             if (mapping->index[src] == NULL) {
-                // Stash our new group into the index
-                mapping->index[src] = create_key_group(
-                    mapping, src, src_tokens, dst_tokens, src_count, dst_count);
+                // create a new mapping for this midi key
+                mapping->index[src] =
+                    create_key_group(mapping, src, src_tokens, dst_tokens);
                 mapping->group_count++;
 
             } else {
+                // update existing mapping group for this midi key.
+                // This means inserting a new key_map into an existing group.
                 update_key_group(mapping->index[src], src, src_tokens,
-                                 dst_tokens, src_count, dst_count);
+                                 dst_tokens);
             }
-
-            free(src_tokens[isrc]);
         }
-
-        // free(key_tokens[kt_count]);
     }
 
-    // Store for later cleanup
-    mapping->key_tokens = key_tokens;
-    mapping->dst_tokens = dst_tokens;
-    mapping->src_tokens = src_tokens;
+    // for (int isrc = 0; isrc < src_count; ++isrc) {
+    //     mm_mapping_token_set* src_tokens = mm_mapping_tokens;
+    //     src = mm_parse_to_midi(input_tokens[isrc]);
+
+    //     if (mapping->index[src] == NULL) {
+    //         // Stash our new group into the index
+    //         mapping->index[src] =
+    //             create_key_group(mapping, src, input_tokens,
+    //             target_tokens,
+    //                              src_count, dst_count);
+    //         mapping->group_count++;
+
+    //     } else {
+    //         update_key_group(mapping->index[src], src, input_tokens,
+    //                          target_tokens, src_count, dst_count);
+    //     }
+
+    //     // free(src_tokens[isrc]);
+    // }
+
+    // free(key_tokens[kt_count]);
 
     mm_debug("mapping: mm_mapping_from_list successful");
     return mapping;
 }
 
-void update_key_group(mm_key_group* group, int src, char** src_tokens,
-                      char** dst_tokens, int src_count, int dst_count) {
-    group->maps[group->count] =
-        create_key_map(src, src_tokens, dst_tokens, src_count, dst_count);
-
+void update_key_group(mm_key_group* group, int src, mm_tokens* src_tokens,
+                      mm_tokens* dst_tokens) {
+    group->maps[group->count] = create_key_map(src, src_tokens, dst_tokens);
     group->parent->count++;
     group->count++;
 }
 
-mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
-                               char** dst_tokens, int src_count,
-                               int dst_count) {
+mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
+                               mm_tokens* dst_tokens) {
 
     mm_key_group* group = NULL;
     group = malloc(sizeof(mm_key_group));
@@ -241,30 +336,36 @@ mm_key_group* create_key_group(mm_mapping* m, int src, char** src_tokens,
     group->maps = malloc(MAX_GROUPED_KEY_MAPS * sizeof(mm_key_map*));
 
     // Allocate the first key_map
-    group->maps[0] =
-        create_key_map(src, src_tokens, dst_tokens, src_count, dst_count);
+    group->maps[0] = create_key_map(src, src_tokens, dst_tokens);
     return group;
 }
 
-mm_key_map* create_key_map(int src, char** src_tokens, char** dst_tokens,
-                           int src_count, int dst_count) {
+mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
+                           mm_tokens* dst_tokens) {
 
+    printf("create_key_map(key %d -> %d, %d)\n", src, src_tokens->count,
+           dst_tokens->count);
     mm_key_map* km = malloc(sizeof(mm_key_map));
     km->key = src;
 
-    km->src_set = mm_create_key_set(src_count);
-    km->dst_set = mm_create_key_set(dst_count);
+    km->src_set = mm_create_key_set(src_tokens->count);
+    km->dst_set = mm_create_key_set(dst_tokens->count);
 
-    for (int idst = 0; idst < dst_count; ++idst) {
-        km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens[idst]);
+    for (int idst = 0; idst < dst_tokens->count; ++idst) {
+        km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens->tokens[idst]);
     }
 
-    for (int isrc = 0; isrc < src_count; ++isrc) {
-        km->src_set->keys[isrc] = mm_parse_to_midi(src_tokens[isrc]);
+    for (int isrc = 0; isrc < src_tokens->count; ++isrc) {
+        printf("isrc: start(%d)\n", isrc);
+        char* s = src_tokens->tokens[isrc];
+        printf("isrc: %s\n", s);
+        km->src_set->keys[isrc] = mm_parse_to_midi(s);
     }
 
-    for (int i = 0; i < dst_count; ++i) {
-        char* t = dst_tokens[i];
+    printf("isrc: fin\n\n");
+
+    for (int i = 0; i < dst_tokens->count; ++i) {
+        char* t = dst_tokens->tokens[i];
         if (t != NULL) {
             // free(t);
         }

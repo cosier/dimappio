@@ -31,8 +31,21 @@ static bool is_char_number(unsigned ch) {
 }
 
 int mm_parse_to_midi(char* input) {
+    if (input == NULL) {
+        error("Bad midi input: NULL");
+        return -1;
+    }
+
+    if (!*input) {
+        printf("INVALID INPUT!\n");
+    }
+
+    unsigned char f = input[0];
+
+    // printf("f: %c\n", f);
+
     // cast first char to unsigned uppercase, for digit check.
-    if (is_char_number(toupper((unsigned char)input[0]))) {
+    if (is_char_number(toupper(f))) {
         return atoi(input);
     }
 
@@ -123,10 +136,10 @@ char* mm_midi_to_note_display(int midi) {
 }
 
 char* mm_note_print(mm_note* n) {
-    int size = sizeof(char*) * 16;
+    int size = sizeof(char*) * 4;
     char* buf = malloc(size);
     assert(n->letter != NULL);
-    assert(n->oct >= 0 && n->oct <= 10);
+    assert(n->oct >= 0 && n->oct <= 12);
 
     snprintf(buf, size, "%s%d", n->letter, n->oct);
     return buf;

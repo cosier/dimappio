@@ -14,5 +14,5 @@ fi
 if [[ $FULL == true ]]; then
   valgrind -v --show-reachable=yes --leak-check=full $ROOT/bin/midi-mapper $@
 else
-  valgrind -v --leak-check=full $ROOT/bin/midi-mapper $@
+  valgrind -v --quiet --leak-check=full $ROOT/bin/midi-mapper $@
 fi
