@@ -81,8 +81,6 @@ void mm_mapping_free(mm_mapping* mapping) {
         for (int i2 = 0; i2 < grp->count; ++i2) {
             mm_key_map* k = grp->maps[i2];
 
-            printf("mapping: freeing keymap(%d)\n", k->key);
-
             free(k->dst_set->keys);
             free(k->src_set->keys);
 
@@ -441,10 +439,10 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
 
 void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     // mm_debug("mapping: mm_remove_key_set()");
-    if (substract->count <= 0) {
-        mm_debug("mapping: bailing from mm_remove_set!\n");
-        return;
-    }
+    // if (substract->count <= 0) {
+    //     mm_debug("mapping: bailing from mm_remove_set!\n");
+    //     return;
+    // }
 
     int sub_lookup[128] = {0};
     int substractable = 0;
@@ -477,13 +475,12 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
         }
     }
 
-    set->count = index;
-    assert(set->count == new_size);
-
     free(set->keys);
-    free(substract->keys);
-    free(substract);
+
+    set->count = index;
     set->keys = new_keys;
+
+    assert(set->count == new_size);
 }
 
 mm_key_set* mm_key_set_copy(mm_key_set* set) {

@@ -275,13 +275,21 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                         }
 
                         release_mapping(output, release_keys);
+
                         mm_remove_key_set(dsts_set, new_keys);
+
+                        free(new_keys->keys);
+                        free(new_keys);
 
                         // If we have deep copied new_keys, or removed a key
                         // from it, we need to free the new copy.
                         if (new_keys != release_keys) {
+                            free(release_keys->keys);
                             free(release_keys);
+                            release_keys = NULL;
                         }
+
+                        new_keys = NULL;
                     }
 
                 } else {
@@ -321,6 +329,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     mm_options_free(options);
 
     free(pfds);
+    free(dsts_set->keys);
     free(dsts_set);
     free(list);
     free(grp);
