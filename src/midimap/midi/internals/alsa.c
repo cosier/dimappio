@@ -167,6 +167,11 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
         note_owners[i] = -1;
     }
 
+    int active_lookup[129] = {0};
+    for (int i = 0; i < 129; ++i) {
+        active_lookup[i] = 0;
+    }
+
     mm_monitor_render(options, list, dsts_set);
 
     for (;;) {
@@ -224,16 +229,36 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                     char* key_dump = mm_key_set_dump(new_keys);
 
                     mm_debug("key(%d)\n%s\n", midi, key_dump);
+                    free(key_dump);
 
                     if (note_on) {
+                        int remove_hits[129] = {0};
+
                         for (int i = 0; i < new_keys->count; ++i) {
                             // set the latest owner to `midi` if it's available
                             int k = new_keys->keys[i];
-                            // if (note_owners[k] < 0) {
-                            note_owners[k] = midi;
+
+                            if (active_lookup[k]) {
+                                // mark key for pre-emptive removal due to it
+                                // being active already
+                                remove_hits[k] = 5;
+                            } else {
+                                note_owners[k] = midi;
+                            }
                         }
 
-                        if (new_keys->count > 0) {
+                        // stage 2 hit removals
+                        for (int i = 0; i < 129; ++i) {
+                            if (remove_hits[i] == 5) {
+                                remove_hits[i] = 0;
+                                mm_debug("removing single_key due to active "
+                                         "hit: %d\n",
+                                         i);
+                                mm_key_set_remove_single_key(new_keys, i);
+                            }
+                        }
+
+                        if (!active_lookup[midi] && new_keys->count > 0) {
                             // dont process default event if we have mapped a
                             // key
                             process_event = 0;
@@ -244,9 +269,13 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
                     } else if (note_off) {
 
-                        if (new_keys->count > 0) {
+                        if (!active_lookup[midi] || new_keys->count > 0) {
                             // dont process default event if we have mapped a
                             // key
+                            process_event = 0;
+                        }
+
+                        if (!active_lookup[midi]) {
                             process_event = 0;
                         }
 
@@ -330,6 +359,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                 }
 
                 if (process_event) {
+                    active_lookup[midi] = note_on;
                     event->data.note.channel = 0;
                     send_event(output, event);
                 }

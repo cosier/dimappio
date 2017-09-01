@@ -541,7 +541,7 @@ mm_key_set* mm_key_set_copy(mm_key_set* set) {
 }
 
 void mm_key_set_remove_single_key(mm_key_set* set, int key) {
-    int size = set->count - 1;
+    int size = set->count;
     int* keys = malloc(sizeof(int) * size);
 
     int index = 0;
@@ -552,8 +552,6 @@ void mm_key_set_remove_single_key(mm_key_set* set, int key) {
             ++index;
         }
     }
-
-    assert(size == index);
 
     free(set->keys);
     set->keys = keys;

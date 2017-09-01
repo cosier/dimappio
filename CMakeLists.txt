@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 project(midi-mapper)
 
 set (MM_VERSION_MAJOR 0)
-set (MM_VERSION_MINOR 1)
+set (MM_VERSION_MINOR 2)
 set (MM_VERSION_PATCH 0)
 
 if ("$ENV{BUILD_REVISION}" STREQUAL "")
