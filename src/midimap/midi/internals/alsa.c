@@ -250,7 +250,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                                 }
 
                                 // we don't own the key, don't release_mapping
-                                // yet. ergo we must remove from
+                                // ye. ergo we must remove frm
                                 // `release_keys`
 
                                 // But first, we need to turn keys_to_release
@@ -276,6 +276,12 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
                         release_mapping(output, release_keys);
                         mm_remove_key_set(dsts_set, new_keys);
+
+                        // If we have deep copied new_keys, or removed a key
+                        // from it, we need to free the new copy.
+                        if (new_keys != release_keys) {
+                            free(release_keys);
+                        }
                     }
 
                 } else {

@@ -33,6 +33,8 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
     mm_kitty(&buf, "\n • ");
     mm_kitty(&buf, RED);
     mm_kitty(&buf, display);
+    free(display);
+
     mm_kitty(&buf, RESET);
     mm_kitty(&buf, CYAN);
 
@@ -41,13 +43,16 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
         char* istr = malloc(sizeof(char*) * istr_size);
         snprintf(istr, istr_size, " [%d: ->", k->src_set->count);
         mm_kitty(&buf, istr);
+        free(istr);
 
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
             char* note_display_buf = malloc(sizeof(char*) * 6);
-            snprintf(note_display_buf, 6, " %s ",
-                     mm_midi_to_note_display(k->src_set->keys[isrc]));
+            char* display2 = mm_midi_to_note_display(k->src_set->keys[isrc]);
+            snprintf(note_display_buf, 6, " %s ", display2);
+            free(display2);
 
             mm_kitty(&buf, note_display_buf);
+            free(note_display_buf);
         }
 
         mm_kitty(&buf, " ]->");
@@ -56,11 +61,11 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
     }
 
     for (int di = 0; di < k->dst_set->count; ++di) {
-        char* display = mm_midi_to_note_display(k->dst_set->keys[di]);
+        char* display3 = mm_midi_to_note_display(k->dst_set->keys[di]);
         mm_kitty(&buf, " ");
-        mm_kitty(&buf, display);
+        mm_kitty(&buf, display3);
         mm_kitty(&buf, " ");
-        free(display);
+        free(display3);
     }
 
     mm_kitty(&buf, RESET);
@@ -153,16 +158,16 @@ int mm_token_count(const char* src, char delim) {
 }
 
 mm_tokens* mm_token_split(const char* src, char delim) {
-    char** buf = malloc(sizeof(char**) * 64);
+    int buf_size = strlen(src);
+    char** buf = malloc(sizeof(char**) * buf_size);
     int tokens = 0;
-    char* cursor = strdup(src);
+    const char* cursor = src;
 
     // printf("mm_token_split(%s) on %c\n", cursor, delim);
 
-    for (int i = 0; i < 64; ++i) {
+    for (int i = 0; i < buf_size; ++i) {
         int token_tracker = 0;
-        char* token = malloc(sizeof(char) * 1);
-        token[0] = 0;
+        char* token = NULL;
 
         if (!*cursor) {
             break;
@@ -179,7 +184,13 @@ mm_tokens* mm_token_split(const char* src, char delim) {
                 break;
             } else {
                 char* appendage = malloc(sizeof(char*) * 3);
-                sprintf(appendage, "%s%c", token, *cursor);
+                if (token != NULL) {
+                    sprintf(appendage, "%s%c", token, *cursor);
+                    free(token);
+                } else {
+                    sprintf(appendage, "%c", *cursor);
+                }
+
                 token = appendage;
                 ++token_tracker;
                 ++cursor;
@@ -188,16 +199,28 @@ mm_tokens* mm_token_split(const char* src, char delim) {
 
         if (token_tracker > 0) {
             // printf("processed buf[%d] = token: %s\n", tokens, token);
-            buf[tokens] = token;
-            ++tokens;
+            if (tokens < buf_size) {
+                buf[tokens] = token;
+                ++tokens;
+            }
         }
     }
 
     // printf("token_split done, found(%d) tokens\n\n", tokens);
     // return buf;
     mm_tokens* result = malloc(sizeof(mm_tokens));
+
+    char** mbuf = malloc(sizeof(char**) * tokens);
+    for (int b = 0; b < tokens; ++b) {
+        mbuf[b] = buf[b];
+    }
+
+    free(buf);
+
     result->count = tokens;
-    result->tokens = buf;
+    result->tokens = mbuf;
+    // free(buf);
+
     return result;
 }
 
@@ -283,8 +306,13 @@ mm_mapping* mm_mapping_from_list(char* list) {
                                  dst_tokens);
             }
         }
+
+        mm_tokens_free(src_tokens);
+        mm_tokens_free(dst_tokens);
+        mm_tokens_free(tokens);
     }
 
+    mm_tokens_free(mappings);
     mm_debug("mapping: mm_mapping_from_list successful");
     return mapping;
 }
@@ -488,4 +516,15 @@ void mm_key_set_remove_single_key(mm_key_set* set, int key) {
     free(set->keys);
     set->keys = keys;
     set->count = index;
+}
+
+void mm_tokens_free(mm_tokens* tokens) {
+    for (int i = 0; i < tokens->count; ++i) {
+        free(tokens->tokens[i]);
+        tokens->tokens[i] = NULL;
+    }
+
+    free(tokens->tokens);
+    free(tokens);
+    tokens = NULL;
 }

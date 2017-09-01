@@ -121,5 +121,5 @@ mm_tokens* mm_token_split(const char* src, char delim);
 //                                         char* token_delim);
 
 char* mm_tokens_dump(mm_tokens* tokens);
-
+void mm_tokens_free(mm_tokens* tokens);
 #endif
