@@ -80,10 +80,6 @@ typedef struct mm_mapping {
     // Total key_map(s) in this mapping
     int count;
 
-    char** src_tokens;
-    char** dst_tokens;
-    char** key_tokens;
-
 } mm_mapping;
 
 mm_mapping* mm_build_mapping();

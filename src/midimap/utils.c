@@ -123,16 +123,28 @@ int mm_tokenize(char* src, char* delim, char** result) {
 /**
  * There be fast cats here, use at your own risk!
  */
-void mm_cat(char** buf, char* src) {
-    char* dest = *buf;
-    while (*dest) {
-        dest++;
+char* mm_cat(char* buf, char* src) {
+    while (*buf) {
+        buf++;
     }
 
-    while ((*dest = *src++)) {
+    while ((*buf++ = *src++)) {
         // Loop until we reach a null terminator in src
     };
 
-    char* fin = --dest;
-    buf = &fin;
+    return --buf;
+}
+
+void mm_kitty(char** ref, char* src) {
+    char* buf = *ref;
+    while (*buf) {
+        buf++;
+    }
+
+    while ((*buf++ = *src++)) {
+        // Loop until we reach a null terminator in src
+    };
+
+    *ref = --buf;
+    // return --buf;
 }

@@ -166,6 +166,8 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
         note_owners[i] = -1;
     }
 
+    mm_monitor_render(options, list, dsts_set);
+
     for (;;) {
         // gather poll descriptors for this sequencer
         snd_seq_poll_descriptors(output->dev, pfds, pfds_num, POLLIN);

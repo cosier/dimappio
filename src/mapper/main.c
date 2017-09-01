@@ -310,7 +310,8 @@ int main(int argc, char** argv) {
     if (mapping->count) {
         char* buf = malloc(sizeof(char) * 128 * mapping->count);
         mm_mapping_dump(mapping, buf);
-        printf("%s\n", buf);
+        printf("%s\n%s▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄%s\n ",
+               buf, BLACK, RESET);
         free(buf);
     }
 

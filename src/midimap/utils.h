@@ -24,7 +24,8 @@ int mm_count_lines(char* input);
 bool contains_bit(unsigned val, unsigned bitindex);
 
 int mm_tokenize(char* src, char* delim, char** result);
-void mm_cat(char** buf, char* src);
+char* mm_cat(char* buf, char* src);
+void mm_kitty(char** buf, char* src);
 
 //////////////////////////////////////////////////////////
 // HERE BE APPLES
