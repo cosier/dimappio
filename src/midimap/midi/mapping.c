@@ -28,34 +28,37 @@ void mm_key_group_dump(mm_key_group* g, char* buf) {
 void mm_key_map_dump(mm_key_map* k, char* buf) {
     char* display = mm_midi_to_note_display(k->key);
     // sprintf(buf, "OK");
+    char* widthbuf = malloc(sizeof(char*) * 4);
+    snprintf(widthbuf, 4, "%3s", display);
 
     // retun;
     mm_kitty(&buf, "\n • ");
     mm_kitty(&buf, RED);
-    mm_kitty(&buf, display);
+    mm_kitty(&buf, widthbuf);
     free(display);
+    free(widthbuf);
 
     mm_kitty(&buf, RESET);
     mm_kitty(&buf, CYAN);
 
     if (k->src_set->count > 1) {
-        int istr_size = 16;
-        char* istr = malloc(sizeof(char*) * istr_size);
-        snprintf(istr, istr_size, " [%d: ->", k->src_set->count);
-        mm_kitty(&buf, istr);
-        free(istr);
+        mm_kitty(&buf, " [");
 
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
             char* note_display_buf = malloc(sizeof(char*) * 6);
             char* display2 = mm_midi_to_note_display(k->src_set->keys[isrc]);
-            snprintf(note_display_buf, 6, " %s ", display2);
-            free(display2);
+            snprintf(note_display_buf, 6, "%s", display2);
 
             mm_kitty(&buf, note_display_buf);
+            if (isrc < k->src_set->count - 1) {
+                mm_kitty(&buf, ", ");
+            }
+
+            free(display2);
             free(note_display_buf);
         }
 
-        mm_kitty(&buf, " ]->");
+        mm_kitty(&buf, "]->");
     } else {
         mm_kitty(&buf, " ->");
     }
@@ -77,7 +80,6 @@ void mm_mapping_free(mm_mapping* mapping) {
     for (int i = 0; i < mapping->count; ++i) {
         mm_key_group* grp = mapping->mapped[i];
 
-        printf("mapping: freeing group(%d)\n", grp->src);
         for (int i2 = 0; i2 < grp->count; ++i2) {
             mm_key_map* k = grp->maps[i2];
 
@@ -132,6 +134,45 @@ mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
                 combined_set->keys[combined_set->count] =
                     map->dst_set->keys[isrc];
                 combined_set->count++;
+            }
+        }
+    }
+
+    return combined_set;
+}
+
+mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
+                                      int note_on) {
+    mm_key_set* combined_set = malloc(sizeof(mm_key_set));
+    // hold up to 128 keys in this set
+    combined_set->keys = malloc(sizeof(int*) * 128);
+    combined_set->count = 0;
+
+    for (int i = 0; i < grp->count; ++i) {
+        mm_key_map* map = grp->maps[i];
+
+        if (map->src_set->count == 1) {
+            for (int isrc = 0; isrc < map->dst_set->count; isrc++) {
+                combined_set->keys[combined_set->count] =
+                    map->dst_set->keys[isrc];
+                combined_set->count++;
+            }
+        } else {
+            int srcs_checked = 0;
+            for (int isrc = 0; isrc < map->src_set->count; isrc++) {
+                int src = map->src_set->keys[isrc];
+                if (note_on && !mm_key_node_contains(tail, src)) {
+                    break;
+                }
+
+                ++srcs_checked;
+                if (srcs_checked == map->src_set->count) {
+                    for (int idst = 0; idst < map->dst_set->count; ++idst) {
+                        combined_set->keys[combined_set->count] =
+                            map->dst_set->keys[idst];
+                        combined_set->count++;
+                    }
+                }
             }
         }
     }
@@ -385,7 +426,11 @@ mm_key_set* mm_create_key_set(int count) {
 }
 
 char* mm_key_set_dump(mm_key_set* set) {
-    char* buf = malloc(sizeof(char*) * set->count * 10);
+    int size = set->count * 10;
+    if (size < 10) {
+        size = 10;
+    }
+    char* buf = malloc(sizeof(char*) * size);
     buf[0] = '\0';
     for (int i = 0; i < set->count; ++i) {
         int size = sizeof(char*) * 12;
@@ -404,7 +449,7 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
     /*          set->count, addition->count); */
 
     int* new_keys = malloc(sizeof(int) * (set->count + addition->count));
-    int lookup[128] = {0};
+    int lookup[256] = {0};
 
     for (int i = 0; i < set->count; ++i) {
         // mark original key existence
@@ -444,7 +489,7 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     //     return;
     // }
 
-    int sub_lookup[128] = {0};
+    int sub_lookup[256] = {0};
     int substractable = 0;
 
     for (int i = 0; i < substract->count; ++i) {

@@ -3,7 +3,7 @@
 mm_key_node* mm_key_node_create(int key) {
     mm_key_node* n = malloc(sizeof(mm_key_node));
     n->next = NULL;
-    n->map = NULL;
+    // n->map = NULL;
     n->key = key;
     return n;
 }
@@ -194,7 +194,7 @@ void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
 
     n->next = next->next;
     n->key = next->key;
-    n->map = next->map;
+    // n->map = next->map;
 
     // Catch the tail and shift it back, if necessary
     if (*tail == next) {

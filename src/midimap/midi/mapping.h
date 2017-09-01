@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "midi/nodes.h"
 #include "midi/parser.h"
 #include "utils.h"
 
@@ -92,6 +93,8 @@ void mm_key_group_dump(mm_key_group* g, char* buf);
 void mm_key_map_dump(mm_key_map* k, char* buf);
 
 mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* group);
+mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
+                                      int note_on);
 mm_key_set* mm_mapping_group_srcs(mm_key_group* group);
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src);
@@ -113,12 +116,11 @@ void update_key_group(mm_key_group* group, int src, mm_tokens* src_tokens,
                       mm_tokens* dst_tokens);
 
 mm_key_set* mm_key_set_copy(mm_key_set* set);
+char* mm_key_set_dump(mm_key_set* set);
 void mm_key_set_remove_single_key(mm_key_set* set, int key);
 
 int mm_token_count(const char* src, char delim);
 mm_tokens* mm_token_split(const char* src, char delim);
-// mm_mapping_token_set* mm_mapping_tokens(char* src, char* set_delim,
-//                                         char* token_delim);
 
 char* mm_tokens_dump(mm_tokens* tokens);
 void mm_tokens_free(mm_tokens* tokens);

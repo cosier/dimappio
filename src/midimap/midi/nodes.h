@@ -4,9 +4,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "midi/mapping.h"
 #include "midi/parser.h"
 #include "utils.h"
+
+struct mm_key_map;
 
 /**
  * Singly linked list for effecient insertion
@@ -17,7 +18,6 @@
  */
 typedef struct mm_key_node {
     struct mm_key_node* next;
-    mm_key_map* map;
     int key;
 } mm_key_node;
 

@@ -160,6 +160,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     int type = 0;
     int note_on = 0;
     int note_off = 0;
+    int process_event = 1;
 
     int note_owners[129] = {0};
     for (int i = 0; i < 129; ++i) {
@@ -179,6 +180,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
         // iterate over available events
         do {
+            process_event = 1;
             event = NULL;
             grp = NULL;
 
@@ -213,8 +215,15 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                     //          "(midi:%d, note_on: %d, note_off: %d)\n",
                     //          midi, note_on, note_off);
 
+                    // mm_key_set* new_keys =
+                    //     mm_mapping_group_single_src_dsts(grp);
+
                     mm_key_set* new_keys =
-                        mm_mapping_group_single_src_dsts(grp);
+                        mm_mapping_group_all_dsts(grp, list, note_on);
+
+                    char* key_dump = mm_key_set_dump(new_keys);
+
+                    mm_debug("key(%d)\n%s\n", midi, key_dump);
 
                     if (note_on) {
                         for (int i = 0; i < new_keys->count; ++i) {
@@ -224,10 +233,22 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                             note_owners[k] = midi;
                         }
 
+                        if (new_keys->count > 0) {
+                            // dont process default event if we have mapped a
+                            // key
+                            process_event = 0;
+                        }
+
                         trigger_mapping(output, event, new_keys);
                         mm_combine_key_set(dsts_set, new_keys);
 
                     } else if (note_off) {
+
+                        if (new_keys->count > 0) {
+                            // dont process default event if we have mapped a
+                            // key
+                            process_event = 0;
+                        }
 
                         int keys_to_release_deeped = 0;
                         mm_key_set* release_keys = new_keys;
@@ -293,8 +314,6 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                     }
 
                 } else {
-                    int process_event = 1;
-
                     if (note_off) {
                         // apply checks to determine if we can release or not,
                         // due to any other active mappings at this moment.
@@ -308,11 +327,11 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                             mm_debug("released note_owners[midi] = -1\n");
                         }
                     }
+                }
 
-                    if (process_event) {
-                        event->data.note.channel = 0;
-                        send_event(output, event);
-                    }
+                if (process_event) {
+                    event->data.note.channel = 0;
+                    send_event(output, event);
                 }
             }
 
@@ -328,11 +347,11 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
     mm_options_free(options);
 
-    free(pfds);
     free(dsts_set->keys);
     free(dsts_set);
     free(list);
     free(grp);
+    free(pfds);
     snd_seq_close(output->dev);
 }
 
