@@ -38,8 +38,13 @@ typedef struct mm_key_map {
     // must be present to initiate the key map.
     mm_key_set* src_set;
 
+    int channel;
+
     // Source key for this definition
     int key;
+
+    unsigned int id;
+
 } mm_key_map;
 
 /**
@@ -89,12 +94,12 @@ mm_mapping* mm_mapping_from_list(char* list);
 void mm_mapping_free(mm_mapping* mapping);
 
 void mm_mapping_dump(mm_mapping* mapping, char* buf);
-void mm_key_group_dump(mm_key_group* g, char* buf);
+void mm_key_group_dump(mm_key_group* g, char* buf, int* id_index);
 void mm_key_map_dump(mm_key_map* k, char* buf);
 
 mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* group);
 mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
-                                      int note_on);
+                                      int note_on, int chan);
 mm_key_set* mm_mapping_group_srcs(mm_key_group* group);
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src);

@@ -1,5 +1,7 @@
 #include "midi/mapping.h"
 
+#define ID_SIZE 10000
+
 /**
  * Dumps a description of a mapping to the provided char buffer
  */
@@ -11,67 +13,77 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
 
     buf[0] = '\0';
 
+    int* id_index = calloc(sizeof(int) * ID_SIZE, sizeof(int));
+
     if (mapping->count) {
         sprintf(buf, "%sUser Mapping:%s", BLUE, RESET);
         for (int i = 0; i < mapping->group_count; ++i) {
-            mm_key_group_dump(mapping->mapped[i], buf);
+            mm_key_group_dump(mapping->mapped[i], buf, id_index);
         }
     }
 }
 
-void mm_key_group_dump(mm_key_group* g, char* buf) {
+void mm_key_group_dump(mm_key_group* g, char* buf, int* id_index) {
     for (int i = 0; i < g->count; ++i) {
-        mm_key_map_dump(g->maps[i], buf);
+        mm_key_map* m = g->maps[i];
+        if (!id_index[m->id]) {
+            id_index[m->id] = 1;
+            mm_key_map_dump(g->maps[i], buf);
+        }
     }
 }
 
 void mm_key_map_dump(mm_key_map* k, char* buf) {
-    char* display = mm_midi_to_note_display(k->key);
-    // sprintf(buf, "OK");
-    char* widthbuf = malloc(sizeof(char*) * 4);
-    snprintf(widthbuf, 4, "%3s", display);
-
+    char* id = malloc(sizeof(char*) * 32);
+    char* ptr = buf;
+    sprintf(id, "%05d", k->id);
     // retun;
-    mm_kitty(&buf, "\n • ");
-    mm_kitty(&buf, RED);
-    mm_kitty(&buf, widthbuf);
-    free(display);
-    free(widthbuf);
-
-    mm_kitty(&buf, RESET);
-    mm_kitty(&buf, CYAN);
+    mm_cat(&ptr, "\n • ");
+    mm_cat(&ptr, id);
+    mm_cat(&ptr, RED);
 
     if (k->src_set->count > 1) {
-        mm_kitty(&buf, " [");
+        mm_cat(&ptr, " ");
 
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
             char* note_display_buf = malloc(sizeof(char*) * 6);
             char* display2 = mm_midi_to_note_display(k->src_set->keys[isrc]);
             snprintf(note_display_buf, 6, "%s", display2);
 
-            mm_kitty(&buf, note_display_buf);
+            mm_cat(&ptr, note_display_buf);
             if (isrc < k->src_set->count - 1) {
-                mm_kitty(&buf, ", ");
+                mm_cat(&ptr, ", ");
             }
 
             free(display2);
             free(note_display_buf);
         }
 
-        mm_kitty(&buf, "]->");
+        mm_cat(&buf, RESET);
+        mm_cat(&buf, "->");
+
     } else {
-        mm_kitty(&buf, " ->");
+        char* widthbuf = malloc(sizeof(char*) * 4);
+        char* display = mm_midi_to_note_display(k->key);
+        snprintf(widthbuf, 4, "%3s", display);
+        mm_cat(&ptr, widthbuf);
+        free(display);
+        free(widthbuf);
+
+        mm_cat(&ptr, RESET);
+        mm_cat(&ptr, " ->");
     }
 
+    mm_cat(&ptr, CYAN);
     for (int di = 0; di < k->dst_set->count; ++di) {
         char* display3 = mm_midi_to_note_display(k->dst_set->keys[di]);
-        mm_kitty(&buf, " ");
-        mm_kitty(&buf, display3);
-        mm_kitty(&buf, " ");
+        mm_cat(&ptr, " ");
+        mm_cat(&ptr, display3);
+        mm_cat(&ptr, " ");
         free(display3);
     }
 
-    mm_kitty(&buf, RESET);
+    mm_cat(&ptr, RESET);
 }
 
 mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }
@@ -142,7 +154,7 @@ mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
 }
 
 mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
-                                      int note_on) {
+                                      int note_on, int chan) {
     mm_key_set* combined_set = malloc(sizeof(mm_key_set));
     // hold up to 128 keys in this set
     combined_set->keys = malloc(sizeof(int*) * 128);
@@ -150,6 +162,9 @@ mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
 
     for (int i = 0; i < grp->count; ++i) {
         mm_key_map* map = grp->maps[i];
+        if (chan != map->channel) {
+            continue;
+        }
 
         if (map->src_set->count == 1) {
             for (int isrc = 0; isrc < map->dst_set->count; isrc++) {
@@ -393,6 +408,8 @@ mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
     //        dst_tokens->count);
     mm_key_map* km = malloc(sizeof(mm_key_map));
     km->key = src;
+    km->channel = 0;
+    km->id = 0;
 
     km->src_set = mm_create_key_set(src_tokens->count);
     km->dst_set = mm_create_key_set(dst_tokens->count);
@@ -401,26 +418,31 @@ mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
         km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens->tokens[idst]);
     }
 
+    char* id = malloc(sizeof(char) * 32);
+    id[0] = 0;
+    char* p = id;
+    // mm_cat(&id, "123");
+    sprintf(id, "01");
+
     for (int isrc = 0; isrc < src_tokens->count; ++isrc) {
-        // printf("isrc: start(%d)\n", isrc);
         char* s = src_tokens->tokens[isrc];
-        // printf("isrc: %s\n", s);
-        km->src_set->keys[isrc] = mm_parse_to_midi(s);
+        // mm_cat(&id, s);
+        int midi = mm_parse_to_midi(s);
+        km->src_set->keys[isrc] = midi;
+        char* m = malloc(sizeof(char*) * 6);
+        sprintf(m, "%d", midi);
+        mm_cat(&p, m);
     }
 
-    for (int i = 0; i < dst_tokens->count; ++i) {
-        char* t = dst_tokens->tokens[i];
-        if (t != NULL) {
-            // free(t);
-        }
-    }
+    km->id = atoi(id) % ID_SIZE;
+    free(id);
 
     return km;
 }
 
 mm_key_set* mm_create_key_set(int count) {
     mm_key_set* set = malloc(sizeof(mm_key_set));
-    set->keys = malloc(sizeof(int) * count);
+    set->keys = calloc(sizeof(int) * count, sizeof(int));
     set->count = count;
     return set;
 }
@@ -430,14 +452,15 @@ char* mm_key_set_dump(mm_key_set* set) {
     if (size < 10) {
         size = 10;
     }
-    char* buf = malloc(sizeof(char*) * size);
-    buf[0] = '\0';
+
+    char* buf = calloc(sizeof(char*) * size, sizeof(char));
+    char* ptr = buf;
+
     for (int i = 0; i < set->count; ++i) {
         int size = sizeof(char*) * 12;
-        char* append = malloc(size);
+        char* append = calloc(size, sizeof(char));
         snprintf(append, size, " %d = %d\n", i, set->keys[i]);
-        // sns sprintf(buf, "%s %d = %d\n", buf, i, set->keys[i]);
-        strcat(buf, append);
+        mm_cat(&ptr, append);
         free(append);
     }
 
@@ -448,7 +471,8 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
     /* mm_debug("Attempting to combine key_set(%d) with addition(%d)\n", */
     /*          set->count, addition->count); */
 
-    int* new_keys = malloc(sizeof(int) * (set->count + addition->count));
+    int* new_keys =
+        calloc(sizeof(int) * (set->count + addition->count), sizeof(int));
     int lookup[256] = {0};
 
     for (int i = 0; i < set->count; ++i) {

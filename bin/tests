@@ -19,7 +19,7 @@ fi
 
 clear
 
-make -j4
+$ROOT/bin/build
 
 if [ ! $? -eq 0 ]; then
   exit 1

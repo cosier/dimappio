@@ -122,29 +122,29 @@ int mm_tokenize(char* src, char* delim, char** result) {
 
 /**
  * There be fast cats here, use at your own risk!
+ * Appends a src string onto the tail of an existing buffer;
+ *
+ * Take caution to keep a handle onto the original starting buffer point,
+ * otherwise you will lose it due to pointer arithmetic.
+ *
+ * When you need fast appending of cats, create a char* on the stack and
+ * continually use the return value of this function to track the end.
+ * Then once you are done with fast cat appendages, you may discard the stack
+ * pointer.
  */
-char* mm_cat(char* buf, char* src) {
+void mm_cat(char** orig, char* src) {
+    // printf("mm_cat: appending(%s) to buf(%s)\n", src, buf);
+    char* buf = *orig;
+
     while (*buf) {
         buf++;
     }
 
     while ((*buf++ = *src++)) {
-        // Loop until we reach a null terminator in src
     };
 
-    return --buf;
-}
-
-void mm_kitty(char** ref, char* src) {
-    char* buf = *ref;
-    while (*buf) {
-        buf++;
-    }
-
-    while ((*buf++ = *src++)) {
-        // Loop until we reach a null terminator in src
-    };
-
-    *ref = --buf;
+    // buf++;
+    // *buf = 0;
+    *orig = --buf;
     // return --buf;
 }
