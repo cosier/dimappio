@@ -9,14 +9,6 @@ if [[ "$1" == "clean" ]]; then
 fi
 
 mkdir -p $ROOT/build && cd $ROOT/build;
-
-if [[ ! -f $ROOT/build/Makefile ]]; then
-  cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug ..
-  if [ ! $? -eq 0 ]; then
-    exit 1
-  fi
-fi
-
 clear
 
 $ROOT/bin/build
