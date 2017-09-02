@@ -67,6 +67,13 @@ void assert_mapping_list(char* list, int ich, int och, int groups,
             }
 
             assert(km->channel_in == ich);
+            assert(km->channel_out == och);
+
+            // char* kmbuf = calloc(sizeof(char*), sizeof(char*));
+            // mm_key_map_dump(km, kmbuf);
+            // printd("key_map_dump: \n%s", kmbuf);
+            // printd("km->dst_set->count(%d)\n", km->dst_set->count);
+
             assert(km->dst_set->count == dst_count);
             assert(km->src_set->count <= max_src_count);
             assert(km->src_set->count >= min_src_count);

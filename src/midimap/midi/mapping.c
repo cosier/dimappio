@@ -318,7 +318,7 @@ char* mm_mapping_extract_channel(const char* src, int* ch) {
     char* pptr = prestine;
 
     int open = 0;
-    printd("scanning src: %s\n", src);
+    // printd("scanning src: %s\n", src);
     fflush(stdout);
 
     while (*src) {
@@ -375,7 +375,7 @@ mm_mapping* mm_mapping_from_list(char* list) {
         assert(tokens->count == 2 && tokens->count > 0);
 
         char* src_input = tokens->tokens[0];
-        char* dst_input = tokens->tokens[0];
+        char* dst_input = tokens->tokens[1];
         int ich = 0;
         int och = 0;
 
