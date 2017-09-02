@@ -19,6 +19,8 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
             mm_key_group_dump(mapping->mapped[i], buf, id_index);
         }
     }
+
+    free(id_index);
 }
 
 void mm_key_group_dump(mm_key_group* g, char* buf, int* id_index) {
@@ -38,6 +40,8 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
     // retun;
     mm_cat(&ptr, "\n • ");
     mm_cat(&ptr, id);
+    free(id);
+
     mm_cat(&ptr, RED);
 
     if (k->src_set->count > 1) {
@@ -45,7 +49,8 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
 
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
             char* note_display_buf = malloc(sizeof(char*) * 6);
-            char* display2 = mm_midi_to_note_display(k->src_set->keys[isrc]);
+            int key = k->src_set->keys[isrc]->key;
+            char* display2 = mm_midi_to_note_display(key);
             snprintf(note_display_buf, 6, "%s", display2);
 
             mm_cat(&ptr, note_display_buf);
@@ -74,7 +79,7 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
 
     mm_cat(&ptr, CYAN);
     for (int di = 0; di < k->dst_set->count; ++di) {
-        char* display3 = mm_midi_to_note_display(k->dst_set->keys[di]);
+        char* display3 = mm_midi_to_note_display(k->dst_set->keys[di]->key);
         mm_cat(&ptr, " ");
         mm_cat(&ptr, display3);
         mm_cat(&ptr, " ");
@@ -93,8 +98,8 @@ void mm_mapping_free(mm_mapping* mapping) {
         for (int i2 = 0; i2 < grp->count; ++i2) {
             mm_key_map* k = grp->maps[i2];
 
-            free(k->dst_set->keys);
-            free(k->src_set->keys);
+            mm_keylets_free(k->dst_set->keys, k->dst_set->count);
+            mm_keylets_free(k->src_set->keys, k->src_set->count);
 
             free(k->dst_set);
             free(k->src_set);
@@ -136,7 +141,7 @@ mm_mapping* mm_build_mapping() {
 mm_key_set* mm_mapping_group_single_src_dsts(mm_key_group* grp) {
     mm_key_set* combined_set = malloc(sizeof(mm_key_set));
     // hold up to 128 keys in this set
-    combined_set->keys = malloc(sizeof(int*) * 128);
+    combined_set->keys = calloc(sizeof(mm_keylet*) * 128, sizeof(mm_keylet*));
     combined_set->count = 0;
 
     for (int i = 0; i < grp->count; ++i) {
@@ -157,7 +162,7 @@ mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
                                       int note_on, int chan) {
     mm_key_set* combined_set = malloc(sizeof(mm_key_set));
     // hold up to 128 keys in this set
-    combined_set->keys = malloc(sizeof(int*) * 128);
+    combined_set->keys = calloc(sizeof(mm_keylet*) * 128, sizeof(mm_keylet*));
     combined_set->count = 0;
 
     for (int i = 0; i < grp->count; ++i) {
@@ -168,14 +173,17 @@ mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
 
         if (map->src_set->count == 1) {
             for (int isrc = 0; isrc < map->dst_set->count; isrc++) {
+                mm_keylet* k = map->dst_set->keys[isrc];
                 combined_set->keys[combined_set->count] =
-                    map->dst_set->keys[isrc];
+                    mm_keylet_create(k->key, k->ch);
+
+                // inc
                 combined_set->count++;
             }
         } else {
             int srcs_checked = 0;
             for (int isrc = 0; isrc < map->src_set->count; isrc++) {
-                int src = map->src_set->keys[isrc];
+                int src = map->src_set->keys[isrc]->key;
                 if (note_on && !mm_key_node_contains(tail, src)) {
                     break;
                 }
@@ -183,8 +191,9 @@ mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
                 ++srcs_checked;
                 if (srcs_checked == map->src_set->count) {
                     for (int idst = 0; idst < map->dst_set->count; ++idst) {
+                        mm_keylet* k = map->dst_set->keys[idst];
                         combined_set->keys[combined_set->count] =
-                            map->dst_set->keys[idst];
+                            mm_keylet_create(k->key, k->ch);
                         combined_set->count++;
                     }
                 }
@@ -485,7 +494,9 @@ mm_key_map* create_key_map(int src, int ich, int och, mm_tokens* src_tokens,
     km->dst_set = mm_create_key_set(dst_tokens->count);
 
     for (int idst = 0; idst < dst_tokens->count; ++idst) {
-        km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens->tokens[idst]);
+        int key = mm_parse_to_midi(dst_tokens->tokens[idst]);
+        // printd("dst_set: assigning keylet(%d,%d) -> %d\n", key, och, idst);
+        km->dst_set->keys[idst] = mm_keylet_create(key, och);
     }
 
     char* id = calloc(sizeof(char) * 32, sizeof(char));
@@ -497,10 +508,16 @@ mm_key_map* create_key_map(int src, int ich, int och, mm_tokens* src_tokens,
         char* s = src_tokens->tokens[isrc];
         // mm_cat(&id, s);
         int midi = mm_parse_to_midi(s);
-        km->src_set->keys[isrc] = midi;
+        // printd("src_set: assigning keylet(%d,%d) -> %d\n", midi, ich, isrc);
+        km->src_set->keys[isrc] = mm_keylet_create(midi, ich);
+
+        // printd("km->dst_set->keys[%d]->key(%d)\n", isrc,
+        // km->src_set->keys[isrc]->key);
+
         char* m = malloc(sizeof(char*) * 6);
         sprintf(m, "%d%d%d", ich, och, midi);
         mm_cat(&p, m);
+        free(m);
     }
 
     km->id = atoi(id) % KEY_MAP_ID_SIZE;
@@ -511,7 +528,7 @@ mm_key_map* create_key_map(int src, int ich, int och, mm_tokens* src_tokens,
 
 mm_key_set* mm_create_key_set(int count) {
     mm_key_set* set = malloc(sizeof(mm_key_set));
-    set->keys = calloc(sizeof(int) * count, sizeof(int));
+    set->keys = calloc(sizeof(mm_keylet*) * count, sizeof(mm_keylet*));
     set->count = count;
     return set;
 }
@@ -528,7 +545,7 @@ char* mm_key_set_dump(mm_key_set* set) {
     for (int i = 0; i < set->count; ++i) {
         int size = sizeof(char*) * 12;
         char* append = calloc(size, sizeof(char));
-        snprintf(append, size, " %d = %d\n", i, set->keys[i]);
+        snprintf(append, size, " %d = %d\n", i, set->keys[i]->key);
         mm_cat(&ptr, append);
         free(append);
     }
@@ -541,84 +558,76 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
      * key_set(%d) with addition(%d)\n", */
     /*          set->count, addition->count); */
 
-    int* new_keys =
-        calloc(sizeof(int) * (set->count + addition->count), sizeof(int));
+    mm_keylet** new_keys =
+        calloc(sizeof(mm_keylet*) * (set->count + addition->count),
+               sizeof(mm_keylet*));
     int lookup[256] = {0};
 
     for (int i = 0; i < set->count; ++i) {
         // mark original key existence
-        lookup[set->keys[i]] = 1;
-
-        new_keys[i] = set->keys[i];
+        lookup[set->keys[i]->key] = 1;
+        mm_keylet* k = set->keys[i];
+        new_keys[i] = mm_keylet_create(k->key, k->ch);
     }
 
     int added = 0;
     for (int i2 = 0; i2 < addition->count; ++i2) {
-        int new_additional_key = addition->keys[i2];
+        int new_additional_key = addition->keys[i2]->key;
+        int ch = addition->keys[i2]->ch;
 
         if (!lookup[new_additional_key]) {
             lookup[new_additional_key] = 1;
-            new_keys[added + set->count] = new_additional_key;
+            new_keys[added + set->count] =
+                mm_keylet_create(new_additional_key, ch);
             ++added;
         }
     }
+
+    mm_keylets_free(set->keys, set->count);
+
     // assign new keys over previous keys
     set->count = set->count + added;
 
     // Free the original keys before reassignment
-    free(set->keys);
     set->keys = new_keys;
 
-    /* mm_debug("updated st: \n%s\n",
-     * mm_key_set_dump(set)); */
-
     // cleanup old keys and entire new addition
-    free(addition->keys);
+    mm_keylets_free(addition->keys, addition->count);
     free(addition);
 }
 
 void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
-    // mm_debug("mapping: mm_remove_key_set()");
-    // if (substract->count <= 0) {
-    //     mm_debug("mapping: bailing from
-    //     mm_remove_set!\n");
-    //     return;
-    // }
-
     int sub_lookup[256] = {0};
     int substractable = 0;
 
     for (int i = 0; i < substract->count; ++i) {
-        sub_lookup[substract->keys[i]] = 1;
+        sub_lookup[substract->keys[i]->key] = 1;
     }
 
     for (int i1 = 0; i1 < set->count; ++i1) {
-        int key = set->keys[i1];
+        int key = set->keys[i1]->key;
         if (sub_lookup[key]) {
             ++substractable;
         }
     }
 
     int new_size = set->count - substractable;
-    int* new_keys = malloc(sizeof(int) * new_size);
+    mm_keylet** new_keys =
+        calloc(sizeof(mm_keylet*) * new_size, sizeof(mm_keylet*));
 
     int index = 0;
     for (int i2 = 0; i2 < set->count; ++i2) {
-        int key = set->keys[i2];
+        int key = set->keys[i2]->key;
         assert(key >= 0 && key <= 128);
 
         if (key >= 0 && !sub_lookup[key]) {
-            mm_debug("mm_remove_key_set: "
-                     "assigning %d = (%d) from "
-                     "set(%d) "
-                     "sub(%d)\n",
-                     key, index, set->count, substract->count);
-            new_keys[index] = key;
+            mm_keylet* k = set->keys[i2];
+            new_keys[index] = mm_keylet_create(k->key, k->ch);
             ++index;
         }
     }
 
-    free(set->keys);
+    mm_keylets_free(set->keys, set->count);
 
     set->count = index;
     set->keys = new_keys;
@@ -629,10 +638,11 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
 mm_key_set* mm_key_set_copy(mm_key_set* set) {
     mm_key_set* new_set = malloc(sizeof(mm_key_set));
     new_set->count = set->count;
-    new_set->keys = malloc(sizeof(int) * set->count);
+    new_set->keys = calloc(sizeof(mm_keylet*) * set->count, sizeof(mm_keylet*));
 
     for (int i = 0; i < set->count; ++i) {
-        new_set->keys[i] = set->keys[i];
+        mm_keylet* k = set->keys[i];
+        new_set->keys[i] = mm_keylet_create(k->key, k->ch);
     }
 
     return new_set;
@@ -640,18 +650,19 @@ mm_key_set* mm_key_set_copy(mm_key_set* set) {
 
 void mm_key_set_remove_single_key(mm_key_set* set, int key) {
     int size = set->count;
-    int* keys = malloc(sizeof(int) * size);
-
+    mm_keylet** keys = calloc(sizeof(mm_keylet*) * size, sizeof(mm_keylet*));
     int index = 0;
+
     for (int i = 0; i < set->count; ++i) {
-        int k = set->keys[i];
-        if (k != key) {
-            keys[index] = k;
+        mm_keylet* k = set->keys[i];
+
+        if (k->key != key) {
+            keys[index] = mm_keylet_create(k->key, k->ch);
             ++index;
         }
     }
 
-    free(set->keys);
+    mm_keylets_free(set->keys, set->count);
     set->keys = keys;
     set->count = index;
 }
@@ -665,4 +676,21 @@ void mm_tokens_free(mm_tokens* tokens) {
     free(tokens->tokens);
     free(tokens);
     tokens = NULL;
+}
+
+mm_keylet* mm_keylet_create(int key, int ch) {
+    mm_keylet* k = malloc(sizeof(mm_keylet));
+    k->key = key;
+    k->ch = ch;
+    return k;
+}
+
+void mm_keylets_free(mm_keylet** k, int c) {
+    for (int i = 0; i < c; ++i) {
+        free(k[i]);
+        k[i] = NULL;
+    }
+
+    free(k);
+    k = NULL;
 }

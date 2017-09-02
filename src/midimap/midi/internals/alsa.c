@@ -21,10 +21,9 @@ static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
 
 static void check_snd(char* desc, int err);
 
-static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* event,
-                            mm_key_set* dsts_set);
-
 static void release_mapping(mm_midi_output* output, mm_key_set* dsts_set);
+static void trigger_mapping(mm_midi_output* output, mm_key_set* dsts_set,
+                            int vel);
 
 mm_devices* mma_get_devices() {
     mm_devices* devices = malloc(sizeof(mm_devices));
@@ -239,7 +238,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
                         for (int i = 0; i < new_keys->count; ++i) {
                             // set the latest owner to `midi` if it's available
-                            int k = new_keys->keys[i];
+                            int k = new_keys->keys[i]->key;
 
                             if (active_lookup[k]) {
                                 // mark key for pre-emptive removal due to it
@@ -267,7 +266,8 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                             process_event = 0;
                         }
 
-                        trigger_mapping(output, event, new_keys);
+                        trigger_mapping(output, new_keys,
+                                        event->data.note.velocity);
                         mm_combine_key_set(dsts_set, new_keys);
 
                     } else if (note_off) {
@@ -286,7 +286,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                         mm_key_set* release_keys = new_keys;
 
                         for (int i = 0; i < new_keys->count; ++i) {
-                            int k = new_keys->keys[i];
+                            int k = new_keys->keys[i]->key;
                             int owner = note_owners[k];
                             int active = mm_key_node_contains(list, k);
 
@@ -331,13 +331,15 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
                         mm_remove_key_set(dsts_set, new_keys);
 
-                        free(new_keys->keys);
+                        mm_keylets_free(new_keys->keys, new_keys->count);
                         free(new_keys);
 
                         // If we have deep copied new_keys, or removed a key
                         // from it, we need to free the new copy.
                         if (new_keys != release_keys) {
-                            free(release_keys->keys);
+                            mm_keylets_free(release_keys->keys,
+                                            release_keys->count);
+
                             free(release_keys);
                             release_keys = NULL;
                         }
@@ -382,8 +384,8 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     }
 
     mm_options_free(options);
-
-    free(dsts_set->keys);
+    mm_keylets_free(dsts_set->keys, dsts_set->count);
+    // free(dsts_set->keys);
     free(dsts_set);
     free(list);
     free(grp);
@@ -576,16 +578,18 @@ static void update_node_list(snd_seq_event_t* ev, mm_key_node** tail) {
     }
 }
 
-static void trigger_mapping(mm_midi_output* output, snd_seq_event_t* ev,
-                            mm_key_set* dst_set) {
+static void trigger_mapping(mm_midi_output* output, mm_key_set* dst_set,
+                            int vel) {
     for (int i = 0; i < dst_set->count; i++) {
-        send_midi(output, dst_set->keys[i], true, 0, ev->data.note.velocity);
+        mm_keylet* k = dst_set->keys[i];
+        send_midi(output, k->key, true, k->ch, vel);
     }
 }
 
 static void release_mapping(mm_midi_output* output, mm_key_set* dst_set) {
     for (int i = 0; i < dst_set->count; i++) {
-        send_midi(output, dst_set->keys[i], false, 0, 0);
+        mm_keylet* k = dst_set->keys[i];
+        send_midi(output, k->key, false, k->ch, 0);
     }
 }
 

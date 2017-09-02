@@ -59,11 +59,11 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         strcat(mkeys, " -> ");
         strcat(mkeys, CYAN);
         for (int i = 0; i < key_set->count; ++i) {
-            int key = key_set->keys[i];
+            int key = key_set->keys[i]->key;
             assert(key >= 0 && key <= 128);
             lookup[key] = -1;
             // Render Mapped keys
-            char* display = mm_midi_to_note_display(key_set->keys[i]);
+            char* display = mm_midi_to_note_display(key_set->keys[i]->key);
             strcat(mkeys, display);
             strcat(mkeys, " ");
             free(display);

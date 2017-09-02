@@ -22,8 +22,13 @@ typedef struct mm_tokens {
     int count;
 } mm_tokens;
 
+typedef struct mm_keylet {
+    int key;
+    int ch;
+} mm_keylet;
+
 typedef struct mm_key_set {
-    int* keys;
+    mm_keylet** keys;
     int count;
 } mm_key_set;
 
@@ -133,4 +138,7 @@ mm_tokens* mm_token_split(const char* src, char delim);
 
 char* mm_tokens_dump(mm_tokens* tokens);
 void mm_tokens_free(mm_tokens* tokens);
+
+mm_keylet* mm_keylet_create(int key, int ch);
+void mm_keylets_free(mm_keylet** k, int c);
 #endif
