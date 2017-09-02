@@ -97,7 +97,7 @@ void map_building_from_list() {
                    "C3|C4:D#2|F3|G3|G4|G#4,"
                    "C4|C#4:C4|C#4|G4|G#4|Eb4";
 
-    // ich(0), och(0), groups(5), dst_count(5), min_src(2), max_src(2)
+    // ich(0), och(0), groups(7), dst_count(5), min_src(2), max_src(2)
     assert_mapping_list(list_2, 0, 0, 7, 5, 2, 2);
 
     char* list_3 = "(1)G3|G4:G2|F3|A3|Bb3|D4,"
@@ -105,7 +105,16 @@ void map_building_from_list() {
                    "(1)C3|C4:D#2|F3|G3|G4|G#4,"
                    "(1)C4|C#4:C4|C#4|G4|G#4|Eb4";
 
+    // ich(1), och(0), groups(7), dst_count(5), min_src(2), max_src(2)
     assert_mapping_list(list_3, 1, 0, 7, 5, 2, 2);
+
+    char* list_4 = "(3)G3|G4:(2)G2|F3|A3|Bb3|D4,"
+                   "(3)F3|F2:F2|G#3|C4|D#4|G4(2),"
+                   "(3)C3|C4:D#2|F3|G3|G4|G#4(2),"
+                   "(3)C4|C#4:C4|C#4|G4|G#4|Eb4(2)";
+
+    // ich(3), och(2), groups(7), dst_count(5), min_src(2), max_src(2)
+    assert_mapping_list(list_4, 3, 2, 7, 5, 2, 2);
 }
 
 int main() {

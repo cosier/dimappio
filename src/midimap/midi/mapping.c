@@ -388,7 +388,7 @@ mm_mapping* mm_mapping_from_list(char* list) {
 
         if (strstr(dst_input, "(") != NULL) {
             int* poch = calloc(sizeof(int), sizeof(int));
-            src_input = mm_mapping_extract_channel(dst_input, poch);
+            dst_input = mm_mapping_extract_channel(dst_input, poch);
             och = *poch;
             free(poch);
         }
@@ -417,6 +417,9 @@ mm_mapping* mm_mapping_from_list(char* list) {
                                  dst_tokens);
             }
         }
+
+        free(src_input);
+        free(dst_input);
 
         mm_tokens_free(src_tokens);
         mm_tokens_free(dst_tokens);
