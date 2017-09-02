@@ -50,14 +50,14 @@ void assert_mapping_list(char* list, int ich, int och, int groups,
 
                 // deep check of src_sets against km and other
                 for (int isrc = 0; isrc < other->src_set->count; ++isrc) {
-                    assert(other->src_set->keys[isrc] ==
-                           km->src_set->keys[isrc]);
+                    assert(other->src_set->keys[isrc]->key ==
+                           km->src_set->keys[isrc]->key);
                 }
 
                 // deep check of dst_sets against km and other
                 for (int idst = 0; idst < other->dst_set->count; ++idst) {
-                    assert(other->dst_set->keys[idst] ==
-                           km->dst_set->keys[idst]);
+                    assert(other->dst_set->keys[idst]->key ==
+                           km->dst_set->keys[idst]->key);
                 }
 
                 assert(other->key != km->key);
