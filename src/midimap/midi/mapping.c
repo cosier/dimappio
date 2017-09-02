@@ -418,8 +418,13 @@ mm_mapping* mm_mapping_from_list(char* list) {
             }
         }
 
-        free(src_input);
-        free(dst_input);
+        if (src_input != tokens->tokens[0]) {
+            free(src_input);
+        }
+
+        if (dst_input != tokens->tokens[1]) {
+            free(dst_input);
+        }
 
         mm_tokens_free(src_tokens);
         mm_tokens_free(dst_tokens);

@@ -117,8 +117,31 @@ void map_building_from_list() {
     assert_mapping_list(list_4, 3, 2, 7, 5, 2, 2);
 }
 
+void assert_whitespaced_list(char* list, int group_count, int isrc, int idst) {
+    mm_mapping* mapping = mm_mapping_from_list(list);
+    assert(mapping->group_count == group_count);
+    for (int i = 0; i < mapping->group_count; ++i) {
+        mm_key_group* grp = mapping->mapped[i];
+        for (int k = 0; k < grp->count; ++k) {
+            mm_key_map* km = grp->maps[k];
+            assert(km->src_set->count == isrc);
+            assert(km->dst_set->count == idst);
+        }
+    }
+}
+
+void list_handle_whitespace() {
+    char* list_1 = "(3) G3|G4 : (2) G2|F3|A3 |Bb3|D4 ";
+    assert_whitespaced_list(list_1, 2, 2, 5);
+
+    char* list_2 = "(3) G3|G4 : (2) G2|F3|A3 |Bb3|D4 ,"
+                   "(3) G3 | G4 : (2) G2 | F3|   A3 |Bb3|D4 ";
+    assert_whitespaced_list(list_2, 2, 2, 5);
+}
+
 int main() {
     // assert(1 == 3);
+    test_run("list_handle_whitespace", &list_handle_whitespace);
     test_run("map_building_from_list", &map_building_from_list);
     return 0;
 }
