@@ -162,7 +162,7 @@ mm_key_set* mm_mapping_group_all_dsts(mm_key_group* grp, mm_key_node* tail,
 
     for (int i = 0; i < grp->count; ++i) {
         mm_key_map* map = grp->maps[i];
-        if (chan != map->channel) {
+        if (chan != map->channel_in) {
             continue;
         }
 
@@ -306,6 +306,45 @@ char* mm_tokens_dump(mm_tokens* tokens) {
     return buf;
 }
 
+char* mm_mapping_extract_channel(const char* src, int* ch) {
+    // strlen - 2 for the `()` parens - still not accounting for inner digits.
+    int src_size = sizeof(char) * (strlen(src) - 2);
+    int csize = sizeof(char) * 4;
+
+    char* collector = calloc(csize, sizeof(char));
+    char* prestine = calloc(src_size, sizeof(char));
+
+    char* cptr = collector;
+    char* pptr = prestine;
+
+    int open = 0;
+    printd("scanning src: %s\n", src);
+    fflush(stdout);
+
+    while (*src) {
+        if (*src == '(') {
+            open = 1;
+        } else if (*src == ')') {
+            open = 0;
+        } else {
+            if (open) {
+                *cptr = *src;
+                ++cptr;
+            } else {
+                *pptr = *src;
+                ++pptr;
+            }
+        }
+
+        ++src;
+    }
+
+    *ch = atoi(collector);
+    free(collector);
+
+    return prestine;
+}
+
 /**
  * Builds a complete mapping from a string of characters.
  * Char* list is delimited to form a list of key mappings for parsing.
@@ -326,38 +365,55 @@ mm_mapping* mm_mapping_from_list(char* list) {
     }
 
     mm_tokens* mappings = mm_token_split(list, ',');
-    // printf("token split complete!\n");
 
     for (int i = 0; i < mappings->count; ++i) {
         // process individual mappings from the list.
         // break into src and dst groups.
         char* input = mappings->tokens[i];
-        printf("\ninput = %s\n", input);
 
         mm_tokens* tokens = mm_token_split(input, ':');
-        // printf("tokens->count(%d)\n", tokens->count);
         assert(tokens->count == 2 && tokens->count > 0);
 
-        mm_tokens* src_tokens = mm_token_split(tokens->tokens[0], '|');
-        mm_tokens* dst_tokens = mm_token_split(tokens->tokens[1], '|');
+        char* src_input = tokens->tokens[0];
+        char* dst_input = tokens->tokens[0];
+        int ich = 0;
+        int och = 0;
+
+        if (strstr(src_input, "(") != NULL) {
+            int* pich = calloc(sizeof(int), sizeof(int));
+            src_input = mm_mapping_extract_channel(src_input, pich);
+            ich = *pich;
+            free(pich);
+        }
+
+        if (strstr(dst_input, "(") != NULL) {
+            int* poch = calloc(sizeof(int), sizeof(int));
+            src_input = mm_mapping_extract_channel(dst_input, poch);
+            och = *poch;
+            free(poch);
+        }
+
+        mm_tokens* src_tokens = mm_token_split(src_input, '|');
+        mm_tokens* dst_tokens = mm_token_split(dst_input, '|');
 
         for (int isrc = 0; isrc < src_tokens->count; ++isrc) {
             int src = mm_parse_to_midi(src_tokens->tokens[isrc]);
 
             if (mapping->index[src] == NULL) {
-                printd("[src:%d] creating key_group\n", src);
+                // printd("[src:%d] creating key_group\n", src);
                 // create a new mapping for this midi key
-                mapping->index[src] =
-                    create_key_group(mapping, src, src_tokens, dst_tokens);
+                mapping->index[src] = create_key_group(mapping, src, ich, och,
+                                                       src_tokens, dst_tokens);
 
-                printd("[src:%d] mapping->group_count++ -> %d\n", src,
-                       mapping->group_count);
+                // printd("[src:%d] mapping->group_count++ -> %d\n", src,
+                // mapping->group_count);
 
             } else {
-                printd("[src:%d] updating key_group\n", src);
+                // printd("[src:%d] updating key_group\n", src);
                 // update existing mapping group for this midi key.
-                // This means inserting a new key_map into an existing group.
-                update_key_group(mapping->index[src], src, src_tokens,
+                // This means inserting a new key_map into an existing
+                // group.
+                update_key_group(mapping->index[src], src, ich, och, src_tokens,
                                  dst_tokens);
             }
         }
@@ -372,16 +428,16 @@ mm_mapping* mm_mapping_from_list(char* list) {
     return mapping;
 }
 
-void update_key_group(mm_key_group* group, int src, mm_tokens* src_tokens,
-                      mm_tokens* dst_tokens) {
-    printd("inserting key_map into: %d\n", group->count);
-    group->maps[group->count] = create_key_map(src, src_tokens, dst_tokens);
-    // group->parent->count++;
+void update_key_group(mm_key_group* group, int src, int ich, int och,
+                      mm_tokens* src_tokens, mm_tokens* dst_tokens) {
+    // printd("inserting key_map into: %d\n", group->count);
+    group->maps[group->count] =
+        create_key_map(src, ich, och, src_tokens, dst_tokens);
     group->count++;
 }
 
-mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
-                               mm_tokens* dst_tokens) {
+mm_key_group* create_key_group(mm_mapping* m, int src, int ich, int och,
+                               mm_tokens* src_tokens, mm_tokens* dst_tokens) {
 
     mm_key_group* group = malloc(sizeof(mm_key_group));
     group->count = 1;
@@ -401,11 +457,11 @@ mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
     }
 
     // Allocate the first key_map
-    group->maps[0] = create_key_map(src, src_tokens, dst_tokens);
+    group->maps[0] = create_key_map(src, ich, och, src_tokens, dst_tokens);
     return group;
 }
 
-mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
+mm_key_map* create_key_map(int src, int ich, int och, mm_tokens* src_tokens,
                            mm_tokens* dst_tokens) {
 
     // printf("create_key_map(key %d -> %d,
@@ -413,7 +469,8 @@ mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
     //        dst_tokens->count);
     mm_key_map* km = malloc(sizeof(mm_key_map));
     km->key = src;
-    km->channel = 0;
+    km->channel_in = ich;
+    km->channel_out = och;
     km->id = 0;
 
     km->src_set = mm_create_key_set(src_tokens->count);
@@ -423,8 +480,7 @@ mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
         km->dst_set->keys[idst] = mm_parse_to_midi(dst_tokens->tokens[idst]);
     }
 
-    char* id = malloc(sizeof(char) * 32);
-    id[0] = 0;
+    char* id = calloc(sizeof(char) * 32, sizeof(char));
     char* p = id;
     // mm_cat(&id, "123");
     sprintf(id, "01");
@@ -435,7 +491,7 @@ mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
         int midi = mm_parse_to_midi(s);
         km->src_set->keys[isrc] = midi;
         char* m = malloc(sizeof(char*) * 6);
-        sprintf(m, "%d", midi);
+        sprintf(m, "%d%d%d", ich, och, midi);
         mm_cat(&p, m);
     }
 

@@ -6,17 +6,16 @@
 #include "helpers/helpers.h"
 #include <midimap/core.h>
 
-void assert_mapping_list(char* list, int ch, int groups, int dst_count,
-                         int min_src_count, int max_src_count) {
-    printf("asserting mapping:\nlist: %s\n"
-           "channel: %d, groups: %d, dst_count:%d, src_count:%d/%d\n",
-           list, ch, groups, dst_count, min_src_count, max_src_count);
+void assert_mapping_list(char* list, int ich, int och, int groups,
+                         int dst_count, int min_src_count, int max_src_count) {
+    printf("Asserting mapping:\nlist: %s\n"
+           "channel: %d<>%d, groups: %d, dst_count:%d, src_count:%d/%d\n\n",
+           list, ich, och, groups, dst_count, min_src_count, max_src_count);
     fflush(stdout);
 
     mm_mapping* mapping = NULL;
     mapping = mm_mapping_from_list(list);
 
-    printf("mapping groups: %d\n", mapping->group_count);
     assert(mapping->group_count == groups);
 
     mm_key_map* index[KEY_MAP_ID_SIZE] = {NULL};
@@ -30,6 +29,7 @@ void assert_mapping_list(char* list, int ch, int groups, int dst_count,
         if (grp == NULL) {
             error("mapping->group_count: %d/%d", i, mapping->group_count);
         }
+
         assert(grp != NULL);
         assert(grp->count = 1);
 
@@ -66,12 +66,14 @@ void assert_mapping_list(char* list, int ch, int groups, int dst_count,
                 index[km->id] = km;
             }
 
-            assert(km->channel == ch);
+            assert(km->channel_in == ich);
             assert(km->dst_set->count == dst_count);
             assert(km->src_set->count <= max_src_count);
             assert(km->src_set->count >= min_src_count);
         }
     }
+
+    printf("\n\n");
 }
 
 void map_building_from_list() {
@@ -80,16 +82,23 @@ void map_building_from_list() {
                    "C3:D#2|F3|G3|G4|G#4,"
                    "C4|C#4:C4|C#4|G4|G#4|Eb4";
 
-    // ch(0), groups(5), dst_count(5), min_src(1), max_src(2)
-    // assert_mapping_list(list_1, 0, 5, 5, 1, 2);
+    // ich(0), och(0), groups(5), dst_count(5), min_src(1), max_src(2)
+    assert_mapping_list(list_1, 0, 0, 5, 5, 1, 2);
 
     char* list_2 = "G3|G4:G2|F3|A3|Bb3|D4,"
                    "F3|F2:F2|G#3|C4|D#4|G4,"
                    "C3|C4:D#2|F3|G3|G4|G#4,"
                    "C4|C#4:C4|C#4|G4|G#4|Eb4";
 
-    // ch(0), groups(5), dst_count(5), min_src(2), max_src(2)
-    assert_mapping_list(list_2, 0, 7, 5, 2, 2);
+    // ich(0), och(0), groups(5), dst_count(5), min_src(2), max_src(2)
+    assert_mapping_list(list_2, 0, 0, 7, 5, 2, 2);
+
+    char* list_3 = "(1)G3|G4:G2|F3|A3|Bb3|D4,"
+                   "(1)F3|F2:F2|G#3|C4|D#4|G4,"
+                   "(1)C3|C4:D#2|F3|G3|G4|G#4,"
+                   "(1)C4|C#4:C4|C#4|G4|G#4|Eb4";
+
+    assert_mapping_list(list_3, 1, 0, 7, 5, 2, 2);
 }
 
 int main() {

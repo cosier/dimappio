@@ -39,7 +39,8 @@ typedef struct mm_key_map {
     // must be present to initiate the key map.
     mm_key_set* src_set;
 
-    int channel;
+    int channel_in;
+    int channel_out;
 
     // Source key for this definition
     int key;
@@ -92,6 +93,8 @@ typedef struct mm_mapping {
 mm_mapping* mm_build_mapping();
 mm_mapping* mm_mapping_from_list(char* list);
 
+char* mm_mapping_extract_channel(const char* src, int* ch);
+
 void mm_mapping_free(mm_mapping* mapping);
 
 void mm_mapping_dump(mm_mapping* mapping, char* buf);
@@ -110,16 +113,16 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* addition);
 
 void create_src_group(mm_tokens* src_tokens, mm_tokens* dst_tokens);
 
-mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
-                               mm_tokens* dst_tokens);
+mm_key_group* create_key_group(mm_mapping* m, int src, int ich, int och,
+                               mm_tokens* src_tokens, mm_tokens* dst_tokens);
 
-mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
+mm_key_map* create_key_map(int src, int ich, int och, mm_tokens* src_tokens,
                            mm_tokens* dst_tokens);
 
 mm_key_set* mm_create_key_set(int count);
 
-void update_key_group(mm_key_group* group, int src, mm_tokens* src_tokens,
-                      mm_tokens* dst_tokens);
+void update_key_group(mm_key_group* group, int src, int ich, int och,
+                      mm_tokens* src_tokens, mm_tokens* dst_tokens);
 
 mm_key_set* mm_key_set_copy(mm_key_set* set);
 char* mm_key_set_dump(mm_key_set* set);
