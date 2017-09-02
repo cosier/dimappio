@@ -358,11 +358,14 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                             note_owners[midi] = -1;
                             mm_debug("released note_owners[midi] = -1\n");
                         }
+
+                        active_lookup[midi] = 0;
                     }
                 }
 
+                active_lookup[midi] = note_on;
+
                 if (process_event) {
-                    active_lookup[midi] = note_on;
                     event->data.note.channel = 0;
                     send_event(output, event);
                 }
