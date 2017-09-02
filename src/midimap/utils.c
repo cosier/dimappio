@@ -32,6 +32,21 @@ CFStringRef char_to_cf_string_ref(char* c) {
 
 static FILE* LOG_FILE = NULL;
 
+void printd(const char* format, ...) {
+#ifdef _DEBUG_
+    va_list* ap = malloc(sizeof(va_list));
+    char* fmt = malloc(sizeof(char*) * 64);
+
+    va_start(*ap, format);
+    sprintf(fmt, "%s%s%s", RED, format, RESET);
+    vfprintf(stderr, fmt, *ap);
+    va_end(*ap);
+
+    free(ap);
+    free(fmt);
+#endif
+}
+
 void mm_debug(const char* format, ...) {
     if (mm_driver_debug_mode) {
         if (LOG_FILE == NULL) {
@@ -125,7 +140,7 @@ int mm_tokenize(char* src, char* delim, char** result) {
  * Appends a src string onto the tail of an existing buffer;
  *
  * Take caution to keep a handle onto the original starting buffer point,
- * otherwise you will lose it due to pointer arithmetic.
+ * ise you will lose it due to pointer arithmetic.
  *
  * When you need fast appending of cats, create a char* on the stack and
  * continually use the return value of this function to track the end.
@@ -135,6 +150,7 @@ int mm_tokenize(char* src, char* delim, char** result) {
 void mm_cat(char** orig, char* src) {
     // printf("mm_cat: appending(%s) to buf(%s)\n", src, buf);
     char* buf = *orig;
+    assert(buf != NULL);
 
     while (*buf) {
         buf++;

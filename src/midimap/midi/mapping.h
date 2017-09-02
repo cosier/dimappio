@@ -11,6 +11,7 @@
 #define MAX_MIDI_NOTES 128
 #define MAX_GROUPED_KEY_MAPS 16
 #define MAX_KEY_MAP_DSTS 16
+#define KEY_MAP_ID_SIZE 10000
 
 struct mm_key_map;
 struct mm_key_group;
@@ -84,7 +85,7 @@ typedef struct mm_mapping {
     struct mm_key_group** mapped;
 
     // Total key_map(s) in this mapping
-    int count;
+    // int count;
 
 } mm_mapping;
 

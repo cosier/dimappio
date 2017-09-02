@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 
+#include <assert.h>
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -17,6 +18,7 @@
 extern bool mm_driver_debug_mode;
 void mm_debug(const char* format, ...);
 void error(char* format, ...);
+void printd(const char* format, ...);
 void mm_clear(int lines);
 int64_t mm_micros();
 

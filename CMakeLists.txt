@@ -38,7 +38,6 @@ enable_testing ()
 add_test(NAME test-utils COMMAND test-utils)
 add_test(NAME test-key-maps COMMAND test-key-maps)
 add_test(NAME test-key-nodes COMMAND test-key-nodes)
-add_test(NAME test-map-parser COMMAND test-map-parser)
 add_test(NAME test-note-parser COMMAND test-note-parser)
 
 

@@ -307,8 +307,8 @@ int main(int argc, char** argv) {
         mm_debug("main: mappings created successfully\n");
     }
 
-    if (mapping->count) {
-        char* buf = malloc(sizeof(char) * 128 * mapping->count);
+    if (mapping->group_count) {
+        char* buf = malloc(sizeof(char) * 128 * mapping->group_count);
         mm_mapping_dump(mapping, buf);
         printf("%s\n%s▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄%s\n ",
                buf, BLACK, RESET);

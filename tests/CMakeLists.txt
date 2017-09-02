@@ -21,13 +21,11 @@ add_library(test_helper STATIC ${HELPER_LIB})
 add_executable(test-utils test_utils.c)
 add_executable(test-key-maps test_key_maps.c)
 add_executable(test-key-nodes test_key_nodes.c)
-add_executable(test-map-parser test_map_parser.c)
 add_executable(test-note-parser test_note_parser.c)
 
 # Link up main executable with our Library: libmidimap
 target_link_libraries( test-utils midimap test_helper)
 target_link_libraries( test-key-maps midimap test_helper)
 target_link_libraries( test-key-nodes midimap test_helper)
-target_link_libraries( test-map-parser midimap test_helper)
 target_link_libraries( test-note-parser midimap test_helper)
 

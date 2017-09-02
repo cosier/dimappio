@@ -1,7 +1,5 @@
 #include "midi/mapping.h"
 
-#define ID_SIZE 10000
-
 /**
  * Dumps a description of a mapping to the provided char buffer
  */
@@ -13,9 +11,9 @@ void mm_mapping_dump(mm_mapping* mapping, char* buf) {
 
     buf[0] = '\0';
 
-    int* id_index = calloc(sizeof(int) * ID_SIZE, sizeof(int));
+    int* id_index = calloc(sizeof(int) * KEY_MAP_ID_SIZE, sizeof(int));
 
-    if (mapping->count) {
+    if (mapping->group_count) {
         sprintf(buf, "%sUser Mapping:%s", BLUE, RESET);
         for (int i = 0; i < mapping->group_count; ++i) {
             mm_key_group_dump(mapping->mapped[i], buf, id_index);
@@ -63,7 +61,7 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
         mm_cat(&buf, "->");
 
     } else {
-        char* widthbuf = malloc(sizeof(char*) * 4);
+        char* widthbuf = calloc(sizeof(char) * 4, sizeof(char));
         char* display = mm_midi_to_note_display(k->key);
         snprintf(widthbuf, 4, "%3s", display);
         mm_cat(&ptr, widthbuf);
@@ -89,7 +87,7 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
 mm_key_group* mm_get_key_group(mm_mapping* m, int src) { return m->index[src]; }
 
 void mm_mapping_free(mm_mapping* mapping) {
-    for (int i = 0; i < mapping->count; ++i) {
+    for (int i = 0; i < mapping->group_count; ++i) {
         mm_key_group* grp = mapping->mapped[i];
 
         for (int i2 = 0; i2 < grp->count; ++i2) {
@@ -118,10 +116,12 @@ void mm_mapping_free(mm_mapping* mapping) {
 mm_mapping* mm_build_mapping() {
     mm_mapping* mapping = malloc(sizeof(mm_mapping));
 
-    mapping->count = 0;
     mapping->group_count = 0;
-    mapping->index = malloc(sizeof(mm_key_group*) * MAX_MIDI_NOTES);
-    mapping->mapped = malloc(sizeof(mm_key_group*) * MAX_MIDI_NOTES);
+
+    mapping->index =
+        calloc(sizeof(mm_key_group*) * MAX_MIDI_NOTES, sizeof(mm_key_group*));
+    mapping->mapped =
+        calloc(sizeof(mm_key_group*) * MAX_MIDI_NOTES, sizeof(mm_key_group*));
 
     // We expect to lookup any midi note at any given time,
     // therefore we must pre-initialise sparse array of pointers for
@@ -213,7 +213,7 @@ int mm_token_count(const char* src, char delim) {
 
 mm_tokens* mm_token_split(const char* src, char delim) {
     int buf_size = strlen(src);
-    char** buf = malloc(sizeof(char**) * buf_size);
+    char** buf = malloc(sizeof(char**) * buf_size + 10);
     int tokens = 0;
     const char* cursor = src;
 
@@ -237,12 +237,13 @@ mm_tokens* mm_token_split(const char* src, char delim) {
                 ++cursor;
                 break;
             } else {
-                char* appendage = malloc(sizeof(char*) * 3);
+                int ap_size = sizeof(char*) * 4;
+                char* appendage = malloc(ap_size);
                 if (token != NULL) {
-                    sprintf(appendage, "%s%c", token, *cursor);
+                    snprintf(appendage, ap_size, "%s%c", token, *cursor);
                     free(token);
                 } else {
-                    sprintf(appendage, "%c", *cursor);
+                    snprintf(appendage, ap_size, "%c", *cursor);
                 }
 
                 token = appendage;
@@ -264,7 +265,7 @@ mm_tokens* mm_token_split(const char* src, char delim) {
     // return buf;
     mm_tokens* result = malloc(sizeof(mm_tokens));
 
-    char** mbuf = malloc(sizeof(char**) * tokens);
+    char** mbuf = malloc(sizeof(char**) * tokens + 1);
     for (int b = 0; b < tokens; ++b) {
         mbuf[b] = buf[b];
     }
@@ -327,13 +328,11 @@ mm_mapping* mm_mapping_from_list(char* list) {
     mm_tokens* mappings = mm_token_split(list, ',');
     // printf("token split complete!\n");
 
-    int src_used[128] = {0};
-
     for (int i = 0; i < mappings->count; ++i) {
         // process individual mappings from the list.
         // break into src and dst groups.
         char* input = mappings->tokens[i];
-        // printf("\ninput = %s\n", input);
+        printf("\ninput = %s\n", input);
 
         mm_tokens* tokens = mm_token_split(input, ':');
         // printf("tokens->count(%d)\n", tokens->count);
@@ -344,16 +343,18 @@ mm_mapping* mm_mapping_from_list(char* list) {
 
         for (int isrc = 0; isrc < src_tokens->count; ++isrc) {
             int src = mm_parse_to_midi(src_tokens->tokens[isrc]);
-            assert(src_used[src] == 0);
-            src_used[src] = 1;
 
             if (mapping->index[src] == NULL) {
+                printd("[src:%d] creating key_group\n", src);
                 // create a new mapping for this midi key
                 mapping->index[src] =
                     create_key_group(mapping, src, src_tokens, dst_tokens);
-                mapping->group_count++;
+
+                printd("[src:%d] mapping->group_count++ -> %d\n", src,
+                       mapping->group_count);
 
             } else {
+                printd("[src:%d] updating key_group\n", src);
                 // update existing mapping group for this midi key.
                 // This means inserting a new key_map into an existing group.
                 update_key_group(mapping->index[src], src, src_tokens,
@@ -373,8 +374,9 @@ mm_mapping* mm_mapping_from_list(char* list) {
 
 void update_key_group(mm_key_group* group, int src, mm_tokens* src_tokens,
                       mm_tokens* dst_tokens) {
+    printd("inserting key_map into: %d\n", group->count);
     group->maps[group->count] = create_key_map(src, src_tokens, dst_tokens);
-    group->parent->count++;
+    // group->parent->count++;
     group->count++;
 }
 
@@ -386,11 +388,13 @@ mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
     group->src = src;
 
     group->parent = m;
-    m->mapped[group->parent->count] = group;
-    m->count++;
+    m->mapped[m->group_count] = group;
+    m->group_count++;
 
-    // Allocate enough space for all future key_maps
-    // in this group (expected to be a relatively small need)
+    // Allocate enough space for all future
+    // key_maps
+    // in this group (expected to be a relatively
+    // small need)
     group->maps = malloc(MAX_GROUPED_KEY_MAPS * sizeof(mm_key_map*));
     for (int i = 0; i < MAX_GROUPED_KEY_MAPS; ++i) {
         group->maps[i] = NULL;
@@ -404,7 +408,8 @@ mm_key_group* create_key_group(mm_mapping* m, int src, mm_tokens* src_tokens,
 mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
                            mm_tokens* dst_tokens) {
 
-    // printf("create_key_map(key %d -> %d, %d)\n", src, src_tokens->count,
+    // printf("create_key_map(key %d -> %d,
+    // %d)\n", src, src_tokens->count,
     //        dst_tokens->count);
     mm_key_map* km = malloc(sizeof(mm_key_map));
     km->key = src;
@@ -434,7 +439,7 @@ mm_key_map* create_key_map(int src, mm_tokens* src_tokens,
         mm_cat(&p, m);
     }
 
-    km->id = atoi(id) % ID_SIZE;
+    km->id = atoi(id) % KEY_MAP_ID_SIZE;
     free(id);
 
     return km;
@@ -468,7 +473,8 @@ char* mm_key_set_dump(mm_key_set* set) {
 }
 
 void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
-    /* mm_debug("Attempting to combine key_set(%d) with addition(%d)\n", */
+    /* mm_debug("Attempting to combine
+     * key_set(%d) with addition(%d)\n", */
     /*          set->count, addition->count); */
 
     int* new_keys =
@@ -499,7 +505,8 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
     free(set->keys);
     set->keys = new_keys;
 
-    /* mm_debug("updated st: \n%s\n", mm_key_set_dump(set)); */
+    /* mm_debug("updated st: \n%s\n",
+     * mm_key_set_dump(set)); */
 
     // cleanup old keys and entire new addition
     free(addition->keys);
@@ -509,7 +516,8 @@ void mm_combine_key_set(mm_key_set* set, mm_key_set* addition) {
 void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
     // mm_debug("mapping: mm_remove_key_set()");
     // if (substract->count <= 0) {
-    //     mm_debug("mapping: bailing from mm_remove_set!\n");
+    //     mm_debug("mapping: bailing from
+    //     mm_remove_set!\n");
     //     return;
     // }
 
@@ -536,7 +544,9 @@ void mm_remove_key_set(mm_key_set* set, mm_key_set* substract) {
         assert(key >= 0 && key <= 128);
 
         if (key >= 0 && !sub_lookup[key]) {
-            mm_debug("mm_remove_key_set: assigning %d = (%d) from set(%d) "
+            mm_debug("mm_remove_key_set: "
+                     "assigning %d = (%d) from "
+                     "set(%d) "
                      "sub(%d)\n",
                      key, index, set->count, substract->count);
             new_keys[index] = key;

@@ -8,6 +8,8 @@ set( CMAKE_C_STANDARD 11 )
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wno-unused-function")
 add_definitions( -D__STDC_WANT_LIB_EXT1__=1 )
 
+set( _app_defs _DEBUG_ )
+
 # Glob'n all C source + headers under src/
 #
 # Below we iterate and remove any tmp files that

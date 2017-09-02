@@ -43,7 +43,7 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     // mm_debug("midi_start(%d)\n", midi_start);
 
     ++clear_count;
-    if (options->mapping->count) {
+    if (options->mapping->group_count) {
     }
 
     char* colour = NULL;
