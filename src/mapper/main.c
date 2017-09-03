@@ -202,23 +202,31 @@ int main(int argc, char** argv) {
 
     // Capture n amount of mappings provided to the CLI
     if (optind < argc) {
-        char* mapbuf = malloc(sizeof(char*) * 1024);
-        mapbuf[0] = '\0';
-        int opts = argc - optind;
+        char* mapbuf = calloc(sizeof(char*) * 1024, sizeof(char*));
+        char* cat_ptr = mapbuf;
+
+        int opts = argc - optind + 1;
+        int base = optind - 1;
         for (int i = 0; i < opts; ++i) {
-            if (i > 0) {
-                sprintf(mapbuf, "%s,%s", mapbuf, argv[optind + i]);
-            } else {
-                sprintf(mapbuf, "%s", argv[optind + i]);
+            char* arg_str = argv[base + i];
+            if (arg_str == NULL) {
+                break;
+            }
+
+            mm_cat(&cat_ptr, arg_str);
+            if (i < (opts - 1)) {
+                mm_cat(&cat_ptr, ", ");
             }
         }
         mapsrc = mapbuf;
     }
 
+    // printf("mapsrc: %s\noptind: %d/%d\n", mapsrc, optind, argc);
+
     // Flip global debug flag.
     if (debug) {
         mm_driver_debug();
-        mm_debug("\033c[midi-mapper started]: %lu\n", mm_micros());
+        mm_debug("\033c[dimappio started]: %lu\n", mm_micros());
     }
 
     // Version output and then exit.
