@@ -7,13 +7,13 @@
 #include "version.h"
 
 void print_usage() {
-    printf("Usage: midi-mapper [options] [Mapping]\n\n");
+    printf("Usage: dimappio [options] [Mapping]\n\n");
     printf("[Mapping] consists of a comma delimited list of notes.\n");
     printf("Within that list, you may nest sub lists to specify \na group of "
            "notes to be executed per src trigger\n");
 
     printf("\nExample:\n");
-    printf("midi-mapper -x 32:0  C3:C3|C4|C5,F#3:F#4\n");
+    printf("dimappio -x 32:0  C3:C3|C4|C5,F#3:F#4\n");
 
     printf("\nThis will create a virtual interface attached to the device port "
            "32:0.\n");
@@ -36,12 +36,12 @@ void print_usage() {
 }
 
 void print_version() {
-    printf("midi-mapper v%s.%s.%s\nrevision: %s\nbuild date: %s\n\n",
+    printf("Di'Mappio v%s.%s.%s\nrevision: %s\nbuild date: %s\n\n",
            MM_VERSION_MAJOR, MM_VERSION_MINOR, MM_VERSION_PATCH,
            MM_VERSION_BUILD, MM_VERSION_DATE);
 
     printf("Authors: Bailey Cosier <bailey@cosier.ca>\n");
-    printf("Homepage: https://github.com/cosier/midi-mapper\n\n");
+    printf("Homepage: https://github.com/cosier/dimappio\n\n");
 }
 
 int requires_target_specified(char* cmd) {
@@ -74,7 +74,7 @@ bool verify_valid_midi_client(char* client) {
     if (!mm_client_exists(client)) {
         printf("Midi Client (%s) was not found or is no longer available.\n\n",
                client);
-        printf("Try \"midi-mapper --list\" to list available Midi Clients.\n");
+        printf("Try \"dimappio --list\" to list available Midi Clients.\n");
         printf("The [xx:x] denotes the client id + port number.\n\n");
         return false;
     }
