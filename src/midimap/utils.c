@@ -48,6 +48,7 @@ void printd(const char* format, ...) {
 }
 
 void mm_debug(const char* format, ...) {
+#ifdef _DEBUG_
     if (mm_driver_debug_mode) {
         if (LOG_FILE == NULL) {
             struct passwd* pw = getpwuid(getuid());
@@ -75,6 +76,7 @@ void mm_debug(const char* format, ...) {
         /* fclose(LOG_FILE); */
         /* LOG_FILE = NULL; */
     }
+#endif
 }
 
 int mm_count_lines(char* input) {

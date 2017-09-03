@@ -239,21 +239,17 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    mm_device* midi_through = mm_get_midi_through();
-
     // If target client:port is specified, verify that it exists.
     if (target != NULL) {
         if (!verify_valid_midi_client(target)) {
             exit(EXIT_FAILURE);
         }
-    } else if (midi_through != NULL) {
-        target = malloc(sizeof(char*) * 6);
-        sprintf(target, "%d:%d", midi_through->client, midi_through->port);
-    }
-
-    // Done with midi_through fallback, time to free
-    if (midi_through != NULL) {
-        free(midi_through);
+    } else {
+        mm_device* midi_through = mm_get_midi_through();
+        if (midi_through != NULL) {
+            target = malloc(sizeof(char*) * 6);
+            sprintf(target, "%d:%d", midi_through->client, midi_through->port);
+        }
     }
 
     // If source client:port is specified, verify that it exists.
@@ -292,7 +288,7 @@ int main(int argc, char** argv) {
         mm_debug("main: attempting to build mappings from list using: %s\n",
                  mapsrc);
         mapping = mm_mapping_from_list(mapsrc);
-        free(mapsrc);
+        // free(mapsrc);
     } else {
         mm_debug("main: building solo mappings\n");
         mapping = mm_build_mapping();
