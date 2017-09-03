@@ -1,10 +1,10 @@
-# Di'Mappo
+# Di'Mappio
 
-### Tool for creating Smart Virtual Midi Devices
-Di'Mappo allows you to re-route and remap individual notes from your Midi Devices.
+### Tool for creating dynamic  Virtual Midi Devices
+Di'Mappio allows you to re-route and remap individual notes from your Midi Devices.
 
-**Implemented in pure C**, midi-mapper accesses the low level audio API(s) for OS.
-Designed for performance, it does one thing and hopes to do it well: midi mapping.
+**Implemented in pure C**, Di'Mappio accesses the low level audio API(s) for OS.
+Designed for performance, it does one thing and hopes to do it well: midi mapping and routing.
 
 ## Features:
 
@@ -15,11 +15,11 @@ Designed for performance, it does one thing and hopes to do it well: midi mappin
 	- Supports **Single** midi key can **trigger** multiple midi keys
 	- Supports **Multiple Keys** Trigger other keys
 		- Sophisticated rules to allow triggering only when the mapping rule has been fully satisfied
-		
+
 - Low level integration with raw midi/sequencer API(s) on Linux / OSX
 	- Runs on Linux via Alsa core lib
 	- Runs on OSX via CoreAudio
-	- *Todo: WIndows support via WMM* 
+	- *Todo: WIndows support via WMM*
 
 ## Use Case:
 
@@ -34,7 +34,7 @@ This can allow for a small 25-midi-key device to access it's drum pads to suppor
 ## Usage:
 
 ```
-Usage: dimappo [options] [Mapping]
+Usage: dimappio [options] [Mapping]
 
 [Mapping] consists of a comma delimited list of notes.
 Within that list, you may nest sub lists to specify
@@ -65,17 +65,18 @@ Options:
 
 ## Installation:
 
-Di' Mappo depends only on audio API(s) provided by your OS.
+Di' Mappio depends only on audio API(s) provided by your OS.
 ALSA for Linux, and CoreAudio on OSX.
 
 
 CMake is used to build the application.
 
 ## Linux (Ubuntu):
-```sudo apt-get install cmake libasound-dev libasound2```
+```sudo apt-get install cmake libasound-dev```
 
 
-##OSX:
+## OSX:
+
 ```brew install cmake```
 
 You will need XCode installed for CoreAudio headers.
@@ -93,6 +94,9 @@ $ cd dimappo
 $ # automated cmake wrappers
 $ bin/build
 $ bin/install
+
+$ dimappio --help
+
 ```
 
 ----
