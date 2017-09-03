@@ -13,15 +13,15 @@ SET ( SRC_MAIN main.c )
 # Setup 2 targets for build output.
 # 1. A library for ... library reuse.
 # 2. A Executable that utilises the library.
-add_executable(midi-mapper ${SRC_MAIN})
+add_executable(dimappio ${SRC_MAIN})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../../ )
 
 # Break into conditionals for audio driver support
 
 # Link Library support: libmidimap
-target_link_libraries( midi-mapper midimap )
+target_link_libraries( dimappio midimap )
 
-install(TARGETS midi-mapper
+install(TARGETS dimappio
   RUNTIME DESTINATION bin)
 

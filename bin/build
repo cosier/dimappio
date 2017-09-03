@@ -50,7 +50,7 @@ fi
 
 echo
 
-if [ ! -f $ROOT/bin/midi-mapper ]; then
-  ln -sf $ROOT/build/src/mapper/midi-mapper $ROOT/bin/midi-mapper
+if [ ! -f $ROOT/bin/dimappio ]; then
+  ln -sf $ROOT/build/src/mapper/dimappio $ROOT/bin/dimappio
 fi
 
