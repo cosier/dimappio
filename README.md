@@ -19,7 +19,11 @@ In the above demonstration, I am able to play a variety of chords spanning 4 oct
 **Implemented in pure C**, Di'Mappio accesses the low level audio API(s) for OS.
 Designed for performance, it does one thing and hopes to do it well: midi mapping and routing.
 
-Once you have established your mappings, you can route Di'Mappio's output into your favorite Digital Audio Workstation *(eg. Logic, Ableton, etc..)*
+
+Di'Mappio runs as a **light-weight background process** inside of your **terminal**.
+
+Once you have established your mappings, you can route
+Di'Mappio's output into your favorite Digital Audio Workstation *(eg. Logic, Ableton, etc..)*
 
 
 ----
