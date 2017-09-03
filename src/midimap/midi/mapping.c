@@ -36,7 +36,7 @@ void mm_key_group_dump(mm_key_group* g, char* buf, int* id_index) {
 void mm_key_map_dump(mm_key_map* k, char* buf) {
     char* id = malloc(sizeof(char*) * 32);
     char* ptr = buf;
-    sprintf(id, "%05d", k->id);
+    sprintf(id, "%05d:ch%d", k->id, k->channel_in);
     // retun;
     mm_cat(&ptr, "\n • ");
     mm_cat(&ptr, id);
@@ -85,6 +85,10 @@ void mm_key_map_dump(mm_key_map* k, char* buf) {
         mm_cat(&ptr, " ");
         free(display3);
     }
+
+    mm_cat(&ptr, "[ch:");
+    sprintf(ptr, "%d", k->channel_out);
+    mm_cat(&ptr, "]");
 
     mm_cat(&ptr, RESET);
 }

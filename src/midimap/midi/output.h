@@ -16,5 +16,7 @@ typedef struct mm_midi_output {
 
 } mm_midi_output;
 
+void mm_output_free(mm_midi_output* output);
+
 #endif
 #endif

@@ -67,6 +67,7 @@ mm_devices* mma_get_devices() {
     }
 
     snd_seq_close(seq);
+    snd_config_update_free_global();
 
     // downsize to accurate storage size.
     devices->store =
@@ -97,6 +98,7 @@ snd_seq_port_info_t* mma_get_port_info(mm_device* dev) {
     int found = snd_seq_get_any_port_info(seq, dev->client, dev->port, pinfo);
 
     snd_seq_close(seq);
+    snd_config_update_free_global();
 
     if (found == 0) {
         return pinfo;
@@ -137,9 +139,7 @@ void mma_monitor_device(mm_options* options) {
     free(src);
 
     mma_event_loop(options, output);
-    free(output->in_ports);
-    free(output->out_ports);
-    free(output);
+    mm_output_free(output);
 }
 
 void mma_event_loop(mm_options* options, mm_midi_output* output) {
@@ -383,6 +383,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
         }
     }
 
+    // mm_output_free(output);
     mm_options_free(options);
     mm_keylets_free(dsts_set->keys, dsts_set->count);
     // free(dsts_set->keys);
@@ -390,7 +391,6 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     free(list);
     free(grp);
     free(pfds);
-    snd_seq_close(output->dev);
 }
 
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
@@ -400,6 +400,8 @@ void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
 
     int midi = atoi(note);
     send_midi(output, midi, on, ch, vel);
+
+    mm_output_free(output);
 
     // TODO: close out_port since this is one-shot api
 }
@@ -480,16 +482,18 @@ int mma_init_sequencer(snd_seq_t** seq, char* name) {
         exit(EXIT_FAILURE);
     }
 
-    // free cached memory (in regards to valgrind)
-    snd_config_update_free_global();
-
     if (name != NULL) {
         snd_seq_set_client_name(*seq, name);
     }
 
     snd_seq_nonblock(*seq, 1);
 
-    return snd_seq_client_id(*seq);
+    int id = snd_seq_client_id(*seq);
+
+    // free cached memory (in regards to valgrind)
+    snd_config_update_free_global();
+
+    return id;
 }
 
 int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type) {
