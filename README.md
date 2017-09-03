@@ -1,10 +1,29 @@
 # Di'Mappio
 
-### Tool for creating dynamic  Virtual Midi Devices
-Di'Mappio allows you to re-route and remap individual notes from your Midi Devices.
+### Musical tool for Intercepting Midi Devices
+Di'Mappio allows you create a virtual midi interface that intercepts another device, enhancing your notes with additional mappings and chord harmonization.
 
+![demo_gif](https://raw.githubusercontent.com/cosier/dimappio/master/data/dimappio_demo.gif) 
+
+
+**The magenta keys show the keys that I am actually pressing, where the green keys are additional keys triggered by Di'Mappio.**
+
+
+In the above demonstration, I am able to play a variety of chords spanning 4 octaves -  **Gm9, Fm9, Bb7, and Ebadd9**
+
+*However*, I am using just one hand an a mini 25-key device (*which supports only 2 octaves at any given time)*
+
+----
+
+## About
 **Implemented in pure C**, Di'Mappio accesses the low level audio API(s) for OS.
 Designed for performance, it does one thing and hopes to do it well: midi mapping and routing.
+
+Once you have established your mappings, you can route Di'Mappio's output into your favorite Digital Audio Workstation *(eg. Logic, Ableton, etc..)*
+
+
+----
+
 
 ## Features:
 
