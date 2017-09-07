@@ -385,6 +385,8 @@ mm_mapping* mm_mapping_from_list(char* list) {
         char* input = mappings->tokens[i];
 
         mm_tokens* tokens = mm_token_split(input, ':');
+        printf("%s", mm_tokens_dump(tokens));
+        fflush(stdout);
         assert(tokens->count == 2 && tokens->count > 0);
 
         char* src_input = tokens->tokens[0];

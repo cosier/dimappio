@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
         char* cat_ptr = mapbuf;
 
         int opts = argc - optind + 1;
-        int base = optind - 1;
+        int base = optind;
         for (int i = 0; i < opts; ++i) {
             char* arg_str = argv[base + i];
             if (arg_str == NULL) {
