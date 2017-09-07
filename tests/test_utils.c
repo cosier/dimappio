@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "helpers/helpers.h"
-#include <midimap/core.h>
+#include <dimappio/core.h>
 
 void test_cats() {
     int bsize = 128;

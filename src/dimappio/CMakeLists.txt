@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(midimap)
+project(dimappio)
 
 # This project uses C11 Standard
 set( CMAKE_C_STANDARD 11 )
@@ -27,7 +27,7 @@ endforeach( PATH )
 # Setup 2 targets for build output.
 # 1. A library for ... library reuse.
 # 2. A Executable that utilises the library.
-add_library(midimap STATIC ${SRC_LIB})
+add_library(dimappio STATIC ${SRC_LIB})
 
 # Break into conditionals for audio driver support
 if (APPLE)
@@ -62,10 +62,10 @@ endif ()
 # Everybody needs curses
 find_library( ncurses_lib ncurses )
 
-# Link Library support: libmidimap
-target_include_directories( midimap PUBLIC ./ )
-target_compile_definitions( midimap PUBLIC ${_midi_defs} ${_app_defs} )
-target_link_libraries( midimap m ${_midi_libs} ${ncurses_lib} )
+# Link Library support: libdimappio
+target_include_directories( dimappio PUBLIC ./ )
+target_compile_definitions( dimappio PUBLIC ${_midi_defs} ${_app_defs} )
+target_link_libraries( dimappio m ${_midi_libs} ${ncurses_lib} )
 
 # Cleanup after ourselves.
 unset( _midi_libs )

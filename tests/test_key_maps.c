@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "helpers/helpers.h"
-#include <midimap/core.h>
+#include <dimappio/core.h>
 
 void assert_mapping_list(char* list, int ich, int och, int groups,
                          int dst_count, int min_src_count, int max_src_count) {

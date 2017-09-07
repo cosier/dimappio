@@ -30,7 +30,7 @@ set( CMAKE_C_STANDARD 11 )
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wno-unused-function")
 
 add_subdirectory("tests")
-add_subdirectory("src/midimap")
+add_subdirectory("src/dimappio")
 add_subdirectory("src/mapper")
 
 enable_testing ()

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <midimap/core.h>
+#include <dimappio/core.h>
 
 void midi_to_note_transform() {
     dm_note* note = dm_midi_to_note(20, true);

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(midimap-tests)
+project(dimappio-tests)
 
 # This project uses C11 Standard
 set( CMAKE_C_STANDARD 11 )
@@ -13,7 +13,7 @@ file(GLOB_RECURSE HELPER_LIB helpers/*.c helpers/*.h)
 include_directories(
   "${CMAKE_SOURCE_DIR}/tests"
   "${CMAKE_SOURCE_DIR}/src"
-  "${CMAKE_SOURCE_DIR}/src/midimap")
+  "${CMAKE_SOURCE_DIR}/src/dimappio")
 
 add_library(test_helper STATIC ${HELPER_LIB})
 # Test Executable that utilises the library.
@@ -23,9 +23,9 @@ add_executable(test-key-maps test_key_maps.c)
 add_executable(test-key-nodes test_key_nodes.c)
 add_executable(test-note-parser test_note_parser.c)
 
-# Link up main executable with our Library: libmidimap
-target_link_libraries( test-utils midimap test_helper)
-target_link_libraries( test-key-maps midimap test_helper)
-target_link_libraries( test-key-nodes midimap test_helper)
-target_link_libraries( test-note-parser midimap test_helper)
+# Link up main executable with our Library: libdimappio
+target_link_libraries( test-utils dimappio test_helper)
+target_link_libraries( test-key-maps dimappio test_helper)
+target_link_libraries( test-key-nodes dimappio test_helper)
+target_link_libraries( test-note-parser dimappio test_helper)
 
