@@ -50,7 +50,8 @@ void mm_list_clients() {
     for (int i = 0; i < devices->count; ++i) {
         mm_device* device = devices->store[i];
         char id[12];
-        sprintf(id, "[%d:%d]", device->client, device->port);
+        snprintf(id, sizeof(char) * 12, "[%d:%d]", device->client,
+                 device->port);
 
         if (device->name != NULL) {
             printf("%-8s %s\n", id, device->name);
