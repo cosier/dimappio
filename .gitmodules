@@ -1,3 +1,0 @@
-[submodule "vendor/alsa-lib"]
-	path = vendor/alsa-lib
-	url = git://git.alsa-project.org/alsa-lib.git
