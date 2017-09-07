@@ -129,11 +129,14 @@ void mma_monitor_device(mm_options* options) {
     snd_seq_port_info_free(pinfo);
     free(src);
 
-    mma_event_loop(options, output);
+    mma_event_loop(options, output, &mm_monitor_render);
     mm_output_free(output);
 }
 
-void mma_event_loop(mm_options* options, mm_midi_output* output) {
+void mma_event_loop(mm_options* options, mm_midi_output* output,
+                    void (*render_callback)(mm_options* options,
+                                            mm_key_node* tail,
+                                            mm_key_set* key_set)) {
 
     int pfds_num =
         snd_seq_poll_descriptors_count(output->dev, POLLIN | POLLOUT);
@@ -153,7 +156,9 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     int err = 0;
     int process_event = 1;
 
-    mm_monitor_render(options, list, dsts_set);
+    if (render_callback != NULL) {
+        render_callback(options, list, dsts_set);
+    }
 
     for (;;) {
         // gather poll descriptors for this sequencer
@@ -197,7 +202,9 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
 
         } while (err > 0);
 
-        mm_monitor_render(options, list, dsts_set);
+        if (render_callback != NULL) {
+            render_callback(options, list, dsts_set);
+        }
 
         // Caught a sig signal, time to exit!
         if (stop) {

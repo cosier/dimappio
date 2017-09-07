@@ -31,7 +31,10 @@ void mma_monitor_device(mm_options* options);
 void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
                         int vel);
 
-void mma_event_loop(mm_options* options, mm_midi_output* output);
+void mma_event_loop(mm_options* options, mm_midi_output* output,
+                    void (*render_callback)(mm_options* options,
+                                            mm_key_node* tail,
+                                            mm_key_set* key_set));
 
 int mma_init_sequencer(snd_seq_t** seq, char* name);
 mm_midi_output* mma_midi_output_create(int client, int port);

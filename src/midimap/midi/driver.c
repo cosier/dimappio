@@ -24,6 +24,17 @@ void mm_monitor_client(mm_options* options) {
 #endif
 }
 
+void mm_event_loop(mm_options* options, mm_midi_output* output,
+                   void (*render_callback)(mm_options* options,
+                                           mm_key_node* tail,
+                                           mm_key_set* key_set)) {
+#ifdef __APPLE__
+// TODO : implement.
+#elif __linux__
+    mma_event_loop(options, output, render_callback);
+#endif
+}
+
 void mm_list_clients() {
 #ifdef __linux__
     mm_devices* devices = mma_get_devices();
