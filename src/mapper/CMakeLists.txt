@@ -15,7 +15,7 @@ SET ( SRC_MAIN main.c )
 # 2. A Executable that utilises the library.
 add_executable(dmappio ${SRC_MAIN})
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../../ )
+include_directories(${DM_ROOT}/src ${DM_ROOT}/build )
 
 # Break into conditionals for audio driver support
 

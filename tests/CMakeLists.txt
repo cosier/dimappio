@@ -11,9 +11,8 @@ file(GLOB_RECURSE HELPER_LIB helpers/*.c helpers/*.h)
 
 # message ( FATAL_ERROR "HELPER_SRC: ${HELPER_LIB}" )
 include_directories(
-  "${CMAKE_SOURCE_DIR}/tests"
-  "${CMAKE_SOURCE_DIR}/src"
-  "${CMAKE_SOURCE_DIR}/src/dimappio")
+  "${DM_ROOT}/tests"
+  "${DM_ROOT}/src")
 
 add_library(test_helper STATIC ${HELPER_LIB})
 # Test Executable that utilises the library.
