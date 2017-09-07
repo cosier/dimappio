@@ -4,6 +4,7 @@
 #ifdef __linux__
 #include <alsa/asoundlib.h>
 typedef snd_seq_t mm_midi_device;
+typedef snd_seq_event_t mm_midi_event;
 #endif
 
 typedef struct mm_device {

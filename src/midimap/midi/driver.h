@@ -22,8 +22,11 @@ void mm_monitor_client(mm_options* options);
 
 void mm_list_clients();
 bool mm_client_exists(char* client);
-void mm_send_midi_note(int client, int port, char* note, bool on, int ch,
-                       int vel);
+void mm_send_midi_to_client(int client, int port, char* note, bool on, int ch,
+                            int vel);
+
+void mm_send_midi(mm_midi_output* output, int midi, bool on, int ch, int vel);
+void mm_send_event(mm_midi_output* output, mm_midi_event* ev);
 
 void mm_driver_init(mm_midi_device**, char* name);
 

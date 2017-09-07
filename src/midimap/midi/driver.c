@@ -93,17 +93,37 @@ mm_device* mm_get_midi_through() {
     return NULL;
 }
 
-void mm_send_midi_note(int client, int port, char* note, bool on, int channel,
-                       int vel) {
-    printf("mm_send_midi_note -> %d:%d [%s, %d, ch:%d, vel:%d]", client, port,
-           note, on, channel, vel);
+void mm_send_midi_to_client(int client, int port, char* note, bool on,
+                            int channel, int vel) {
+    printf("mm_send_midi_to_client -> %d:%d [%s, %d, ch:%d, vel:%d]", client,
+           port, note, on, channel, vel);
+#ifdef __linux__
     mma_send_midi_note(client, port, note, on, channel, vel);
+#elif __APPLE__
+// TODO:
+#endif
+}
+
+void mm_send_midi(mm_midi_output* output, int midi, bool on, int ch, int vel) {
+#ifdef __linux__
+    mma_send_midi(output, midi, on, ch, vel);
+#elif __APPLE__
+// TODO:
+#endif
+}
+void mm_send_event(mm_midi_output* output, mm_midi_event* ev) {
+#ifdef __linux__
+    mma_send_event(output, ev);
+#elif __APPLE__
+// TODO:
+#endif
 }
 
 void mm_driver_init(mm_midi_device** dev, char* name) {
 #ifdef __linux__
     mma_init_sequencer(dev, name);
 #elif __APPLE__
+// TODO:
 #endif
 }
 
@@ -111,6 +131,7 @@ void mm_send_events_to(mm_midi_output* output, int client, int port) {
 #ifdef __linux__
     mma_send_events_to(output, client, port);
 #elif __APPLE__
+// TODO:
 #endif
 }
 
@@ -118,6 +139,7 @@ void mm_receive_events_from(mm_midi_output* output, int client, int port) {
 #ifdef __linux__
     mma_receive_events_from(output, client, port);
 #elif __APPLE__
+// TODO:
 #endif
 }
 

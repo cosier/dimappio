@@ -9,12 +9,14 @@
 #include <sys/poll.h>
 
 #include "midi/device.h"
+#include "midi/eventing.h"
 #include "midi/internals/alsa_decoder.h"
 #include "midi/mapping.h"
 #include "midi/monitor.h"
 #include "midi/nodes.h"
 #include "midi/output.h"
 #include "midi/parser.h"
+
 #include "options.h"
 #include "utils.h"
 
@@ -36,7 +38,10 @@ mm_midi_output* mma_midi_output_create(int client, int port);
 
 void mma_receive_events_from(mm_midi_output* output, int client, int port);
 void mma_send_events_to(mm_midi_output* output, int client, int port);
+void mma_send_event(mm_midi_output* output, snd_seq_event_t* ev);
+void mma_send_midi(mm_midi_output* output, int midi, bool on, int ch, int vel);
 
 int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type);
+
 #endif
 #endif

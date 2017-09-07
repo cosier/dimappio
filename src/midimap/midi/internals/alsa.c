@@ -13,17 +13,8 @@ static volatile sig_atomic_t stop = 0;
  */
 static void sighandler() { stop = 1; }
 
-static void update_node_list(snd_seq_event_t* event, mm_key_node** tail);
-
-static void send_event(mm_midi_output* output, snd_seq_event_t* event);
-static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
-                      int vel);
-
+static void update_node_list(mm_key_node** tail, int note_on, int midi);
 static void check_snd(char* desc, int err);
-
-static void release_mapping(mm_midi_output* output, mm_key_set* dsts_set);
-static void trigger_mapping(mm_midi_output* output, mm_key_set* dsts_set,
-                            int vel);
 
 mm_devices* mma_get_devices() {
     mm_devices* devices = malloc(sizeof(mm_devices));
@@ -152,25 +143,15 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     mm_key_group* grp = NULL;
     mm_key_set* dsts_set = mm_create_key_set(0);
 
-    MIDIEvent* event = NULL;
+    snd_seq_event_t* event = NULL;
 
-    int err = 0;
     int midi = 0;
     int type = 0;
     int chan = 0;
+    int vel = 0;
     int note_on = 0;
-    int note_off = 0;
+    int err = 0;
     int process_event = 1;
-
-    int note_owners[129] = {0};
-    for (int i = 0; i < 129; ++i) {
-        note_owners[i] = -1;
-    }
-
-    int active_lookup[129] = {0};
-    for (int i = 0; i < 129; ++i) {
-        active_lookup[i] = 0;
-    }
 
     mm_monitor_render(options, list, dsts_set);
 
@@ -199,177 +180,18 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
                 type = event->type;
                 midi = event->data.note.note;
                 chan = event->data.note.channel;
+                vel = event->data.note.velocity;
 
                 note_on = (type == SND_SEQ_EVENT_NOTEON) ? 1 : 0;
-                note_off = (type == SND_SEQ_EVENT_NOTEOFF) ? 1 : 0;
 
-                update_node_list(event, &list);
+                update_node_list(&list, note_on, midi);
 
-                grp = options->mapping->index[midi];
-
-                // acquire ownership of self key
-                if (note_owners[midi] < 0) {
-                    mm_debug("initialising note_owners[midi] = %d\n", midi);
-                    note_owners[midi] = midi;
-                } else if (note_owners[midi] != midi) {
-                    mm_debug("could not initialise note_owners[midi] because: "
-                             "%d != %d\n",
-                             note_owners[midi], midi);
-                }
-
-                if (grp != NULL) {
-                    // mm_debug("event_loop: mappings for event "
-                    //          "(midi:%d, note_on: %d, note_off: %d)\n",
-                    //          midi, note_on, note_off);
-
-                    // mm_key_set* new_keys =
-                    //     mm_mapping_group_single_src_dsts(grp);
-
-                    mm_key_set* new_keys =
-                        mm_mapping_group_all_dsts(grp, list, note_on, chan);
-
-                    char* key_dump = mm_key_set_dump(new_keys);
-
-                    mm_debug("[%d]key(%d)\n%s\n", chan, midi, key_dump);
-                    free(key_dump);
-
-                    if (note_on) {
-                        int remove_hits[129] = {0};
-
-                        for (int i = 0; i < new_keys->count; ++i) {
-                            // set the latest owner to `midi` if it's available
-                            int k = new_keys->keys[i]->key;
-
-                            if (active_lookup[k]) {
-                                // mark key for pre-emptive removal due to it
-                                // being active already
-                                remove_hits[k] = 5;
-                            } else {
-                                note_owners[k] = midi;
-                            }
-                        }
-
-                        // stage 2 hit removals
-                        for (int i = 0; i < 129; ++i) {
-                            if (remove_hits[i] == 5) {
-                                remove_hits[i] = 0;
-                                mm_debug("removing single_key due to active "
-                                         "hit: %d\n",
-                                         i);
-                                mm_key_set_remove_single_key(new_keys, i);
-                            }
-                        }
-
-                        if (!active_lookup[midi] && new_keys->count > 0) {
-                            // dont process default event if we have mapped a
-                            // key
-                            process_event = 0;
-                        }
-
-                        trigger_mapping(output, new_keys,
-                                        event->data.note.velocity);
-                        mm_combine_key_set(dsts_set, new_keys);
-
-                    } else if (note_off) {
-
-                        if (!active_lookup[midi] || new_keys->count > 0) {
-                            // dont process default event if we have mapped a
-                            // key
-                            process_event = 0;
-                        }
-
-                        if (!active_lookup[midi]) {
-                            process_event = 0;
-                        }
-
-                        int keys_to_release_deeped = 0;
-                        mm_key_set* release_keys = new_keys;
-
-                        for (int i = 0; i < new_keys->count; ++i) {
-                            int k = new_keys->keys[i]->key;
-                            int owner = note_owners[k];
-                            int active = mm_key_node_contains(list, k);
-
-                            // relinquish ownership if `midi` still owns it
-                            if (owner == midi && !active) {
-                                note_owners[k] = -1;
-                            } else {
-
-                                if (active) {
-                                    // if active, set the owner to `k` itself,
-                                    // as `list` query will only indicate as
-                                    // such.
-                                    note_owners[k] = k;
-                                }
-
-                                // we don't own the key, don't release_mapping
-                                // ye. ergo we must remove frm
-                                // `release_keys`
-
-                                // But first, we need to turn keys_to_release
-                                // into a deep copy.
-                                if (!keys_to_release_deeped) {
-                                    release_keys = mm_key_set_copy(new_keys);
-
-                                    // we're done, flip the bit.
-                                    keys_to_release_deeped = 1;
-                                }
-
-                                mm_key_set_remove_single_key(release_keys, k);
-                            }
-
-                            // Check if the owner is a virtual key, in which we
-                            // will not remove it from the dsts_set.
-                            if (owner >= 0 &&
-                                options->mapping->index[owner] == NULL) {
-                                // remove from virtual dsts_set
-                                mm_key_set_remove_single_key(dsts_set, k);
-                            }
-                        }
-
-                        release_mapping(output, release_keys);
-
-                        mm_remove_key_set(dsts_set, new_keys);
-
-                        mm_keylets_free(new_keys->keys, new_keys->count);
-                        free(new_keys);
-
-                        // If we have deep copied new_keys, or removed a key
-                        // from it, we need to free the new copy.
-                        if (new_keys != release_keys) {
-                            mm_keylets_free(release_keys->keys,
-                                            release_keys->count);
-
-                            free(release_keys);
-                            release_keys = NULL;
-                        }
-
-                        new_keys = NULL;
-                    }
-
-                } else {
-                    if (note_off) {
-                        // apply checks to determine if we can release or not,
-                        // due to any other active mappings at this moment.
-                        if (note_owners[midi] != midi) {
-                            mm_debug(
-                                "cannot release note_off because: %d != %d\n",
-                                midi, note_owners[midi]);
-                            process_event = 0;
-                        } else {
-                            note_owners[midi] = -1;
-                            mm_debug("released note_owners[midi] = -1\n");
-                        }
-
-                        active_lookup[midi] = 0;
-                    }
-                }
-
-                active_lookup[midi] = note_on;
+                process_event = mm_event_process(
+                    output, options, list, &dsts_set, midi, chan, vel, note_on);
 
                 if (process_event) {
-                    event->data.note.channel = 0;
-                    send_event(output, event);
+                    // event->data.note.channel = 0;
+                    mma_send_event(output, event);
                 }
             }
 
@@ -386,6 +208,7 @@ void mma_event_loop(mm_options* options, mm_midi_output* output) {
     // mm_output_free(output);
     mm_options_free(options);
     mm_keylets_free(dsts_set->keys, dsts_set->count);
+
     // free(dsts_set->keys);
     free(dsts_set);
     free(list);
@@ -399,7 +222,7 @@ void mma_send_midi_note(int client, int port, char* note, bool on, int ch,
     mma_send_events_to(output, client, port);
 
     int midi = atoi(note);
-    send_midi(output, midi, on, ch, vel);
+    mma_send_midi(output, midi, on, ch, vel);
 
     mm_output_free(output);
 
@@ -502,8 +325,7 @@ int mma_create_port(snd_seq_t* seq, char* name, unsigned caps, unsigned type) {
     return port_result;
 }
 
-static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
-                      int vel) {
+void mma_send_midi(mm_midi_output* output, int midi, bool on, int ch, int vel) {
     snd_seq_event_t ev;
     snd_seq_ev_clear(&ev);
 
@@ -512,10 +334,10 @@ static void send_midi(mm_midi_output* output, int midi, bool on, int ch,
     ev.data.note.note = midi;
     ev.data.note.velocity = vel;
 
-    send_event(output, &ev);
+    mma_send_event(output, &ev);
 }
 
-static void send_event(mm_midi_output* output, snd_seq_event_t* ev) {
+void mma_send_event(mm_midi_output* output, snd_seq_event_t* ev) {
 
     // publish to any subscribers to the sequencer
     snd_seq_ev_set_subs(ev);
@@ -547,12 +369,10 @@ static void send_event(mm_midi_output* output, snd_seq_event_t* ev) {
     snd_seq_free_event(ev);
 }
 
-static void update_node_list(snd_seq_event_t* ev, mm_key_node** tail) {
+static void update_node_list(mm_key_node** tail, int note_on, int midi) {
     mm_key_node* node = NULL;
-    int midi = ev->data.note.note;
 
-    switch (ev->type) {
-    case SND_SEQ_EVENT_NOTEON:
+    if (note_on) {
         node = NULL;
         node = mm_key_node_search(tail, midi);
 
@@ -562,38 +382,14 @@ static void update_node_list(snd_seq_event_t* ev, mm_key_node** tail) {
 
             // Insert the new into the list by adjoining with the tail.
             mm_key_node_insert(tail, node);
-        } else {
         }
 
-        break;
-
-    case SND_SEQ_EVENT_NOTEOFF:
+    } else {
         node = mm_key_node_search(tail, midi);
 
         if (node != NULL) {
             mm_key_node_remove(tail, node);
         }
-
-        break;
-
-    case SND_SEQ_EVENT_CONTROLLER:
-        /* puts(mma_event_decoder(ev)); */
-        break;
-    }
-}
-
-static void trigger_mapping(mm_midi_output* output, mm_key_set* dst_set,
-                            int vel) {
-    for (int i = 0; i < dst_set->count; i++) {
-        mm_keylet* k = dst_set->keys[i];
-        send_midi(output, k->key, true, k->ch, vel);
-    }
-}
-
-static void release_mapping(mm_midi_output* output, mm_key_set* dst_set) {
-    for (int i = 0; i < dst_set->count; i++) {
-        mm_keylet* k = dst_set->keys[i];
-        send_midi(output, k->key, false, k->ch, 0);
     }
 }
 

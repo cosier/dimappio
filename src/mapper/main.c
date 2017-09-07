@@ -276,8 +276,8 @@ int main(int argc, char** argv) {
 
         mm_device* cp = mm_parse_device(target);
         mm_debug("main: sending midi note to: %s", target);
-        mm_send_midi_note(cp->client, cp->port, send_note, note_on, note_ch,
-                          note_vel);
+        mm_send_midi_to_client(cp->client, cp->port, send_note, note_on,
+                               note_ch, note_vel);
         return 0;
     }
 
