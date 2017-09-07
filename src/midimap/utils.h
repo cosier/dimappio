@@ -15,18 +15,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-extern bool mm_driver_debug_mode;
-void mm_debug(const char* format, ...);
+extern bool dm_driver_debug_mode;
+void dm_debug(const char* format, ...);
 void error(char* format, ...);
 void printd(const char* format, ...);
-void mm_clear(int lines);
-int64_t mm_micros();
+void dm_clear(int lines);
+int64_t dm_micros();
 
-int mm_count_lines(char* input);
+int dm_count_lines(char* input);
 bool contains_bit(unsigned val, unsigned bitindex);
 
-int mm_tokenize(char* src, char* delim, char** result);
-void mm_cat(char** buf, char* src);
+int dm_tokenize(char* src, char* delim, char** result);
+void dm_cat(char** buf, char* src);
 
 //////////////////////////////////////////////////////////
 // HERE BE APPLES

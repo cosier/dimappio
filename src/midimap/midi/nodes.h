@@ -7,7 +7,7 @@
 #include "midi/parser.h"
 #include "utils.h"
 
-struct mm_key_map;
+struct dm_key_map;
 
 /**
  * Singly linked list for effecient insertion
@@ -16,29 +16,29 @@ struct mm_key_map;
  * stored is the corresponding MIDI key, and any key mappings.
  * while presence in of itself represents active state.
  */
-typedef struct mm_key_node {
-    struct mm_key_node* next;
+typedef struct dm_key_node {
+    struct dm_key_node* next;
     int key;
-} mm_key_node;
+} dm_key_node;
 
-typedef struct mm_key_node_list {
-    mm_key_node** nodes;
+typedef struct dm_key_node_list {
+    dm_key_node** nodes;
     int size;
-} mm_key_node_list;
+} dm_key_node_list;
 
-mm_key_node* mm_key_node_head();
-mm_key_node* mm_key_node_create(int key);
+dm_key_node* dm_key_node_head();
+dm_key_node* dm_key_node_create(int key);
 
-mm_key_node_list* mm_key_node_get_list(mm_key_node* n);
-void mm_key_node_list_free(mm_key_node_list* list);
+dm_key_node_list* dm_key_node_get_list(dm_key_node* n);
+void dm_key_node_list_free(dm_key_node_list* list);
 
-char* mm_key_node_print_list(mm_key_node_list* list);
-char* mm_key_node_print_tail(mm_key_node* tail);
+char* dm_key_node_print_list(dm_key_node_list* list);
+char* dm_key_node_print_tail(dm_key_node* tail);
 
-void mm_key_node_insert(mm_key_node** tail, mm_key_node* node);
-void mm_key_node_remove(mm_key_node** tail, mm_key_node* node);
-mm_key_node* mm_key_node_search(mm_key_node** tail, int key);
+void dm_key_node_insert(dm_key_node** tail, dm_key_node* node);
+void dm_key_node_remove(dm_key_node** tail, dm_key_node* node);
+dm_key_node* dm_key_node_search(dm_key_node** tail, int key);
 
-int mm_key_node_contains(mm_key_node* tail, int key);
+int dm_key_node_contains(dm_key_node* tail, int key);
 
 #endif

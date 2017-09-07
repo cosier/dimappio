@@ -8,22 +8,22 @@
 
 #define KEY_LIMIT 128
 
-mm_key_node* create_list(int count) {
-    mm_key_node* tail = mm_key_node_head();
+dm_key_node* create_list(int count) {
+    dm_key_node* tail = dm_key_node_head();
     for (int i = 1; i < (count + 1) && i < KEY_LIMIT; ++i) {
-        mm_key_node_insert(&tail, mm_key_node_create(i));
+        dm_key_node_insert(&tail, dm_key_node_create(i));
     }
 
     return tail;
 }
 
 void insertion_test() {
-    mm_key_node* tail = create_list(3);
+    dm_key_node* tail = create_list(3);
 
     // enough allocation to hold the resulting string.
-    mm_key_node_list* list = mm_key_node_get_list(tail->next);
+    dm_key_node_list* list = dm_key_node_get_list(tail->next);
 
-    printf("list: %s\n\n", mm_key_node_print_list(list));
+    printf("list: %s\n\n", dm_key_node_print_list(list));
 
     /* // List should appear as expected, all nodes lined up. */
     assert(list->nodes[0]->key == 1);
@@ -32,18 +32,18 @@ void insertion_test() {
 }
 
 void removal_test() {
-    mm_key_node* tail = create_list(5);
-    mm_key_node_list* list = mm_key_node_get_list(tail);
-    printf("created list: %s\n\n", mm_key_node_print_list(list));
+    dm_key_node* tail = create_list(5);
+    dm_key_node_list* list = dm_key_node_get_list(tail);
+    printf("created list: %s\n\n", dm_key_node_print_list(list));
 
-    mm_key_node* node = mm_key_node_search(&tail, 3);
-    printf("found node: %s\n", mm_midi_to_note(node->key, true)->letter);
+    dm_key_node* node = dm_key_node_search(&tail, 3);
+    printf("found node: %s\n", dm_midi_to_note(node->key, true)->letter);
 
     // Test for node removal
-    mm_key_node_remove(&tail, node);
+    dm_key_node_remove(&tail, node);
 
     // Get a new list as the previous iterator is now invalidated.
-    list = mm_key_node_get_list(tail->next);
+    list = dm_key_node_get_list(tail->next);
 
     // List should be missing the second node (#20)
     // not including the initial head (0).
@@ -55,30 +55,30 @@ void removal_test() {
 }
 
 void search_test() {
-    mm_key_node* tail = create_list(25);
+    dm_key_node* tail = create_list(25);
 
-    mm_key_node* get_10 = mm_key_node_search(&tail, 10);
+    dm_key_node* get_10 = dm_key_node_search(&tail, 10);
     assert(get_10 != NULL);
 
-    mm_key_node* get_5 = mm_key_node_search(&tail, 5);
+    dm_key_node* get_5 = dm_key_node_search(&tail, 5);
     assert(get_5 != NULL);
     assert(get_5->key == 5);
 }
 
 void single_trigger_test() {
-    mm_key_node_list* list = NULL;
-    mm_key_node* tail = create_list(1);
-    mm_key_node* node = mm_key_node_search(&tail, 1);
+    dm_key_node_list* list = NULL;
+    dm_key_node* tail = create_list(1);
+    dm_key_node* node = dm_key_node_search(&tail, 1);
     assert(node != NULL);
 
-    mm_key_node_remove(&tail, node);
+    dm_key_node_remove(&tail, node);
 
-    list = mm_key_node_get_list(tail);
+    list = dm_key_node_get_list(tail);
     assert(list->size == 0);
 
-    mm_key_node_insert(&tail, mm_key_node_create(3));
-    mm_key_node_insert(&tail, mm_key_node_create(3));
-    list = mm_key_node_get_list(tail);
+    dm_key_node_insert(&tail, dm_key_node_create(3));
+    dm_key_node_insert(&tail, dm_key_node_create(3));
+    list = dm_key_node_get_list(tail);
     assert(list->size == 2);
 
     assert(tail != NULL);
@@ -87,7 +87,7 @@ void single_trigger_test() {
 }
 
 /**
- * Testing the linkage of a mm_key_node's singly linked list.
+ * Testing the linkage of a dm_key_node's singly linked list.
  */
 int main() {
     printf("Running key_node tests:\n");

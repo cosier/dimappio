@@ -37,8 +37,8 @@ void print_usage() {
 
 void print_version() {
     printf("Di'Mappio v%s.%s.%s\nrevision: %s\nbuild date: %s\n\n",
-           MM_VERSION_MAJOR, MM_VERSION_MINOR, MM_VERSION_PATCH,
-           MM_VERSION_BUILD, MM_VERSION_DATE);
+           DM_VERSION_MAJOR, DM_VERSION_MINOR, DM_VERSION_PATCH,
+           DM_VERSION_BUILD, DM_VERSION_DATE);
 
     printf("Authors: Bailey Cosier <bailey@cosier.ca>\n");
     printf("Homepage: https://github.com/cosier/dimappio\n\n");
@@ -71,7 +71,7 @@ bool verify_valid_midi_client(char* client) {
         return false;
     }
 
-    if (!mm_client_exists(client)) {
+    if (!dm_client_exists(client)) {
         printf("Midi Client (%s) was not found or is no longer available.\n\n",
                client);
         printf("Try \"dimappio --list\" to list available Midi Clients.\n");
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     char* send_note = NULL;
     char* mapsrc = NULL;
 
-    mm_mapping* mapping = NULL;
+    dm_mapping* mapping = NULL;
 
     int note_ch = 0;
     int note_vel = 0;
@@ -213,9 +213,9 @@ int main(int argc, char** argv) {
                 break;
             }
 
-            mm_cat(&cat_ptr, arg_str);
+            dm_cat(&cat_ptr, arg_str);
             if (i < (opts - 1)) {
-                mm_cat(&cat_ptr, ", ");
+                dm_cat(&cat_ptr, ", ");
             }
         }
         mapsrc = mapbuf;
@@ -225,8 +225,8 @@ int main(int argc, char** argv) {
 
     // Flip global debug flag.
     if (debug) {
-        mm_driver_debug();
-        mm_debug("\033c[dimappio started]: %lu\n", mm_micros());
+        dm_driver_debug();
+        dm_debug("\033c[dimappio started]: %lu\n", dm_micros());
     }
 
     // Version output and then exit.
@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
 
     // List available midi client ports then exit.
     if (list) {
-        mm_list_clients();
+        dm_list_clients();
         return 0;
     }
 
@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
         }
     } else {
-        mm_device* midi_through = mm_get_midi_through();
+        dm_device* midi_through = dm_get_midi_through();
         if (midi_through != NULL) {
             target = malloc(sizeof(char*) * 6);
             sprintf(target, "%d:%d", midi_through->client, midi_through->port);
@@ -269,14 +269,14 @@ int main(int argc, char** argv) {
 
     // Send a midi note to a specific client.
     if (send_note != NULL) {
-        mm_debug("main: attempting to send midi note");
+        dm_debug("main: attempting to send midi note");
         if (target == NULL) {
             requires_target_specified("send");
         }
 
-        mm_device* cp = mm_parse_device(target);
-        mm_debug("main: sending midi note to: %s", target);
-        mm_send_midi_to_client(cp->client, cp->port, send_note, note_on,
+        dm_device* cp = dm_parse_device(target);
+        dm_debug("main: sending midi note to: %s", target);
+        dm_send_midi_to_client(cp->client, cp->port, send_note, note_on,
                                note_ch, note_vel);
         return 0;
     }
@@ -293,13 +293,13 @@ int main(int argc, char** argv) {
         }
 
         // Build mappings from a comma delimited string.
-        mm_debug("main: attempting to build mappings from list using: %s\n",
+        dm_debug("main: attempting to build mappings from list using: %s\n",
                  mapsrc);
-        mapping = mm_mapping_from_list(mapsrc);
+        mapping = dm_mapping_from_list(mapsrc);
         // free(mapsrc);
     } else {
-        mm_debug("main: building solo mappings\n");
-        mapping = mm_build_mapping();
+        dm_debug("main: building solo mappings\n");
+        mapping = dm_build_mapping();
     }
 
     if (mapping == NULL) {
@@ -308,18 +308,18 @@ int main(int argc, char** argv) {
         print_usage();
         exit(EXIT_FAILURE);
     } else {
-        mm_debug("main: mappings created successfully\n");
+        dm_debug("main: mappings created successfully\n");
     }
 
     if (mapping->group_count) {
         char* buf = malloc(sizeof(char) * 128 * mapping->group_count);
-        mm_mapping_dump(mapping, buf);
+        dm_mapping_dump(mapping, buf);
         printf("%s\n%s▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄%s\n ",
                buf, BLACK, RESET);
         free(buf);
     }
 
-    mm_options* options = mm_create_options();
+    dm_options* options = dm_create_options();
     options->mapping = mapping;
     options->keys = keys;
     options->source = source;
@@ -336,8 +336,8 @@ int main(int argc, char** argv) {
             requires_source_specified("monitor");
         }
 
-        mm_debug("main: attempting to monitor client\n");
-        mm_monitor_client(options);
+        dm_debug("main: attempting to monitor client\n");
+        dm_monitor_client(options);
         exit(EXIT_SUCCESS);
     }
 

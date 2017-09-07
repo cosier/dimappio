@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.6)
 project(dimappio)
 
-set (MM_VERSION_MAJOR 0)
-set (MM_VERSION_MINOR 2)
-set (MM_VERSION_PATCH 0)
+set (DM_VERSION_MAJOR 0)
+set (DM_VERSION_MINOR 2)
+set (DM_VERSION_PATCH 0)
 
 if ("$ENV{BUILD_REVISION}" STREQUAL "")
   message (FATAL_ERROR "BUILD_REVISION not specified in ENV")
@@ -20,8 +20,8 @@ if ("$ENV{BUILD_STATIC}" STREQUAL "true")
 endif()
 
 
-set (MM_VERSION_BUILD $ENV{BUILD_REVISION})
-set (MM_VERSION_DATE $ENV{BUILD_TIMESTAMP})
+set (DM_VERSION_BUILD $ENV{BUILD_REVISION})
+set (DM_VERSION_DATE $ENV{BUILD_TIMESTAMP})
 
 # This project uses C11 Standard
 set( CMAKE_C_STANDARD 11 )

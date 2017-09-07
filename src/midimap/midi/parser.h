@@ -13,10 +13,10 @@
 #include "midi/notes.h"
 #include "utils.h"
 
-mm_device* mm_parse_device(char* client_with_port);
-mm_note* mm_midi_to_note(int midi, bool sharp);
-char* mm_midi_to_note_display(int midi);
-char* mm_note_print(mm_note* n);
-int mm_parse_to_midi(char* input);
+dm_device* dm_parse_device(char* client_with_port);
+dm_note* dm_midi_to_note(int midi, bool sharp);
+char* dm_midi_to_note_display(int midi);
+char* dm_note_print(dm_note* n);
+int dm_parse_to_midi(char* input);
 
 #endif

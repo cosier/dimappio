@@ -1,22 +1,22 @@
 #include "midi/nodes.h"
 
-mm_key_node* mm_key_node_create(int key) {
-    mm_key_node* n = malloc(sizeof(mm_key_node));
+dm_key_node* dm_key_node_create(int key) {
+    dm_key_node* n = malloc(sizeof(dm_key_node));
     n->next = NULL;
     // n->map = NULL;
     n->key = key;
     return n;
 }
 
-mm_key_node_list* mm_key_node_get_list(mm_key_node* node) {
-    mm_key_node_list* list = malloc(sizeof(mm_key_node_list));
+dm_key_node_list* dm_key_node_get_list(dm_key_node* node) {
+    dm_key_node_list* list = malloc(sizeof(dm_key_node_list));
 
     // Reasonable maximum - 32 nodes at any given time.
     // How many fingers do you have to press them keys simultaneously?
-    list->nodes = malloc(sizeof(mm_key_node*) * 32);
+    list->nodes = malloc(sizeof(dm_key_node*) * 32);
     list->size = 0;
 
-    mm_key_node* p = node;
+    dm_key_node* p = node;
 
     do {
         if (p->key >= 0) {
@@ -30,16 +30,16 @@ mm_key_node_list* mm_key_node_get_list(mm_key_node* node) {
     return list;
 }
 
-char* mm_key_node_print_tail(mm_key_node* tail) {
-    return mm_key_node_print_list(mm_key_node_get_list(tail));
+char* dm_key_node_print_tail(dm_key_node* tail) {
+    return dm_key_node_print_list(dm_key_node_get_list(tail));
 }
 
-char* mm_key_node_print_list(mm_key_node_list* list) {
+char* dm_key_node_print_list(dm_key_node_list* list) {
     if (list->size == 0) {
         return "";
     }
 
-    mm_key_node* ptr = NULL;
+    dm_key_node* ptr = NULL;
 
     char* buf = malloc(sizeof(char*) * (8 * list->size));
     buf[0] = 0;
@@ -47,8 +47,8 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
     for (int i = 0; i < list->size; ++i) {
         ptr = list->nodes[i];
 
-        mm_note* n = mm_midi_to_note(ptr->key, true);
-        char* note = mm_note_print(n);
+        dm_note* n = dm_midi_to_note(ptr->key, true);
+        char* note = dm_note_print(n);
         free(n);
 
         if (note != NULL && strlen(note) > 1) {
@@ -65,13 +65,13 @@ char* mm_key_node_print_list(mm_key_node_list* list) {
     return buf;
 }
 
-void mm_key_node_list_free(mm_key_node_list* list) {
+void dm_key_node_list_free(dm_key_node_list* list) {
     free(list->nodes);
     free(list);
 }
 
-int mm_key_node_contains(mm_key_node* tail, int key) {
-    mm_key_node* res = mm_key_node_search(&tail, key);
+int dm_key_node_contains(dm_key_node* tail, int key) {
+    dm_key_node* res = dm_key_node_search(&tail, key);
     if (res != NULL) {
         return key;
     } else {
@@ -82,11 +82,11 @@ int mm_key_node_contains(mm_key_node* tail, int key) {
 /**
  * Search a list (singly linked list) for a given key
  */
-mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
-    mm_key_node* handle = *tail;
+dm_key_node* dm_key_node_search(dm_key_node** tail, int key) {
+    dm_key_node* handle = *tail;
 
     if (handle == NULL) {
-        error("mm_key_node_search: handle is null, cannot possibly search for "
+        error("dm_key_node_search: handle is null, cannot possibly search for "
               "a key node!");
         return NULL;
     }
@@ -96,9 +96,9 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
     }
 
     int start = handle->key;
-    mm_key_node* it = handle->next;
+    dm_key_node* it = handle->next;
     if (it == NULL) {
-        error("mm_key_node_search: invalid list iterator");
+        error("dm_key_node_search: invalid list iterator");
         return NULL;
     }
 
@@ -128,14 +128,14 @@ mm_key_node* mm_key_node_search(mm_key_node** tail, int key) {
         return it;
     }
 
-    /* error("mm_key_node_search: search for (%d) was unsuccessful", key); */
+    /* error("dm_key_node_search: search for (%d) was unsuccessful", key); */
     return NULL;
 }
 
 /**
  * Insert (append) a node onto a linked structure
  */
-void mm_key_node_insert(mm_key_node** tail, mm_key_node* node) {
+void dm_key_node_insert(dm_key_node** tail, dm_key_node* node) {
     // Set existing tail->next to be the new 'next' of
     // the node being appended to the end of the list.
     //
@@ -154,8 +154,8 @@ void mm_key_node_insert(mm_key_node** tail, mm_key_node* node) {
     *tail = node;
 }
 
-mm_key_node* mm_key_node_head() {
-    mm_key_node* head = malloc(sizeof(mm_key_node));
+dm_key_node* dm_key_node_head() {
+    dm_key_node* head = malloc(sizeof(dm_key_node));
     head->next = head;
     head->key = -1;
     return head;
@@ -167,8 +167,8 @@ mm_key_node* mm_key_node_head() {
  * Done by copying the next node into itself,
  * thus freeing the adjacent node instead.
  */
-void mm_key_node_remove(mm_key_node** tail, mm_key_node* n) {
-    mm_key_node* next = n->next;
+void dm_key_node_remove(dm_key_node** tail, dm_key_node* n) {
+    dm_key_node* next = n->next;
 
     // Catch attempt to remove last node of a 2 node chain.
     // ie. [0, 30]

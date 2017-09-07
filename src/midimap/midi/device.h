@@ -3,30 +3,30 @@
 
 #ifdef __linux__
 #include <alsa/asoundlib.h>
-typedef snd_seq_t mm_midi_device;
-typedef snd_seq_event_t mm_midi_event;
+typedef snd_seq_t dm_midi_device;
+typedef snd_seq_event_t dm_midi_event;
 #endif
 
-typedef struct mm_device {
+typedef struct dm_device {
     char* name;
     int client;
     int port;
-} mm_device;
+} dm_device;
 
-typedef struct mm_devices {
-    mm_device** store;
+typedef struct dm_devices {
+    dm_device** store;
     int count;
-} mm_devices;
+} dm_devices;
 
-typedef struct mm_midi_port {
+typedef struct dm_midi_port {
     const char* name;
     int capability;
     int channels;
     int port_id;
     unsigned type;
 
-} mm_midi_port;
+} dm_midi_port;
 
-void mm_devices_free(mm_devices* devices);
+void dm_devices_free(dm_devices* devices);
 
 #endif

@@ -1,18 +1,18 @@
-#ifndef MM_OPTIONS_H
-#define MM_OPTIONS_H
+#ifndef DM_OPTIONS_H
+#define DM_OPTIONS_H
 
 #include "midi/mapping.h"
 
-typedef struct mm_options {
-    mm_mapping* mapping;
+typedef struct dm_options {
+    dm_mapping* mapping;
     int first;
     int keys;
 
     char* source;
     char* target;
 
-} mm_options;
+} dm_options;
 
-mm_options* mm_create_options();
-void mm_options_free(mm_options* options);
+dm_options* dm_create_options();
+void dm_options_free(dm_options* options);
 #endif

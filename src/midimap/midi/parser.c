@@ -6,8 +6,8 @@ static const char* SHARPS[12] = {"C",  "C#", "D",  "D#", "E",  "F",
 static const char* FLATS[12] = {"C",  "Db", "D",  "Eb", "E",  "F",
                                 "Gb", "G",  "Ab", "A",  "Bb", "B"};
 
-mm_note* mm_midi_to_note(int midi, bool sharp) {
-    mm_note* n = malloc(sizeof(mm_note));
+dm_note* dm_midi_to_note(int midi, bool sharp) {
+    dm_note* n = malloc(sizeof(dm_note));
     n->oct = floor(midi / 12);
     n->midi = midi;
 
@@ -30,7 +30,7 @@ static bool is_char_number(unsigned ch) {
     return true;
 }
 
-int mm_parse_to_midi(char* input) {
+int dm_parse_to_midi(char* input) {
     if (input == NULL) {
         error("Bad midi input: NULL");
         return -1;
@@ -127,15 +127,15 @@ int mm_parse_to_midi(char* input) {
     return midi;
 }
 
-char* mm_midi_to_note_display(int midi) {
-    mm_note* n = mm_midi_to_note(midi, true);
-    char* printed = mm_note_print(n);
+char* dm_midi_to_note_display(int midi) {
+    dm_note* n = dm_midi_to_note(midi, true);
+    char* printed = dm_note_print(n);
 
     free(n);
     return printed;
 }
 
-char* mm_note_print(mm_note* n) {
+char* dm_note_print(dm_note* n) {
     int size = sizeof(char*) * 4;
     char* buf = malloc(size);
     assert(n->letter != NULL);
@@ -145,11 +145,11 @@ char* mm_note_print(mm_note* n) {
     return buf;
 }
 
-mm_device* mm_parse_device(char* str) {
-    mm_debug("parser: mm_parse_device(%s)\n", str);
-    mm_device* dev = malloc(sizeof(mm_device) * 1);
+dm_device* dm_parse_device(char* str) {
+    dm_debug("parser: dm_parse_device(%s)\n", str);
+    dm_device* dev = malloc(sizeof(dm_device) * 1);
 
-    mm_debug("parser: mm_parse_device malloc success\n");
+    dm_debug("parser: dm_parse_device malloc success\n");
     dev->client = 0;
     dev->port = 0;
 
@@ -160,7 +160,7 @@ mm_device* mm_parse_device(char* str) {
 
     char* container;
     str = strdup(str);
-    mm_debug("parser: mm_parse_device: attempting to strtok_r\n");
+    dm_debug("parser: dm_parse_device: attempting to strtok_r\n");
     char* token = strtok_r(str, ":", &container);
 
     if (token != NULL) {
@@ -178,6 +178,6 @@ mm_device* mm_parse_device(char* str) {
     }
 
     free(str);
-    mm_debug("parser: mma_parse_device: success\n");
+    dm_debug("parser: dma_parse_device: success\n");
     return dev;
 }

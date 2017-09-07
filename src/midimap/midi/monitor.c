@@ -8,12 +8,12 @@ static char* COLOUR_PRESSED_SHARP = BGRED2;
 static char* COLOUR_MAPPED = BGGREEN;
 static char* COLOUR_MAPPED_SHARP = BGGREEN2;
 
-void mm_monitor_render(mm_options* options, mm_key_node* tail,
-                       mm_key_set* key_set) {
+void dm_monitor_render(dm_options* options, dm_key_node* tail,
+                       dm_key_set* key_set) {
 
     if (options->first) {
-        mm_debug("mm_monitor_render() : called for the first time\n");
-        // Buffer the terminal for the preceeding mm_clear()
+        dm_debug("dm_monitor_render() : called for the first time\n");
+        // Buffer the terminal for the preceeding dm_clear()
         printf("\n\n\n");
         options->first = 0;
     }
@@ -40,7 +40,7 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         midi_start = 0;
     }
 
-    // mm_debug("midi_start(%d)\n", midi_start);
+    // dm_debug("midi_start(%d)\n", midi_start);
 
     ++clear_count;
     if (options->mapping->group_count) {
@@ -55,7 +55,7 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     piano[1] = '\0';
 
     if (key_set != NULL && key_set->count > 0) {
-        /* mm_debug("\nRendering key_set(%d)\n", key_set->count); */
+        /* dm_debug("\nRendering key_set(%d)\n", key_set->count); */
         strcat(mkeys, " -> ");
         strcat(mkeys, CYAN);
         for (int i = 0; i < key_set->count; ++i) {
@@ -63,7 +63,7 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
             assert(key >= 0 && key <= 128);
             lookup[key] = -1;
             // Render Mapped keys
-            char* display = mm_midi_to_note_display(key_set->keys[i]->key);
+            char* display = dm_midi_to_note_display(key_set->keys[i]->key);
             strcat(mkeys, display);
             strcat(mkeys, " ");
             free(display);
@@ -71,11 +71,11 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         strcat(mkeys, RESET);
     }
 
-    mm_clear(clear_count);
-    mm_key_node_list* list = mm_key_node_get_list(tail);
+    dm_clear(clear_count);
+    dm_key_node_list* list = dm_key_node_get_list(tail);
 
     if (list->size > 0) {
-        char* notes = mm_key_node_print_list(list);
+        char* notes = dm_key_node_print_list(list);
         printf("\n%s♬  NOTES:%s %s%s%s %s\n\n", BLUE, RESET, RED, notes, RESET,
                mkeys);
         free(notes);
@@ -83,7 +83,7 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
         printf("\n%s♬  NOTES:%s Waiting for MIDI input... \n\n", BLUE, RESET);
     }
 
-    // Iterated currently active mm_key_node(s) into a lookup hit table
+    // Iterated currently active dm_key_node(s) into a lookup hit table
     for (int l = 0; l < list->size; ++l) {
         lookup[list->nodes[l]->key] = 1;
     }
@@ -152,6 +152,6 @@ void mm_monitor_render(mm_options* options, mm_key_node* tail,
     printf("%s\n", piano);
     free(piano);
     free(mkeys);
-    mm_key_node_list_free(list);
+    dm_key_node_list_free(list);
     fflush(stdout);
 }

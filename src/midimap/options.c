@@ -1,7 +1,7 @@
 #include "options.h"
 
-mm_options* mm_create_options() {
-    mm_options* options = malloc(sizeof(mm_options));
+dm_options* dm_create_options() {
+    dm_options* options = malloc(sizeof(dm_options));
     options->keys = 89;
     options->first = 1;
 
@@ -12,10 +12,10 @@ mm_options* mm_create_options() {
     return options;
 }
 
-void mm_options_free(mm_options* options) {
+void dm_options_free(dm_options* options) {
     // delegate cleanup to mapping func
     if (options->mapping != NULL) {
-        mm_mapping_free(options->mapping);
+        dm_mapping_free(options->mapping);
     }
 
     if (options->target != NULL) {

@@ -2,23 +2,23 @@
 #include "midi/internals/coremidi.h"
 #include <stdlib.h>
 
-void mm_midi_read_proc(const MIDIPacketList* pktlist, void* refCon,
+void dm_midi_read_proc(const MIDIPacketList* pktlist, void* refCon,
                        void* connRefCon) {
 
     Device* dev = (Device*)refCon;
     printf("received midi: %s\n", dev->name);
 }
 
-void mmc_midi_notify_proc(const MIDINotification* message, void* refCon) {
+void dmc_midi_notify_proc(const MIDINotification* message, void* refCon) {
     Device* dev = (Device*)refCon;
     printf("MIDI Notify -> messageID=%d", message->messageID);
 }
 
-void mmc_attach_listener(Device dev,
+void dmc_attach_listener(Device dev,
                          void (*func)(const MIDINotification* message,
                                       void* refCon)) {}
 
-Devices* mmc_get_devices() {
+Devices* dmc_get_devices() {
     int srcs = MIDIGetNumberOfSources();
     /* printf("MIDI Sources: %d\n", srcs); */
 
@@ -61,7 +61,7 @@ Devices* mmc_get_devices() {
     return devices;
 }
 
-Device* mmc_create_virtual_device(char* cname) {
+Device* dmc_create_virtual_device(char* cname) {
     CFStringRef name = char_to_cf_string_ref(cname);
 
     MIDIClientRef client;
@@ -73,13 +73,13 @@ Device* mmc_create_virtual_device(char* cname) {
     Device dev;
     dev.name = cname;
 
-    MIDIClientCreate(name, mm_midi_notify_proc, &dev, &client);
+    MIDIClientCreate(name, dm_midi_notify_proc, &dev, &client);
 
     MIDIOutputPortCreate(client, CFSTR("output"), output);
-    MIDIInputPortCreate(client, CFSTR("input"), mm_midi_read_proc, &dev,
+    MIDIInputPortCreate(client, CFSTR("input"), dm_midi_read_proc, &dev,
                         output);
 
-    MIDIDestinationCreate(client, name, mm_midi_read_proc, &dev, &endpoint);
+    MIDIDestinationCreate(client, name, dm_midi_read_proc, &dev, &endpoint);
     dev.endpoint = endpoint;
 
     MIDISourceCreate(client, name, &endpoint);

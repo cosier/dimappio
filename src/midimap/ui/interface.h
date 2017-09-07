@@ -3,4 +3,4 @@
 
 #include "midi/driver.h"
 
-void mm_interface_start();
+void dm_interface_start();

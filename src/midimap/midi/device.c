@@ -1,9 +1,9 @@
 #include "device.h"
 
-void mm_devices_free(mm_devices* devices) {
+void dm_devices_free(dm_devices* devices) {
     for (int i = 0; i < devices->count; ++i) {
         if (devices->store[i] != NULL) {
-            mm_device* dev = devices->store[i];
+            dm_device* dev = devices->store[i];
             if (dev->name != NULL) {
                 free(dev->name);
             }

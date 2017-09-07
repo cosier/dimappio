@@ -8,7 +8,7 @@ static void ui_startup() {
 
 static void ui_shutdown() { endwin(); }
 
-void mm_interface_start() {
+void dm_interface_start() {
     ui_startup();
     ui_shutdown();
 }

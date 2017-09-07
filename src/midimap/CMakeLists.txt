@@ -49,7 +49,7 @@ if (APPLE)
 
 elseif (MSVC)
   set( _midi_libs winmm )
-  set( _midi_defs __WINDOWS_MM__ )
+  set( _midi_defs __WINDOWS_DM__ )
 
 elseif (UNIX)
   find_package( ALSA REQUIRED )

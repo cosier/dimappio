@@ -13,18 +13,18 @@ void assert_mapping_list(char* list, int ich, int och, int groups,
            list, ich, och, groups, dst_count, min_src_count, max_src_count);
     fflush(stdout);
 
-    mm_mapping* mapping = NULL;
-    mapping = mm_mapping_from_list(list);
+    dm_mapping* mapping = NULL;
+    mapping = dm_mapping_from_list(list);
 
     assert(mapping->group_count == groups);
 
-    mm_key_map* index[KEY_MAP_ID_SIZE] = {NULL};
+    dm_key_map* index[KEY_MAP_ID_SIZE] = {NULL};
 
     printf("creating index(%d) with %lu bytes per element\n", KEY_MAP_ID_SIZE,
-           sizeof(mm_key_map*));
+           sizeof(dm_key_map*));
 
     for (int i = 0; i < mapping->group_count; ++i) {
-        mm_key_group* grp = mapping->mapped[i];
+        dm_key_group* grp = mapping->mapped[i];
 
         if (grp == NULL) {
             error("mapping->group_count: %d/%d", i, mapping->group_count);
@@ -34,13 +34,13 @@ void assert_mapping_list(char* list, int ich, int och, int groups,
         assert(grp->count = 1);
 
         for (int k = 0; k < grp->count; ++k) {
-            mm_key_map* km = grp->maps[k];
+            dm_key_map* km = grp->maps[k];
 
             if (index[km->id]) {
-                mm_key_map* other = index[km->id];
+                dm_key_map* other = index[km->id];
                 char* buf = calloc(sizeof(char) * 512, sizeof(char));
-                mm_key_map_dump(km, buf);
-                mm_key_map_dump(other, buf);
+                dm_key_map_dump(km, buf);
+                dm_key_map_dump(other, buf);
 
                 printf("detected collision with: %s\n", buf);
                 free(buf);
@@ -70,7 +70,7 @@ void assert_mapping_list(char* list, int ich, int och, int groups,
             assert(km->channel_out == och);
 
             // char* kmbuf = calloc(sizeof(char*), sizeof(char*));
-            // mm_key_map_dump(km, kmbuf);
+            // dm_key_map_dump(km, kmbuf);
             // printd("key_map_dump: \n%s", kmbuf);
             // printd("km->dst_set->count(%d)\n", km->dst_set->count);
 
@@ -118,12 +118,12 @@ void map_building_from_list() {
 }
 
 void assert_whitespaced_list(char* list, int group_count, int isrc, int idst) {
-    mm_mapping* mapping = mm_mapping_from_list(list);
+    dm_mapping* mapping = dm_mapping_from_list(list);
     assert(mapping->group_count == group_count);
     for (int i = 0; i < mapping->group_count; ++i) {
-        mm_key_group* grp = mapping->mapped[i];
+        dm_key_group* grp = mapping->mapped[i];
         for (int k = 0; k < grp->count; ++k) {
-            mm_key_map* km = grp->maps[k];
+            dm_key_map* km = grp->maps[k];
             assert(km->src_set->count == isrc);
             assert(km->dst_set->count == idst);
         }

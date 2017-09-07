@@ -47,9 +47,9 @@ void printd(const char* format, ...) {
 #endif
 }
 
-void mm_debug(const char* format, ...) {
+void dm_debug(const char* format, ...) {
 #ifdef _DEBUG_
-    if (mm_driver_debug_mode) {
+    if (dm_driver_debug_mode) {
         if (LOG_FILE == NULL) {
             struct passwd* pw = getpwuid(getuid());
             char* file = pw->pw_dir;
@@ -79,7 +79,7 @@ void mm_debug(const char* format, ...) {
 #endif
 }
 
-int mm_count_lines(char* input) {
+int dm_count_lines(char* input) {
     int i = 0;
     int lines = 1;
     while (input[i] != '\0') {
@@ -91,7 +91,7 @@ int mm_count_lines(char* input) {
     return lines;
 }
 
-void mm_clear(int lines) {
+void dm_clear(int lines) {
     for (int i = 0; i < lines; ++i) {
         printf("\33[2K\r");
         printf("\33[1A\r");
@@ -99,7 +99,7 @@ void mm_clear(int lines) {
     }
 }
 
-int64_t mm_micros() {
+int64_t dm_micros() {
     struct timespec tms;
     timespec_get(&tms, TIME_UTC);
     int64_t micros = tms.tv_sec * 1000000;
@@ -120,7 +120,7 @@ bool contains_bit(unsigned val, unsigned bitindex) {
     return (val & (1 << bitindex)) != 0;
 }
 
-int mm_tokenize(char* src, char* delim, char** result) {
+int dm_tokenize(char* src, char* delim, char** result) {
     char* container = NULL;
     char* token = NULL;
     int i = 0;
@@ -149,8 +149,8 @@ int mm_tokenize(char* src, char* delim, char** result) {
  * Then once you are done with fast cat appendages, you may discard the stack
  * pointer.
  */
-void mm_cat(char** orig, char* src) {
-    // printf("mm_cat: appending(%s) to buf(%s)\n", src, buf);
+void dm_cat(char** orig, char* src) {
+    // printf("dm_cat: appending(%s) to buf(%s)\n", src, buf);
     char* buf = *orig;
     assert(buf != NULL);
 

@@ -6,8 +6,8 @@
 #include "midi/output.h"
 #include "options.h"
 
-int mm_event_process(mm_midi_output* output, mm_options* options,
-                     mm_key_node* tail, mm_key_set** active_keyset, int midi,
+int dm_event_process(dm_midi_output* output, dm_options* options,
+                     dm_key_node* tail, dm_key_set** active_keyset, int midi,
                      int chan, int vel, int note_on);
 
 #endif
