@@ -129,7 +129,7 @@ void dma_monitor_device(dm_options* options) {
     snd_seq_port_info_free(pinfo);
     free(src);
 
-    dma_event_loop(options, output, &dm_monitor_render);
+    dma_event_loop(options, output, &dm_monitor_render, NULL);
     dm_output_free(output);
 }
 
@@ -137,7 +137,7 @@ void dma_event_loop(dm_options* options, dm_midi_output* output,
                     void (*render_callback)(dm_options* options,
                                             dm_key_node* tail,
                                             dm_key_set* key_set),
-                    void (*key_callback)(dm_key_set* key_set, int note_on)) {
+                    void (*key_callback)(int key, int ch, int vel, int on)) {
 
     int pfds_num =
         snd_seq_poll_descriptors_count(output->dev, POLLIN | POLLOUT);
@@ -198,8 +198,7 @@ void dma_event_loop(dm_options* options, dm_midi_output* output,
 
                 if (process_event) {
                     if (key_callback != NULL) {
-                        mm_key_set* ks = dm_key_set_init(midi, chan);
-                        key_callback(ks, note_on);
+                        key_callback(midi, chan, vel, note_on);
                     }
 
                     dma_send_event(output, event);

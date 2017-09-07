@@ -28,7 +28,7 @@ void dm_event_loop(dm_options* options, dm_midi_output* output,
                    void (*render_callback)(dm_options* options,
                                            dm_key_node* tail,
                                            dm_key_set* key_set),
-                   void (*key_callback)(dm_key_set* key_set, int note_on)) {
+                   void (*key_callback)(int key, int ch, int vel, int on)) {
 #ifdef __APPLE__
 // TODO : implement.
 #elif __linux__

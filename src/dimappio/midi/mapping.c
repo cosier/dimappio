@@ -684,10 +684,10 @@ void dm_tokens_free(dm_tokens* tokens) {
     tokens = NULL;
 }
 
-mm_key_set* dm_key_set_init(int key, int chan) {
-    mm_key_set* ks = dm_key_set_create(1);
-    mm_keylet* keylet = dm_keylet_create(key, chan);
-    keylet->keys[0] = ks;
+dm_key_set* dm_key_set_init(int key, int chan) {
+    dm_key_set* ks = dm_key_set_create(1);
+    dm_keylet* keylet = dm_keylet_create(key, chan);
+    ks->keys[0] = keylet;
     return ks;
 }
 
