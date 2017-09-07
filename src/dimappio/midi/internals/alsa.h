@@ -34,7 +34,8 @@ void dma_send_midi_note(int client, int port, char* note, bool on, int ch,
 void dma_event_loop(dm_options* options, dm_midi_output* output,
                     void (*render_callback)(dm_options* options,
                                             dm_key_node* tail,
-                                            dm_key_set* key_set));
+                                            dm_key_set* key_set),
+                    void (*key_callback)(dm_key_set* keys, int note_on));
 
 int dma_init_sequencer(snd_seq_t** seq, char* name);
 dm_midi_output* dma_midi_output_create(int client, int port);
