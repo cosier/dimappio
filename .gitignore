@@ -8,8 +8,7 @@ Testing
 
 vendor
 vendor/build
-bin/dimappio
-
+src/version.h
 
 # Rtags
 compile_commands.json
