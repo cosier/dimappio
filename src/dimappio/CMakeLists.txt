@@ -27,24 +27,24 @@ if (APPLE)
   find_library( audiounit_lib AudioUnit )
   find_library( audiotoolbox_lib AudioToolbox )
 
-  set( _midi_libs
+  set( MIDI_LIBS
     ${coreaudio_lib}
     ${coremidi_lib}
     ${corefoundation_lib}
     ${audiounit_lib}
     ${audiotoolbox_lib})
 
-  set( _midi_defs __MACOSX_AU__ __MACOSX_CORE__ )
+  set( MIDI_DEFS __MACOSX_AU__ __MACOSX_CORE__ )
 
 elseif (MSVC)
-  set( _midi_libs winmm )
-  set( _midi_defs __WINDOWS_DM__ )
+  set( MIDI_LIBS winmm )
+  set( MIDI_DEFS __WINDOWS_DM__ )
 
 elseif (UNIX)
   find_package( ALSA REQUIRED )
 
-  set( _midi_libs ${ALSA_LIBRARY} pthread )
-  set( _midi_defs __LINUX_ALSA__ )
+  set( MIDI_LIBS ${ALSA_LIBRARY} pthread )
+  set( MIDI_DEFS __LINUX_ALSA__ )
 
 endif ()
 
@@ -55,17 +55,17 @@ find_library( ncurses_lib ncurses )
 target_include_directories( ${APP_LIB_NAME} PUBLIC ../ )
 target_include_directories( ${APP_LIB_NAME} PUBLIC ${VENDOR_INCLUDES} )
 
-target_compile_definitions( ${APP_LIB_NAME} PUBLIC ${_midi_defs} ${APP_DEFS} )
+target_compile_definitions( ${APP_LIB_NAME} PUBLIC ${MIDI_DEFS} ${APP_DEFS} )
 
 target_link_libraries( ${APP_LIB_NAME}
   ${ncurses_lib}
-  ${_midi_libs}
+  ${MIDI_LIBS}
   ubelt
   m)
 
 # Cleanup after ourselves.
-unset( _midi_libs )
-unset( _midi_defs )
+unset( MIDI_LIBS )
+unset( MIDI_DEFS )
 
 install(TARGETS ${APP_LIB_NAME} DESTINATION lib)
 

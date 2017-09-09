@@ -8,7 +8,7 @@ Testing
 
 vendor
 vendor/build
-src/version.h
+version.h
 
 # Rtags
 compile_commands.json
