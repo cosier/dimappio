@@ -129,14 +129,15 @@ void dma_monitor_device(dm_options* options) {
     snd_seq_port_info_free(pinfo);
     free(src);
 
-    dma_event_loop(options, output, &dm_monitor_render);
+    dma_event_loop(options, output, &dm_monitor_render, NULL);
     dm_output_free(output);
 }
 
 void dma_event_loop(dm_options* options, dm_midi_output* output,
                     void (*render_callback)(dm_options* options,
                                             dm_key_node* tail,
-                                            dm_key_set* key_set)) {
+                                            dm_key_set* key_set),
+                    void (*key_callback)(int key, int ch, int vel, int on)) {
 
     int pfds_num =
         snd_seq_poll_descriptors_count(output->dev, POLLIN | POLLOUT);
@@ -144,7 +145,7 @@ void dma_event_loop(dm_options* options, dm_midi_output* output,
 
     dm_key_node* list = dm_key_node_head();
     dm_key_group* grp = NULL;
-    dm_key_set* dsts_set = dm_create_key_set(0);
+    dm_key_set* dsts_set = dm_key_set_create(0);
 
     snd_seq_event_t* event = NULL;
 
@@ -191,11 +192,15 @@ void dma_event_loop(dm_options* options, dm_midi_output* output,
 
                 update_node_list(&list, note_on, midi);
 
-                process_event = dm_event_process(
-                    output, options, list, &dsts_set, midi, chan, vel, note_on);
+                process_event =
+                    dm_event_process(key_callback, output, options, list,
+                                     &dsts_set, midi, chan, vel, note_on);
 
                 if (process_event) {
-                    // event->data.note.channel = 0;
+                    if (key_callback != NULL) {
+                        key_callback(midi, chan, vel, note_on);
+                    }
+
                     dma_send_event(output, event);
                 }
             }

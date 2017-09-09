@@ -496,8 +496,8 @@ dm_key_map* create_key_map(int src, int ich, int och, dm_tokens* src_tokens,
     km->channel_out = och;
     km->id = 0;
 
-    km->src_set = dm_create_key_set(src_tokens->count);
-    km->dst_set = dm_create_key_set(dst_tokens->count);
+    km->src_set = dm_key_set_create(src_tokens->count);
+    km->dst_set = dm_key_set_create(dst_tokens->count);
 
     for (int idst = 0; idst < dst_tokens->count; ++idst) {
         int key = dm_parse_to_midi(dst_tokens->tokens[idst]);
@@ -532,7 +532,7 @@ dm_key_map* create_key_map(int src, int ich, int och, dm_tokens* src_tokens,
     return km;
 }
 
-dm_key_set* dm_create_key_set(int count) {
+dm_key_set* dm_key_set_create(int count) {
     dm_key_set* set = malloc(sizeof(dm_key_set));
     set->keys = calloc(sizeof(dm_keylet*) * count, sizeof(dm_keylet*));
     set->count = count;
@@ -682,6 +682,13 @@ void dm_tokens_free(dm_tokens* tokens) {
     free(tokens->tokens);
     free(tokens);
     tokens = NULL;
+}
+
+dm_key_set* dm_key_set_init(int key, int chan) {
+    dm_key_set* ks = dm_key_set_create(1);
+    dm_keylet* keylet = dm_keylet_create(key, chan);
+    ks->keys[0] = keylet;
+    return ks;
 }
 
 dm_keylet* dm_keylet_create(int key, int ch) {

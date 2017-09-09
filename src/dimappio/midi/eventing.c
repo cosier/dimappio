@@ -3,21 +3,31 @@
 static int note_owners[129] = {0};
 static int active_lookup[129] = {0};
 
-static void release_mapping(dm_midi_output* output, dm_key_set* dst_set) {
+static void release_mapping(void (*key_callback)(int key, int ch, int vel,
+                                                 int on),
+                            dm_midi_output* output, dm_key_set* dst_set) {
     for (int i = 0; i < dst_set->count; i++) {
         dm_keylet* k = dst_set->keys[i];
         dm_send_midi(output, k->key, false, k->ch, 0);
+        if (key_callback != NULL) {
+            key_callback(k->key, k->ch, 0, 0);
+        }
     }
 }
-static void trigger_mapping(dm_midi_output* output, dm_key_set* dst_set,
-                            int vel) {
+static void
+trigger_mapping(void (*key_callback)(int key, int ch, int vel, int on),
+                dm_midi_output* output, dm_key_set* dst_set, int vel) {
     for (int i = 0; i < dst_set->count; i++) {
         dm_keylet* k = dst_set->keys[i];
         dm_send_midi(output, k->key, true, k->ch, vel);
+        if (key_callback != NULL) {
+            key_callback(k->key, k->ch, vel, 1);
+        }
     }
 }
 
-int dm_event_process(dm_midi_output* output, dm_options* options,
+int dm_event_process(void (*key_callback)(int key, int ch, int vel, int on),
+                     dm_midi_output* output, dm_options* options,
                      dm_key_node* list, dm_key_set** active_keyset, int midi,
                      int chan, int vel, int note_on) {
 
@@ -85,7 +95,7 @@ int dm_event_process(dm_midi_output* output, dm_options* options,
                 process_event = 0;
             }
 
-            trigger_mapping(output, new_keys, vel);
+            trigger_mapping(key_callback, output, new_keys, vel);
             dm_combine_key_set(dsts_set, new_keys);
 
         } else if (!note_on) {
@@ -144,7 +154,7 @@ int dm_event_process(dm_midi_output* output, dm_options* options,
                 }
             }
 
-            release_mapping(output, release_keys);
+            release_mapping(key_callback, output, release_keys);
 
             dm_remove_key_set(dsts_set, new_keys);
 

@@ -124,7 +124,7 @@ dm_key_group* create_key_group(dm_mapping* m, int src, int ich, int och,
 dm_key_map* create_key_map(int src, int ich, int och, dm_tokens* src_tokens,
                            dm_tokens* dst_tokens);
 
-dm_key_set* dm_create_key_set(int count);
+dm_key_set* dm_key_set_create(int count);
 
 void update_key_group(dm_key_group* group, int src, int ich, int och,
                       dm_tokens* src_tokens, dm_tokens* dst_tokens);
@@ -139,6 +139,8 @@ dm_tokens* dm_token_split(const char* src, char delim);
 char* dm_tokens_dump(dm_tokens* tokens);
 void dm_tokens_free(dm_tokens* tokens);
 
+dm_key_set* dm_key_set_init(int key, int ch);
 dm_keylet* dm_keylet_create(int key, int ch);
+
 void dm_keylets_free(dm_keylet** k, int c);
 #endif

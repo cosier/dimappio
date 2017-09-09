@@ -27,11 +27,12 @@ void dm_monitor_client(dm_options* options) {
 void dm_event_loop(dm_options* options, dm_midi_output* output,
                    void (*render_callback)(dm_options* options,
                                            dm_key_node* tail,
-                                           dm_key_set* key_set)) {
+                                           dm_key_set* key_set),
+                   void (*key_callback)(int key, int ch, int vel, int on)) {
 #ifdef __APPLE__
 // TODO : implement.
 #elif __linux__
-    dma_event_loop(options, output, render_callback);
+    dma_event_loop(options, output, render_callback, key_callback);
 #endif
 }
 
