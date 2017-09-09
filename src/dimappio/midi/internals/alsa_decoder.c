@@ -1,4 +1,4 @@
-#include "midi/internals/alsa_decoder.h"
+#include "dimappio/midi/internals/alsa_decoder.h"
 
 char* dma_event_decoder(MIDIEvent* ev) {
     char* buf = malloc(sizeof(char) * 128);

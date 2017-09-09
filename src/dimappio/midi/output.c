@@ -1,4 +1,4 @@
-#include "midi/output.h"
+#include "dimappio/midi/output.h"
 
 void dm_output_free(dm_midi_output* output) {
     // for (int i = 0; i < output->out_count; ++i) {

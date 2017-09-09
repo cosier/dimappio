@@ -3,8 +3,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "core.h"
-#include "version.h"
+#include "dimappio/core.h"
+#include "dimappio/version.h"
 
 void print_usage() {
     printf("Usage: dimappio [options] [Mapping]\n\n");

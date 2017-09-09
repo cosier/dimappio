@@ -1,4 +1,4 @@
-#include "midi/parser.h"
+#include "dimappio/midi/parser.h"
 
 static const char* SHARPS[12] = {"C",  "C#", "D",  "D#", "E",  "F",
                                  "F#", "G",  "G#", "A",  "A#", "B"};

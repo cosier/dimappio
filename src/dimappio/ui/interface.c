@@ -1,4 +1,4 @@
-#include "ui/interface.h"
+#include "dimappio/ui/interface.h"
 
 static void ui_startup() {
     initscr(); /* Start curses mode 		  */

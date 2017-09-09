@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "midi/parser.h"
+#include "dimappio/midi/parser.h"
 #include <ubelt/utils.h>
 
 struct dm_key_map;

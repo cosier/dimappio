@@ -1,4 +1,4 @@
-#include "midi/mapping.h"
+#include "dimappio/midi/mapping.h"
 
 /**
  * Dumps a description of a mapping to the provided char buffer

@@ -1,4 +1,4 @@
-#include "device.h"
+#include "dimappio/midi/device.h"
 
 void dm_devices_free(dm_devices* devices) {
     for (int i = 0; i < devices->count; ++i) {

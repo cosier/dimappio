@@ -1,0 +1,5 @@
+#define DM_VERSION_MAJOR "0"
+#define DM_VERSION_MINOR "2"
+#define DM_VERSION_PATCH "0"
+#define DM_VERSION_BUILD "c0681d4"
+#define DM_VERSION_DATE "Sat Sep  9 23:51:18 +07 2017"

@@ -1,4 +1,4 @@
-#include "options.h"
+#include "dimappio/options.h"
 
 dm_options* dm_create_options() {
     dm_options* options = malloc(sizeof(dm_options));

@@ -6,6 +6,7 @@ ROOT=$( cd $DIR/../ && pwd )
 
 $ROOT/bin/clean.sh
 mkdir -p $ROOT/build && cd $ROOT/build;
+DEBUG=${DEBUG:-}
 
 if [[ "$DEBUG" == true ]]; then
   BUILD=Debug

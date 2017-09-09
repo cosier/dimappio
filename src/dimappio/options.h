@@ -1,7 +1,7 @@
 #ifndef DM_OPTIONS_H
 #define DM_OPTIONS_H
 
-#include "midi/mapping.h"
+#include "dimappio/midi/mapping.h"
 
 typedef struct dm_options {
     dm_mapping* mapping;

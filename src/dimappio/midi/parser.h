@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "midi/device.h"
-#include "midi/notes.h"
+#include "dimappio/midi/device.h"
+#include "dimappio/midi/notes.h"
 #include <ubelt/utils.h>
 
 dm_device* dm_parse_device(char* client_with_port);

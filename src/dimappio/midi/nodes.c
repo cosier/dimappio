@@ -1,4 +1,4 @@
-#include "midi/nodes.h"
+#include "dimappio/midi/nodes.h"
 
 dm_key_node* dm_key_node_create(int key) {
     dm_key_node* n = malloc(sizeof(dm_key_node));

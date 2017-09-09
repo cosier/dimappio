@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "midi/nodes.h"
-#include "midi/parser.h"
+#include "dimappio/midi/nodes.h"
+#include "dimappio/midi/parser.h"
 #include <ubelt/utils.h>
 
 #define MAX_MIDI_NOTES 128

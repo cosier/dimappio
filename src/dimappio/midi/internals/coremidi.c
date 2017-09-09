@@ -1,5 +1,5 @@
 #ifdef __APPLE__
-#include "midi/internals/coremidi.h"
+#include "dimappio/internals/coremidi.h"
 #include <stdlib.h>
 
 void dm_midi_read_proc(const MIDIPacketList* pktlist, void* refCon,

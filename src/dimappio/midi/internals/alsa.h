@@ -8,16 +8,16 @@
 #include <stdlib.h>
 #include <sys/poll.h>
 
-#include "midi/device.h"
-#include "midi/eventing.h"
-#include "midi/internals/alsa_decoder.h"
-#include "midi/mapping.h"
-#include "midi/monitor.h"
-#include "midi/nodes.h"
-#include "midi/output.h"
-#include "midi/parser.h"
+#include "dimappio/midi/device.h"
+#include "dimappio/midi/eventing.h"
+#include "dimappio/midi/internals/alsa_decoder.h"
+#include "dimappio/midi/mapping.h"
+#include "dimappio/midi/monitor.h"
+#include "dimappio/midi/nodes.h"
+#include "dimappio/midi/output.h"
+#include "dimappio/midi/parser.h"
 
-#include "options.h"
+#include "dimappio/options.h"
 #include <ubelt/utils.h>
 
 typedef snd_seq_t dm_midi_device;

@@ -1,4 +1,4 @@
-#include "driver.h"
+#include "dimappio/midi/driver.h"
 
 dm_devices* dm_get_devices() {
 #ifdef __APPLE__

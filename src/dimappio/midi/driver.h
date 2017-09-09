@@ -3,13 +3,13 @@
 
 #include <ctype.h>
 
-#include "midi/device.h"
-#include "midi/internals/alsa.h"
-#include "midi/internals/coremidi.h"
-#include "midi/internals/winmm.h"
-#include "midi/mapping.h"
-#include "midi/output.h"
-#include "options.h"
+#include "dimappio/midi/device.h"
+#include "dimappio/midi/internals/alsa.h"
+#include "dimappio/midi/internals/coremidi.h"
+#include "dimappio/midi/internals/winmm.h"
+#include "dimappio/midi/mapping.h"
+#include "dimappio/midi/output.h"
+#include "dimappio/options.h"
 
 #include <ubelt/utils.h>
 

@@ -12,14 +12,7 @@ set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 # Below we iterate and remove any tmp files that
 # Would otherwise break the Make build system.
 file(GLOB_RECURSE SRC_LIB *.c *.h)
-
-# Remove tmp files from source tree
-foreach ( PATH ${SRC_LIB} )
-  string (FIND ${PATH} "#" FOUND)
-  if (NOT ${FOUND} EQUAL -1)
-    list ( REMOVE_ITEM SRC_LIB ${PATH} )
-  endif()
-endforeach( PATH )
+file(GLOB_RECURSE HEADERS *.h)
 
 # Setup 2 targets for build output.
 # 1. A library for ... library reuse.
@@ -39,8 +32,7 @@ if (APPLE)
     ${coremidi_lib}
     ${corefoundation_lib}
     ${audiounit_lib}
-    ${audiotoolbox_lib}
-    )
+    ${audiotoolbox_lib})
 
   set( _midi_defs __MACOSX_AU__ __MACOSX_CORE__ )
 
@@ -60,19 +52,36 @@ endif ()
 find_library( ncurses_lib ncurses )
 
 # Link Library support: libdimappio
-target_include_directories( ${APP_LIB_NAME} PUBLIC ./ )
+target_include_directories( ${APP_LIB_NAME} PUBLIC ../ )
 target_include_directories( ${APP_LIB_NAME} PUBLIC ${VENDOR_INCLUDES} )
 
 target_compile_definitions( ${APP_LIB_NAME} PUBLIC ${_midi_defs} ${APP_DEFS} )
 
 target_link_libraries( ${APP_LIB_NAME}
-  m
-  ubelt
+  ${ncurses_lib}
   ${_midi_libs}
-  ${ncurses_lib} )
+  ubelt
+  m)
 
 # Cleanup after ourselves.
 unset( _midi_libs )
 unset( _midi_defs )
+
+install(TARGETS ${APP_LIB_NAME} DESTINATION lib)
+
+# Macro to preserve header directory structure
+MACRO(INSTALL_HEADERS_WITH_DIRECTORY ROOT HEADER_LIST)
+  FOREACH(HEADER ${${HEADER_LIST}})
+    STRING(REPLACE "${ROOT}/src" "" HFILE ${HEADER})
+    STRING(REGEX REPLACE "\\/(.*)\\/(.*)\\.h" "\\1" DIR   ${HFILE})
+    # message(STATUS "\n HFILE: ${HFILE}")
+    # message(STATUS "\n   DIR: ${DIR}\n")
+
+    INSTALL(FILES ${HEADER} DESTINATION include/${DIR})
+  ENDFOREACH(HEADER)
+ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
+
+INSTALL_HEADERS_WITH_DIRECTORY(${APP_ROOT} HEADERS)
+# install(FILES ${HEADERS} DESTINATION include/dimappio)
 
 

@@ -1,4 +1,4 @@
-#include "midi/monitor.h"
+#include "dimappio/midi/monitor.h"
 
 static char* COLOUR_SHARP = BGBLACK;
 static char* COLOUR_KEY = BGGREY1;

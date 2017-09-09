@@ -36,8 +36,7 @@ set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wno-unused-function")
 set( APP_DEFS _DEBUG_ )
 
 set( VENDOR ${APP_ROOT}/vendor)
-set( VENDOR_INCLUDES
-  ${VENDOR}/ubelt/src)
+set( VENDOR_INCLUDES "")
 
 include_directories(${APP_ROOT}/src ${VENDOR_INCLUDES})
 enable_testing ()
@@ -50,5 +49,4 @@ add_subdirectory("vendor/ubelt")
 
 configure_file (
   "${APP_ROOT}/src/version.h.in"
-  "${APP_ROOT}/src/version.h"
-)
+  "${APP_ROOT}/src/dimappio/version.h")

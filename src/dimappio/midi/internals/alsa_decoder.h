@@ -4,7 +4,7 @@
 
 #include <alsa/asoundlib.h>
 
-#include "midi/internals/alsa.h"
+#include "dimappio/midi/internals/alsa.h"
 #include <ubelt/utils.h>
 
 typedef snd_seq_event_t MIDIEvent;

@@ -10,7 +10,7 @@
 
 #include <AudioToolbox/AudioToolbox.h>
 
-#include "midi/driver.h"
+#include "dimappio/driver.h"
 #include <ubelt/utils.h>
 
 typedef struct Device {
