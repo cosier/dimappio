@@ -32,7 +32,9 @@ if [[ "$BUILD_REVISION" == "" ]]; then
 fi
 
 echo
-echo -e " BUILD_TYPE::     $BUILD_TYPE"
+echo -e " APP_LIB_NAME:    $APP_LIB_NAME"
+echo -e " APP_EXE_NAME:    $APP_EXE_NAME"
+echo -e " BUILD_TYPE:      $BUILD_TYPE"
 echo -e " BUILD_REVISION:  $BUILD_REVISION "
 echo -e " BUILD_TIMESTAMP: $BUILD_TIMESTAMP"
 echo -e "-------------------------------------\n"
