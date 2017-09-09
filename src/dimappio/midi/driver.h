@@ -11,7 +11,7 @@
 #include "midi/output.h"
 #include "options.h"
 
-#include "utils.h"
+#include <ubelt/utils.h>
 
 extern bool dm_driver_debug_mode;
 

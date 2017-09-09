@@ -4,6 +4,7 @@
 #include "midi/mapping.h"
 #include "midi/nodes.h"
 #include "options.h"
+#include <ubelt/colors.h>
 
 void dm_monitor_render(dm_options* options, dm_key_node* tail,
                        dm_key_set* key_set);

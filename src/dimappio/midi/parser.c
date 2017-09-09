@@ -32,7 +32,7 @@ static bool is_char_number(unsigned ch) {
 
 int dm_parse_to_midi(char* input) {
     if (input == NULL) {
-        error("Bad midi input: NULL");
+        util_error("Bad midi input: NULL");
         return -1;
     }
 
@@ -113,11 +113,11 @@ int dm_parse_to_midi(char* input) {
     }
 
     if (midi < 0) {
-        error("parser: midi(%d) less than zero.\n\n", midi);
+        util_error("parser: midi(%d) less than zero.\n\n", midi);
         return 0;
 
     } else if (midi > 127) {
-        error("parser: midi(%d) greater than 127\n\n", midi);
+        util_error("parser: midi(%d) greater than 127\n\n", midi);
         return 127;
     }
 
@@ -146,27 +146,28 @@ char* dm_note_print(dm_note* n) {
 }
 
 dm_device* dm_parse_device(char* str) {
-    dm_debug("parser: dm_parse_device(%s)\n", str);
+    util_debug("parser: dm_parse_device(%s)\n", str);
     dm_device* dev = malloc(sizeof(dm_device) * 1);
 
-    dm_debug("parser: dm_parse_device malloc success\n");
+    util_debug("parser: dm_parse_device malloc success\n");
     dev->client = 0;
     dev->port = 0;
 
     if (strstr(str, ":") == NULL) {
-        error("client_with_port(%s) does not contain \":\" delimiter", str);
+        util_error("client_with_port(%s) does not contain \":\" delimiter",
+                   str);
         return NULL;
     }
 
     char* container;
     str = strdup(str);
-    dm_debug("parser: dm_parse_device: attempting to strtok_r\n");
+    util_debug("parser: dm_parse_device: attempting to strtok_r\n");
     char* token = strtok_r(str, ":", &container);
 
     if (token != NULL) {
         dev->client = atoi(token);
     } else {
-        error("parsing of (%s) failed due to client token", str);
+        util_error("parsing of (%s) failed due to client token", str);
     }
 
     token = strtok_r(NULL, "", &container);
@@ -174,10 +175,10 @@ dm_device* dm_parse_device(char* str) {
     if (token != NULL) {
         dev->port = atoi(token);
     } else {
-        error("parsing of (%s) failed due to port token", str);
+        util_error("parsing of (%s) failed due to port token", str);
     }
 
     free(str);
-    dm_debug("parser: dma_parse_device: success\n");
+    util_debug("parser: dma_parse_device: success\n");
     return dev;
 }

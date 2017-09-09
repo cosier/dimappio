@@ -6,7 +6,7 @@
 
 #include "midi/nodes.h"
 #include "midi/parser.h"
-#include "utils.h"
+#include <ubelt/utils.h>
 
 #define MAX_MIDI_NOTES 128
 #define MAX_GROUPED_KEY_MAPS 16

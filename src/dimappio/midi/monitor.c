@@ -1,5 +1,4 @@
 #include "midi/monitor.h"
-#include "colours.h"
 
 static char* COLOUR_SHARP = BGBLACK;
 static char* COLOUR_KEY = BGGREY1;
@@ -12,7 +11,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
                        dm_key_set* key_set) {
 
     if (options->first) {
-        dm_debug("dm_monitor_render() : called for the first time\n");
+        util_debug("dm_monitor_render() : called for the first time\n");
         // Buffer the terminal for the preceeding dm_clear()
         printf("\n\n\n");
         options->first = 0;
@@ -40,7 +39,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
         midi_start = 0;
     }
 
-    // dm_debug("midi_start(%d)\n", midi_start);
+    // util_debug("midi_start(%d)\n", midi_start);
 
     ++clear_count;
     if (options->mapping->group_count) {
@@ -55,7 +54,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
     piano[1] = '\0';
 
     if (key_set != NULL && key_set->count > 0) {
-        /* dm_debug("\nRendering key_set(%d)\n", key_set->count); */
+        /* util_debug("\nRendering key_set(%d)\n", key_set->count); */
         strcat(mkeys, " -> ");
         strcat(mkeys, CYAN);
         for (int i = 0; i < key_set->count; ++i) {
@@ -71,7 +70,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
         strcat(mkeys, RESET);
     }
 
-    dm_clear(clear_count);
+    util_clear(clear_count);
     dm_key_node_list* list = dm_key_node_get_list(tail);
 
     if (list->size > 0) {

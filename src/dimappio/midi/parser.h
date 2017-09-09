@@ -11,7 +11,7 @@
 
 #include "midi/device.h"
 #include "midi/notes.h"
-#include "utils.h"
+#include <ubelt/utils.h>
 
 dm_device* dm_parse_device(char* client_with_port);
 dm_note* dm_midi_to_note(int midi, bool sharp);

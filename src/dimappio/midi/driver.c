@@ -81,7 +81,7 @@ dm_device* dm_get_midi_through() {
             free(name);
 
             if (match != NULL) {
-                // dm_debug("dm_get_midi_through: found it: %s\n",
+                // util_debug("dm_get_midi_through: found it: %s\n",
                 //          devices->store[i]->name);
                 int client = devices->store[i]->client;
                 int port = devices->store[i]->port;
@@ -95,13 +95,13 @@ dm_device* dm_get_midi_through() {
             } else {
                 // printf("dm_get_midi_through(): device not matched: %s\n",
                 //        devices->store[i]->name);
-                dm_debug("dm_get_midi_through: not a match: %s\n",
-                         devices->store[i]->name);
+                util_debug("dm_get_midi_through: not a match: %s\n",
+                           devices->store[i]->name);
             }
         }
     }
 
-    dm_debug("dm_get_midi_through: not found\n");
+    util_debug("dm_get_midi_through: not found\n");
     dm_devices_free(devices);
     return NULL;
 }

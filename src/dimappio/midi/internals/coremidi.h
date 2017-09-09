@@ -11,7 +11,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 
 #include "midi/driver.h"
-#include "utils.h"
+#include <ubelt/utils.h>
 
 typedef struct Device {
     char* name;

@@ -61,6 +61,7 @@ find_library( ncurses_lib ncurses )
 
 # Link Library support: libdimappio
 target_include_directories( ${APP_LIB_NAME} PUBLIC ./ )
+target_include_directories( ${APP_LIB_NAME} PUBLIC ${VENDOR_INCLUDES} )
 
 target_compile_definitions( ${APP_LIB_NAME} PUBLIC ${_midi_defs} ${APP_DEFS} )
 

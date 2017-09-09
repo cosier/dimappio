@@ -37,17 +37,17 @@ int dm_event_process(void (*key_callback)(int key, int ch, int vel, int on),
 
     // acquire ownership of self key
     if (note_owners[midi] < 0) {
-        dm_debug("initialising note_owners[midi] = %d\n", midi);
+        util_debug("initialising note_owners[midi] = %d\n", midi);
         note_owners[midi] = midi;
 
     } else if (note_owners[midi] != midi) {
-        dm_debug("could not initialise note_owners[midi] because: "
-                 "%d != %d\n",
-                 note_owners[midi], midi);
+        util_debug("could not initialise note_owners[midi] because: "
+                   "%d != %d\n",
+                   note_owners[midi], midi);
     }
 
     if (grp != NULL) {
-        // dm_debug("event_loop: mappings for event "
+        // util_debug("event_loop: mappings for event "
         //          "(midi:%d, note_on: %d, note_off: %d)\n",
         //          midi, note_on, note_off);
 
@@ -59,7 +59,7 @@ int dm_event_process(void (*key_callback)(int key, int ch, int vel, int on),
 
         char* key_dump = dm_key_set_dump(new_keys);
 
-        dm_debug("[%d]key(%d)\n%s\n", chan, midi, key_dump);
+        util_debug("[%d]key(%d)\n%s\n", chan, midi, key_dump);
         free(key_dump);
 
         if (note_on) {
@@ -82,9 +82,9 @@ int dm_event_process(void (*key_callback)(int key, int ch, int vel, int on),
             for (int i = 0; i < 129; ++i) {
                 if (remove_hits[i] == 5) {
                     remove_hits[i] = 0;
-                    dm_debug("removing single_key due to active "
-                             "hit: %d\n",
-                             i);
+                    util_debug("removing single_key due to active "
+                               "hit: %d\n",
+                               i);
                     dm_key_set_remove_single_key(new_keys, i);
                 }
             }
@@ -178,12 +178,12 @@ int dm_event_process(void (*key_callback)(int key, int ch, int vel, int on),
             // apply checks to determine if we can release or not,
             // due to any other active mappings at this moment.
             if (note_owners[midi] != midi) {
-                dm_debug("cannot release note_off because: %d != %d\n", midi,
-                         note_owners[midi]);
+                util_debug("cannot release note_off because: %d != %d\n", midi,
+                           note_owners[midi]);
                 process_event = 0;
             } else {
                 note_owners[midi] = -1;
-                dm_debug("released note_owners[midi] = -1\n");
+                util_debug("released note_owners[midi] = -1\n");
             }
 
             active_lookup[midi] = 0;

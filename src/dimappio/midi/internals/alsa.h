@@ -18,7 +18,7 @@
 #include "midi/parser.h"
 
 #include "options.h"
-#include "utils.h"
+#include <ubelt/utils.h>
 
 typedef snd_seq_t dm_midi_device;
 

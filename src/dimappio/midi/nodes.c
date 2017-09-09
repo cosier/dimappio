@@ -86,8 +86,9 @@ dm_key_node* dm_key_node_search(dm_key_node** tail, int key) {
     dm_key_node* handle = *tail;
 
     if (handle == NULL) {
-        error("dm_key_node_search: handle is null, cannot possibly search for "
-              "a key node!");
+        util_error(
+            "dm_key_node_search: handle is null, cannot possibly search for "
+            "a key node!");
         return NULL;
     }
 
@@ -98,7 +99,7 @@ dm_key_node* dm_key_node_search(dm_key_node** tail, int key) {
     int start = handle->key;
     dm_key_node* it = handle->next;
     if (it == NULL) {
-        error("dm_key_node_search: invalid list iterator");
+        util_error("dm_key_node_search: invalid list iterator");
         return NULL;
     }
 
@@ -128,7 +129,8 @@ dm_key_node* dm_key_node_search(dm_key_node** tail, int key) {
         return it;
     }
 
-    /* error("dm_key_node_search: search for (%d) was unsuccessful", key); */
+    /* util_error("dm_key_node_search: search for (%d) was unsuccessful", key);
+     */
     return NULL;
 }
 

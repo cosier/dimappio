@@ -213,9 +213,9 @@ int main(int argc, char** argv) {
                 break;
             }
 
-            dm_cat(&cat_ptr, arg_str);
+            util_cat(&cat_ptr, arg_str);
             if (i < (opts - 1)) {
-                dm_cat(&cat_ptr, ", ");
+                util_cat(&cat_ptr, ", ");
             }
         }
         mapsrc = mapbuf;
@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
     // Flip global debug flag.
     if (debug) {
         dm_driver_debug();
-        dm_debug("\033c[dimappio started]: %lu\n", dm_micros());
+        util_debug("\033c[dimappio started]: %lu\n", util_micros());
     }
 
     // Version output and then exit.
@@ -269,13 +269,13 @@ int main(int argc, char** argv) {
 
     // Send a midi note to a specific client.
     if (send_note != NULL) {
-        dm_debug("main: attempting to send midi note");
+        util_debug("main: attempting to send midi note");
         if (target == NULL) {
             requires_target_specified("send");
         }
 
         dm_device* cp = dm_parse_device(target);
-        dm_debug("main: sending midi note to: %s", target);
+        util_debug("main: sending midi note to: %s", target);
         dm_send_midi_to_client(cp->client, cp->port, send_note, note_on,
                                note_ch, note_vel);
         return 0;
@@ -293,22 +293,22 @@ int main(int argc, char** argv) {
         }
 
         // Build mappings from a comma delimited string.
-        dm_debug("main: attempting to build mappings from list using: %s\n",
-                 mapsrc);
+        util_debug("main: attempting to build mappings from list using: %s\n",
+                   mapsrc);
         mapping = dm_mapping_from_list(mapsrc);
         // free(mapsrc);
     } else {
-        dm_debug("main: building solo mappings\n");
+        util_debug("main: building solo mappings\n");
         mapping = dm_build_mapping();
     }
 
     if (mapping == NULL) {
-        error("Invalid Mapping provided\n");
+        util_error("Invalid Mapping provided\n");
         printf("-----------------------------------\n");
         print_usage();
         exit(EXIT_FAILURE);
     } else {
-        dm_debug("main: mappings created successfully\n");
+        util_debug("main: mappings created successfully\n");
     }
 
     if (mapping->group_count) {
@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
             requires_source_specified("monitor");
         }
 
-        dm_debug("main: attempting to monitor client\n");
+        util_debug("main: attempting to monitor client\n");
         dm_monitor_client(options);
         exit(EXIT_SUCCESS);
     }

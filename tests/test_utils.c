@@ -11,8 +11,8 @@ void test_cats() {
     char* buf = malloc(sizeof(char) * bsize);
     char* ptr = buf;
 
-    dm_cat(&ptr, "Kitty");
-    dm_cat(&ptr, "Cat");
+    util_cat(&ptr, "Kitty");
+    util_cat(&ptr, "Cat");
     printf("buf: %s\n", buf);
 
     assert(strcmp(buf, "KittyCat") == 0);
