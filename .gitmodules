@@ -1,0 +1,3 @@
+[submodule "vendor/ubelt"]
+	path = vendor/ubelt
+	url = git@github.com:cosier/ubelt

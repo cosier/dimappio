@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BIN="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT=$( cd $BIN/../ && pwd )
+source $BIN/vars.sh
 
 function block_for_change() {
   inotifywait -q -r \
@@ -10,10 +10,10 @@ function block_for_change() {
 }
 
 # Run initially
-$ROOT/bin/run clean build $@
+$BIN/run.sh clean build $@
 
 # Now block and watch
 while block_for_change; do
   echo "File changed: $filename"
-  $ROOT/bin/run clean build $@
+  $BIN/run.sh clean build $@
 done

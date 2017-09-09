@@ -1,9 +1,13 @@
 #!/bin/bash
+# Format source code in the entire tree based on clang-format
+set -euf -o pipefail
 
 DIR="$( cd  "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT=$( cd $DIR/../ && pwd )
+source $BIN/vars.sh
+
 SRC=$ROOT/src
 
+# Function to take input from stdout in the proceeding pipe
 cfmt() {
   declare INPUT=${@:-$(</dev/stdin)}
   for f in $INPUT; do

@@ -28,3 +28,8 @@ target_link_libraries( test-key-maps dimappio test_helper)
 target_link_libraries( test-key-nodes dimappio test_helper)
 target_link_libraries( test-note-parser dimappio test_helper)
 
+add_test(NAME test-utils COMMAND test-utils)
+add_test(NAME test-key-maps COMMAND test-key-maps)
+add_test(NAME test-key-nodes COMMAND test-key-nodes)
+add_test(NAME test-note-parser COMMAND test-note-parser)
+
