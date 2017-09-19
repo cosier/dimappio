@@ -183,63 +183,63 @@ char* dma_char_port_types(unsigned index) {
     char* types = malloc(256 * sizeof(char));
     types[0] = '\0';
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_SPECIFIC)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_SPECIFIC)) {
         sprintf(types, "SPECIFIC");
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GENERIC)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GENERIC)) {
         sprintf(types, "%s, MIDI_GENERIC", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GM)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GM)) {
         sprintf(types, "%s, MMIDI_GM", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GS)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GS)) {
         sprintf(types, "%s, MIDI_GS", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_XG)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_XG)) {
         sprintf(types, "%s, MIDI_XG", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_MT32)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_MT32)) {
         sprintf(types, "%s, MIDI_MT32", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GM2)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_MIDI_GM2)) {
         sprintf(types, "%s, MIDI_GM2", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_SYNTH)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_SYNTH)) {
         sprintf(types, "%s, SYNTH", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_DIRECT_SAMPLE)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_DIRECT_SAMPLE)) {
         sprintf(types, "%s, DIRECT_SAMPLE", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_SAMPLE)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_SAMPLE)) {
         sprintf(types, "%s, SAMPLE", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_HARDWARE)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_HARDWARE)) {
         sprintf(types, "%s, HARDWARE", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_SOFTWARE)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_SOFTWARE)) {
         sprintf(types, "%s, SOFTWARE", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_SYNTHESIZER)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_SYNTHESIZER)) {
         sprintf(types, "%s, SYNTHESIZER", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_PORT)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_PORT)) {
         sprintf(types, "%s, PORT", types);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_TYPE_APPLICATION)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_TYPE_APPLICATION)) {
         sprintf(types, "%s, APPLICATION", types);
     }
 
@@ -250,35 +250,35 @@ char* dma_char_port_capabilities(unsigned index) {
     char* caps = malloc(256 * sizeof(char));
     caps[0] = '\0';
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_READ)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_READ)) {
         sprintf(caps, "READ");
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_WRITE)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_WRITE)) {
         sprintf(caps, "%s, WRITE", caps);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_SYNC_READ)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_SYNC_READ)) {
         sprintf(caps, "%s, SYNC_READ", caps);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_SYNC_WRITE)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_SYNC_WRITE)) {
         sprintf(caps, "%s, SYNC_WRITE", caps);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_DUPLEX)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_DUPLEX)) {
         sprintf(caps, "%s, DUPLEX", caps);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_SUBS_READ)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_SUBS_READ)) {
         sprintf(caps, "%s, SUBS_READ", caps);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_SUBS_READ)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_SUBS_READ)) {
         sprintf(caps, "%s, SUBS_WRITE", caps);
     }
 
-    if (util_contains_bit(index, SND_SEQ_PORT_CAP_NO_EXPORT)) {
+    if (ub_contains_bit(index, SND_SEQ_PORT_CAP_NO_EXPORT)) {
         sprintf(caps, "%s, NO_EXPORT", caps);
     }
 

@@ -11,7 +11,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
                        dm_key_set* key_set) {
 
     if (options->first) {
-        util_debug("dm_monitor_render() : called for the first time\n");
+        ub_debug("dm_monitor_render() : called for the first time\n");
         // Buffer the terminal for the preceeding dm_clear()
         printf("\n\n\n");
         options->first = 0;
@@ -39,7 +39,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
         midi_start = 0;
     }
 
-    // util_debug("midi_start(%d)\n", midi_start);
+    // ub_debug("midi_start(%d)\n", midi_start);
 
     ++clear_count;
     if (options->mapping->group_count) {
@@ -54,7 +54,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
     piano[1] = '\0';
 
     if (key_set != NULL && key_set->count > 0) {
-        /* util_debug("\nRendering key_set(%d)\n", key_set->count); */
+        /* ub_debug("\nRendering key_set(%d)\n", key_set->count); */
         strcat(mkeys, " -> ");
         strcat(mkeys, CYAN);
         for (int i = 0; i < key_set->count; ++i) {
@@ -70,7 +70,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
         strcat(mkeys, RESET);
     }
 
-    util_clear(clear_count);
+    ub_clear(clear_count);
     dm_key_node_list* list = dm_key_node_get_list(tail);
 
     if (list->size > 0) {
@@ -79,7 +79,7 @@ void dm_monitor_render(dm_options* options, dm_key_node* tail,
                mkeys);
         free(notes);
     } else {
-        printf("\n%s♬  NOTES:%s Waiting for MIDI input... \n\n", BLUE, RESET);
+        printf("\n%s♬  NOTES:%s\n\n", BLUE, RESET);
     }
 
     // Iterated currently active dm_key_node(s) into a lookup hit table

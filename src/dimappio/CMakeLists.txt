@@ -60,7 +60,7 @@ target_compile_definitions( ${APP_LIB_NAME} PUBLIC ${MIDI_DEFS} ${APP_DEFS} )
 target_link_libraries( ${APP_LIB_NAME}
   ${ncurses_lib}
   ${MIDI_LIBS}
-  ubelt
+  ubeltx
   m)
 
 # Cleanup after ourselves.

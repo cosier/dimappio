@@ -27,7 +27,7 @@ void assert_mapping_list(char* list, int ich, int och, int groups,
         dm_key_group* grp = mapping->mapped[i];
 
         if (grp == NULL) {
-            util_error("mapping->group_count: %d/%d", i, mapping->group_count);
+            ub_error("mapping->group_count: %d/%d", i, mapping->group_count);
         }
 
         assert(grp != NULL);

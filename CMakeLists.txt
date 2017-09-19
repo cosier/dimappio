@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
-set (APP_LIB_NAME dimappio)
-set (APP_EXE_NAME dmappio)
+set (APP_LIB_NAME dimappiox)
+set (APP_EXE_NAME dimappio)
 
 set (APP_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 

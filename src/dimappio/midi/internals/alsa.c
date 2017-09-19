@@ -96,7 +96,7 @@ snd_seq_port_info_t* dma_get_port_info(dm_device* dev) {
 
     } else {
         snd_seq_port_info_free(pinfo);
-        util_debug("Client(%d) port not found(%d)", dev->client, dev->port);
+        ub_debug("Client(%d) port not found(%d)", dev->client, dev->port);
         return NULL;
     }
 }
@@ -105,11 +105,11 @@ void dma_monitor_device(dm_options* options) {
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
-    util_debug("alsa: dma_monitor_device: setting up src\n");
+    ub_debug("alsa: dma_monitor_device: setting up src\n");
     dm_device* src = dm_parse_device(options->source);
     options->source = NULL;
 
-    util_debug("alsa: dma_monitor_device: attempting to query port_info\n");
+    ub_debug("alsa: dma_monitor_device: attempting to query port_info\n");
     snd_seq_port_info_t* pinfo = dma_get_port_info(src);
     const char* pname = snd_seq_port_info_get_name(pinfo);
 
@@ -117,14 +117,14 @@ void dma_monitor_device(dm_options* options) {
     dm_midi_output* output = dma_midi_output_create(src->client, src->port);
 
     if (options->target != NULL) {
-        util_debug("alsa: dma_monitor_device: setting up receiver\n");
+        ub_debug("alsa: dma_monitor_device: setting up receiver\n");
         dm_device* receiver = dm_parse_device(options->target);
         options->target = NULL;
         dma_send_events_to(output, receiver->client, receiver->port);
         free(receiver);
     }
 
-    util_debug("alsa: dma_monitor_device: attempting to enter event loop\n");
+    ub_debug("alsa: dma_monitor_device: attempting to enter event loop\n");
 
     snd_seq_port_info_free(pinfo);
     free(src);
@@ -313,7 +313,7 @@ dm_midi_output* dma_midi_output_create(int input_client, int input_port) {
 int dma_init_sequencer(snd_seq_t** seq, char* name) {
     int status;
     if ((status = snd_seq_open(seq, "default", SND_SEQ_OPEN_DUPLEX, 0)) < 0) {
-        util_error("Could not open sequencer: %s", snd_strerror(status));
+        ub_error("Could not open sequencer: %s", snd_strerror(status));
         exit(EXIT_FAILURE);
     }
 
@@ -407,8 +407,8 @@ static void update_node_list(dm_key_node** tail, int note_on, int midi) {
 
 static void check_snd(char* desc, int err) {
     if (err < 0) {
-        util_error("Alsa Subsystem util_error: failed to %s because %s", desc,
-                   snd_strerror(err));
+        ub_error("Alsa Subsystem ub_error: failed to %s because %s", desc,
+                 snd_strerror(err));
         exit(EXIT_FAILURE);
     }
 }

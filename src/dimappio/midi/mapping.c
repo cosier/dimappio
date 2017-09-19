@@ -5,7 +5,7 @@
  */
 void dm_mapping_dump(dm_mapping* mapping, char* buf) {
     if (mapping == NULL) {
-        util_error("Mappings Null");
+        ub_error("Mappings Null");
         return;
     }
 
@@ -38,14 +38,14 @@ void dm_key_map_dump(dm_key_map* k, char* buf) {
     char* ptr = buf;
     sprintf(id, "%05d:ch%d", k->id, k->channel_in);
     // retun;
-    util_cat(&ptr, "\n • ");
-    util_cat(&ptr, id);
+    ub_cat(&ptr, "\n • ");
+    ub_cat(&ptr, id);
     free(id);
 
-    util_cat(&ptr, RED);
+    ub_cat(&ptr, RED);
 
     if (k->src_set->count > 1) {
-        util_cat(&ptr, " ");
+        ub_cat(&ptr, " ");
 
         for (int isrc = 0; isrc < k->src_set->count; ++isrc) {
             char* note_display_buf = malloc(sizeof(char*) * 6);
@@ -53,44 +53,44 @@ void dm_key_map_dump(dm_key_map* k, char* buf) {
             char* display2 = dm_midi_to_note_display(key);
             snprintf(note_display_buf, 6, "%s", display2);
 
-            util_cat(&ptr, note_display_buf);
+            ub_cat(&ptr, note_display_buf);
             if (isrc < k->src_set->count - 1) {
-                util_cat(&ptr, ", ");
+                ub_cat(&ptr, ", ");
             }
 
             free(display2);
             free(note_display_buf);
         }
 
-        util_cat(&buf, RESET);
-        util_cat(&buf, "->");
+        ub_cat(&buf, RESET);
+        ub_cat(&buf, "->");
 
     } else {
         char* widthbuf = calloc(sizeof(char) * 4, sizeof(char));
         char* display = dm_midi_to_note_display(k->key);
         snprintf(widthbuf, 4, "%3s", display);
-        util_cat(&ptr, widthbuf);
+        ub_cat(&ptr, widthbuf);
         free(display);
         free(widthbuf);
 
-        util_cat(&ptr, RESET);
-        util_cat(&ptr, " ->");
+        ub_cat(&ptr, RESET);
+        ub_cat(&ptr, " ->");
     }
 
-    util_cat(&ptr, CYAN);
+    ub_cat(&ptr, CYAN);
     for (int di = 0; di < k->dst_set->count; ++di) {
         char* display3 = dm_midi_to_note_display(k->dst_set->keys[di]->key);
-        util_cat(&ptr, " ");
-        util_cat(&ptr, display3);
-        util_cat(&ptr, " ");
+        ub_cat(&ptr, " ");
+        ub_cat(&ptr, display3);
+        ub_cat(&ptr, " ");
         free(display3);
     }
 
-    util_cat(&ptr, "[ch:");
+    ub_cat(&ptr, "[ch:");
     sprintf(ptr, "%d", k->channel_out);
-    util_cat(&ptr, "]");
+    ub_cat(&ptr, "]");
 
-    util_cat(&ptr, RESET);
+    ub_cat(&ptr, RESET);
 }
 
 dm_key_group* dm_get_key_group(dm_mapping* m, int src) { return m->index[src]; }
@@ -363,7 +363,7 @@ char* dm_mapping_extract_channel(const char* src, int* ch) {
  * Char* list is delimited to form a list of key mappings for parsing.
  */
 dm_mapping* dm_mapping_from_list(char* list) {
-    util_debug("mapping: dm_mapping_from_list(%s)\n", list);
+    ub_debug("mapping: dm_mapping_from_list(%s)\n", list);
     dm_mapping* mapping = dm_build_mapping();
 
     if (list == NULL) {
@@ -371,9 +371,9 @@ dm_mapping* dm_mapping_from_list(char* list) {
     }
 
     if (strstr(list, ":") == NULL) {
-        util_error("Invalid mapping: %s\n", list);
-        util_error("Need to specify at least a src & dest key\n");
-        util_error("\nFor example: 12:36\n\n");
+        ub_error("Invalid mapping: %s\n", list);
+        ub_error("Need to specify at least a src & dest key\n");
+        ub_error("\nFor example: 12:36\n\n");
         return NULL;
     }
 
@@ -447,7 +447,7 @@ dm_mapping* dm_mapping_from_list(char* list) {
     }
 
     dm_tokens_free(mappings);
-    util_debug("mapping: dm_mapping_from_list successful");
+    ub_debug("mapping: dm_mapping_from_list successful");
     return mapping;
 }
 
@@ -507,12 +507,12 @@ dm_key_map* create_key_map(int src, int ich, int och, dm_tokens* src_tokens,
 
     char* id = calloc(sizeof(char) * 32, sizeof(char));
     char* p = id;
-    // util_cat(&id, "123");
+    // ub_cat(&id, "123");
     sprintf(id, "01");
 
     for (int isrc = 0; isrc < src_tokens->count; ++isrc) {
         char* s = src_tokens->tokens[isrc];
-        // util_cat(&id, s);
+        // ub_cat(&id, s);
         int midi = dm_parse_to_midi(s);
         // printd("src_set: assigning keylet(%d,%d) -> %d\n", midi, ich, isrc);
         km->src_set->keys[isrc] = dm_keylet_create(midi, ich);
@@ -522,7 +522,7 @@ dm_key_map* create_key_map(int src, int ich, int och, dm_tokens* src_tokens,
 
         char* m = malloc(sizeof(char*) * 6);
         sprintf(m, "%d%d%d", ich, och, midi);
-        util_cat(&p, m);
+        ub_cat(&p, m);
         free(m);
     }
 
@@ -552,7 +552,7 @@ char* dm_key_set_dump(dm_key_set* set) {
         int size = sizeof(char*) * 12;
         char* append = calloc(size, sizeof(char));
         snprintf(append, size, " %d = %d\n", i, set->keys[i]->key);
-        util_cat(&ptr, append);
+        ub_cat(&ptr, append);
         free(append);
     }
 
@@ -560,7 +560,7 @@ char* dm_key_set_dump(dm_key_set* set) {
 }
 
 void dm_combine_key_set(dm_key_set* set, dm_key_set* addition) {
-    /* util_debug("Attempting to combine
+    /* ub_debug("Attempting to combine
      * key_set(%d) with addition(%d)\n", */
     /*          set->count, addition->count); */
 

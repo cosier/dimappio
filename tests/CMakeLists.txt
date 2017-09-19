@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(dimappio-tests)
+project(${lib}-tests)
 
 # This project uses C11 Standard
 set( CMAKE_C_STANDARD 11 )
@@ -14,6 +14,7 @@ include_directories(
   "${DM_ROOT}/tests"
   "${DM_ROOT}/src")
 
+set(lib ${APP_LIB_NAME})
 add_library(test_helper STATIC ${HELPER_LIB})
 # Test Executable that utilises the library.
 
@@ -22,11 +23,12 @@ add_executable(test-key-maps test_key_maps.c)
 add_executable(test-key-nodes test_key_nodes.c)
 add_executable(test-note-parser test_note_parser.c)
 
-# Link up main executable with our Library: libdimappio
-target_link_libraries( test-utils dimappio test_helper)
-target_link_libraries( test-key-maps dimappio test_helper)
-target_link_libraries( test-key-nodes dimappio test_helper)
-target_link_libraries( test-note-parser dimappio test_helper)
+
+# Link up main executable with our Library: libdimappiox
+target_link_libraries( test-utils ${lib} test_helper)
+target_link_libraries( test-key-maps ${lib} test_helper)
+target_link_libraries( test-key-nodes ${lib} test_helper)
+target_link_libraries( test-note-parser ${lib} test_helper)
 
 add_test(NAME test-utils COMMAND test-utils)
 add_test(NAME test-key-maps COMMAND test-key-maps)
