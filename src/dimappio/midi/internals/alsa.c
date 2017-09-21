@@ -304,7 +304,7 @@ dm_midi_output* dma_midi_output_create(int input_client, int input_port) {
     output->out_ports = malloc(sizeof(int*) * 64);
     output->in_ports = malloc(sizeof(int*) * 64);
 
-    output->id = dma_init_sequencer(&output->dev, "midi-mapper");
+    output->id = dma_init_sequencer(&output->dev, "di-mappio");
     dma_receive_events_from(output, input_client, input_port);
 
     return output;
